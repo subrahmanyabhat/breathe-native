@@ -10,7 +10,7 @@
       "backgroundColor": "#07111e"
     },
     "ios": {
-      "bundleIdentifier": "com.subrahmanyabhat.breathe",
+      "bundleIdentifier": "com.breathex.app",
       "supportsTablet": false,
       "infoPlist": {
         "NSFaceIDUsageDescription": "Used for Screen Time authentication",
@@ -21,7 +21,7 @@
       }
     },
     "android": {
-      "package": "com.subrahmanyabhat.breathe",
+      "package": "com.breathex.app",
       "adaptiveIcon": {
         "backgroundColor": "#07111e"
       }
