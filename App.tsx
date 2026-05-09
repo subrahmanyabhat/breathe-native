@@ -109,7 +109,7 @@ export default function App() {
             },
             tabBarActiveTintColor: DARK.teal,
             tabBarInactiveTintColor: DARK.label,
-            tabBarLabelStyle: { fontSize: 10, letterSpacing: 0.6, textTransform: 'lowercase' },
+            tabBarLabelStyle: { fontSize: 10, letterSpacing: 0.6 },
             tabBarIcon: ({ color, focused }) => {
               const icons: Record<string, [string, string]> = {
                 Home:       ['home',            'home-outline'],

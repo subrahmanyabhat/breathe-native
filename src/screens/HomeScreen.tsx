@@ -188,7 +188,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession }: Props) {
                   <View style={{ flex: 1, paddingRight: 12 }}>
                     <Text style={ss.techDetailName}>{selTech.name}</Text>
                     <Text style={ss.techDetailDesc}>{selTech.desc}</Text>
-                    <Text style={[ss.techDetailPhase, { fontVariant: ['tabular-nums'] }]}>
+                    <Text style={[ss.techDetailPhase, {}]}>
                       {selTech.phases.map((p, i) => `${i > 0 ? ' · ' : ''}${p.dur}`).join('')}
                     </Text>
                   </View>
@@ -269,7 +269,7 @@ const ss = StyleSheet.create({
   sectionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 },
   sectionAction: { fontSize: 12, fontWeight: '600' },
   heroRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 2, marginBottom: 8 },
-  heroNum: { color: DARK.text, fontSize: 58, fontWeight: '300', letterSpacing: -2, lineHeight: 64, fontVariant: ['tabular-nums'] as any },
+  heroNum: { color: DARK.text, fontSize: 58, fontWeight: '300', letterSpacing: -2, lineHeight: 64 },
   heroUnit: { color: DARK.text2, fontSize: 15, marginBottom: 8, marginLeft: 6 },
   earnedRow: { flexDirection: 'row', gap: 16 },
   earnedTxt: { fontSize: 13, fontWeight: '500' },

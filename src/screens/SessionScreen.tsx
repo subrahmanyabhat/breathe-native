@@ -1,24 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, Animated, Easing, TouchableOpacity,
-  SafeAreaView, Platform,
+  SafeAreaView, Platform, Vibration,
 } from 'react-native';
 import { DARK } from '../theme';
 import { Technique, APPS } from '../data';
 
-// Use string literals — enum references crash when module not fully init'd
-const hapticImpact = (style: 'light' | 'soft' | 'medium' = 'light') => {
-  try {
-    const Haptics = require('expo-haptics');
-    Haptics.impactAsync(style);
-  } catch {}
-};
-const hapticNotify = () => {
-  try {
-    const Haptics = require('expo-haptics');
-    Haptics.notificationAsync('success');
-  } catch {}
-};
+// Use built-in Vibration — no expo-haptics enum crash risk
+const hapticImpact = () => { try { Vibration.vibrate(10); } catch {} };
+const hapticNotify = () => { try { Vibration.vibrate([0, 30, 50, 30]); } catch {} };
 
 interface Props {
   tech: Technique;
