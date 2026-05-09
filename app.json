@@ -7,6 +7,7 @@
     "userInterfaceStyle": "dark",
     "icon": "./assets/icon.png",
     "splash": {
+      "image": "./assets/splash.png",
       "backgroundColor": "#07111e"
     },
     "ios": {
@@ -23,6 +24,7 @@
     "android": {
       "package": "com.breathex.app",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#07111e"
       }
     },
