@@ -38,8 +38,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "breathe-app"
+        "projectId": "13af7296-8f06-4538-9204-dcdd1c94f21c"
       }
-    }
+    },
+    "owner": "subrahmanya126"
   }
 }
