@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Breathe",
+    "slug": "breathe-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "backgroundColor": "#07111e"
+    },
+    "ios": {
+      "bundleIdentifier": "com.breathe.app",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Used for Screen Time authentication"
+      },
+      "entitlements": {
+        "com.apple.developer.family-controls": true
+      }
+    },
+    "android": {
+      "package": "com.breathe.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#07111e"
+      }
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#4fcdd8",
+          "sounds": []
+        }
+      ],
+      "./modules/screen-time/plugin"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "breathe-app"
+      }
+    }
+  }
+}
