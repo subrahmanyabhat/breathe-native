@@ -8,6 +8,7 @@ import { TECHNIQUES, APPS, Technique } from '../data';
 import { DARK } from '../theme';
 import { calcStreak, todayStr, fmtHHMM } from '../storage';
 import * as ScreenTime from '../../modules/screen-time';
+const safeSTStatus = () => { try { return ScreenTime.getAuthorizationStatus(); } catch { return 'unavailable'; } };
 
 interface Props {
   data: AppData;
@@ -21,7 +22,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession }: Props) {
   const [selTech, setSelTech] = useState(TECHNIQUES[0]);
   const [btab, setBtab] = useState<'practice' | 'learn'>('practice');
   const [expandedLearn, setExpandedLearn] = useState<string | null>(null);
-  const [stStatus, setStStatus] = useState<string>(ScreenTime.getAuthorizationStatus());
+  const [stStatus, setStStatus] = useState<string>(safeSTStatus);
 
   const streak = calcStreak(data.sessions);
   const today = todayStr();

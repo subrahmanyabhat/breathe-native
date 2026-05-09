@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { StatusBar, View } from 'react-native';
+import React, { useState, useEffect, Component } from 'react';
+import { StatusBar, View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { enableScreens } from 'react-native-screens';
 import { Ionicons } from '@expo/vector-icons';
 import { load, save, AppData, DEFAULT } from './src/storage';
 import { DARK } from './src/theme';
@@ -11,6 +12,25 @@ import StatsScreen from './src/screens/StatsScreen';
 import ScreentimeScreen from './src/screens/ScreentimeScreen';
 import SessionScreen from './src/screens/SessionScreen';
 import { Technique } from './src/data';
+
+// Must be called before any navigation renders
+enableScreens();
+
+// Catch render errors and show them instead of blank crash
+class ErrorBoundary extends Component<{children: React.ReactNode}, {error: string|null}> {
+  state = { error: null };
+  static getDerivedStateFromError(e: Error) { return { error: e.message }; }
+  render() {
+    if (this.state.error) {
+      return (
+        <View style={{ flex:1, backgroundColor:'#07111e', alignItems:'center', justifyContent:'center', padding:24 }}>
+          <Text style={{ color:'#e8a23c', fontSize:14, fontFamily:'Courier', textAlign:'center' }}>{this.state.error}</Text>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const Tab = createBottomTabNavigator();
 
@@ -73,6 +93,7 @@ export default function App() {
   }
 
   return (
+    <ErrorBoundary>
     <SafeAreaProvider>
       <StatusBar barStyle="light-content" />
       <NavigationContainer theme={{ dark: true, colors: { background: DARK.bg, card: DARK.surf, text: DARK.text, border: DARK.border, primary: DARK.teal, notification: DARK.teal } }}>
@@ -90,12 +111,13 @@ export default function App() {
             tabBarInactiveTintColor: DARK.label,
             tabBarLabelStyle: { fontSize: 10, letterSpacing: 0.6, textTransform: 'lowercase' },
             tabBarIcon: ({ color, focused }) => {
-              const icons: Record<string, any> = {
-                Home:        focused ? 'home'           : 'home-outline',
-                Stats:       focused ? 'bar-chart'      : 'bar-chart-outline',
-                Screentime:  focused ? 'shield-checkmark' : 'shield-checkmark-outline',
+              const icons: Record<string, [string, string]> = {
+                Home:       ['home',            'home-outline'],
+                Stats:      ['bar-chart',       'bar-chart-outline'],
+                Screentime: ['shield-checkmark','shield-checkmark-outline'],
               };
-              return <Ionicons name={icons[route.name]} size={22} color={color} />;
+              const [active, inactive] = icons[route.name] ?? ['ellipse', 'ellipse-outline'];
+              return <Ionicons name={(focused ? active : inactive) as any} size={22} color={color} />;
             },
           })}
         >
@@ -111,5 +133,6 @@ export default function App() {
         </Tab.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }

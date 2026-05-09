@@ -8,6 +8,7 @@ import { APPS, TECHNIQUES, Technique } from '../data';
 import { DARK } from '../theme';
 import { fmtHHMM } from '../storage';
 import * as ScreenTime from '../../modules/screen-time';
+const safeSTStatus = () => { try { return ScreenTime.getAuthorizationStatus(); } catch { return 'unavailable'; } };
 
 const LIMIT_STEPS = [5, 10, 15, 20, 30, 45, 60, 90, 120];
 const nextStep = (v: number, dir: number) => {
@@ -23,7 +24,7 @@ interface Props {
 }
 
 export default function ScreentimeScreen({ data, onUpdate, onStartSession }: Props) {
-  const [stStatus, setStStatus] = useState<string>(ScreenTime.getAuthorizationStatus());
+  const [stStatus, setStStatus] = useState<string>(safeSTStatus);
   const [shielded, setShielded] = useState(data.stShieldEnabled || false);
   const [doneSteps, setDoneSteps] = useState<Record<string, boolean>>({});
 
