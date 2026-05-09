@@ -10,17 +10,18 @@
       "backgroundColor": "#07111e"
     },
     "ios": {
-      "bundleIdentifier": "com.breathe.app",
+      "bundleIdentifier": "com.subrahmanyabhat.breathe",
       "supportsTablet": false,
       "infoPlist": {
-        "NSFaceIDUsageDescription": "Used for Screen Time authentication"
+        "NSFaceIDUsageDescription": "Used for Screen Time authentication",
+        "ITSAppUsesNonExemptEncryption": false
       },
       "entitlements": {
         "com.apple.developer.family-controls": true
       }
     },
     "android": {
-      "package": "com.breathe.app",
+      "package": "com.subrahmanyabhat.breathe",
       "adaptiveIcon": {
         "backgroundColor": "#07111e"
       }
