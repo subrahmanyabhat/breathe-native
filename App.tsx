@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Component } from 'react';
 import { StatusBar, View, Text } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { enableScreens } from 'react-native-screens';
@@ -96,7 +96,7 @@ export default function App() {
     <ErrorBoundary>
     <SafeAreaProvider>
       <StatusBar barStyle="light-content" />
-      <NavigationContainer theme={{ dark: true, colors: { background: DARK.bg, card: DARK.surf, text: DARK.text, border: DARK.border, primary: DARK.teal, notification: DARK.teal } }}>
+      <NavigationContainer theme={{ ...DarkTheme, colors: { ...DarkTheme.colors, background: DARK.bg, card: DARK.surf, text: DARK.text, border: DARK.border, primary: DARK.teal, notification: DARK.teal } }}>
         <Tab.Navigator
           screenOptions={({ route }) => ({
             headerShown: false,
