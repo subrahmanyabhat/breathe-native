@@ -3,9 +3,22 @@ import {
   View, Text, StyleSheet, Animated, Easing, TouchableOpacity,
   SafeAreaView, Platform,
 } from 'react-native';
-import * as Haptics from 'expo-haptics';
 import { DARK } from '../theme';
 import { Technique, APPS } from '../data';
+
+// Use string literals — enum references crash when module not fully init'd
+const hapticImpact = (style: 'light' | 'soft' | 'medium' = 'light') => {
+  try {
+    const Haptics = require('expo-haptics');
+    Haptics.impactAsync(style);
+  } catch {}
+};
+const hapticNotify = () => {
+  try {
+    const Haptics = require('expo-haptics');
+    Haptics.notificationAsync('success');
+  } catch {}
+};
 
 interface Props {
   tech: Technique;
@@ -47,14 +60,13 @@ export default function SessionScreen({ tech, targetApp, onDone, onBack }: Props
     if (p.label === 'Inhale') {
       setLastDir('in');
       animateOrb(1.26, 0.72, p.dur * 1000);
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      hapticImpact('light');
     } else if (p.label === 'Exhale') {
       setLastDir('out');
       animateOrb(0.68, 0.10, p.dur * 1000);
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      hapticImpact('light');
     } else {
-      // Hold — keep position
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+      hapticImpact('soft');
     }
 
     setCount(p.dur);
@@ -74,7 +86,7 @@ export default function SessionScreen({ tech, targetApp, onDone, onBack }: Props
   const handleStart = () => {
     startRef.current = Date.now();
     setRunning(true);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    hapticNotify();
   };
 
   const handleEnd = () => {
@@ -82,7 +94,7 @@ export default function SessionScreen({ tech, targetApp, onDone, onBack }: Props
     setSessMin(m);
     setRunning(false);
     setShowComplete(true);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    hapticNotify();
   };
 
   if (showComplete) {
