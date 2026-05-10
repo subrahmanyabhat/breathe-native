@@ -154,6 +154,7 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPre
 
   // ─── SETUP VIEW ───────────────────────────────────────────────────────────
   return (
+    <>
     <SafeAreaView style={s.root}>
       <ScrollView contentContainerStyle={{padding:20,paddingBottom:48}}>
         <View style={s.poolCard}>
@@ -198,7 +199,7 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPre
         })}
       </ScrollView>
     </SafeAreaView>
-    <Modal visible={showManualPick} transparent animationType='slide' onRequestClose={()=>setShowManualPick(false)}>
+    <Modal visible={showManualPick} transparent animationType="slide" onRequestClose={()=>setShowManualPick(false)}>
       <View style={{flex:1,backgroundColor:'rgba(0,0,0,0.75)',justifyContent:'flex-end'}}>
         <View style={{backgroundColor:'#0d1b36',borderRadius:24,padding:24,paddingBottom:40,borderWidth:1,borderColor:'rgba(255,255,255,0.08)'}}>
           <View style={{width:40,height:4,borderRadius:2,backgroundColor:DARK.text4,alignSelf:'center',marginBottom:20}}/>
@@ -226,6 +227,7 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPre
         </View>
       </View>
     </Modal>
+    </>
   );
 }
 
