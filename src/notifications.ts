@@ -30,7 +30,7 @@ export async function scheduleDailyReminder(time: string): Promise<boolean> {
         'Notification Permission Required',
         'Allow notifications so Breathe can remind you each day.',
         [
-          { text: 'Open Settings', onPress: () => Linking.openURL('App-Prefs:root=NOTIFICATIONS_ID') },
+          { text: 'Open Settings', onPress: () => Linking.openURL(Platform.OS === 'android' ? 'android.settings.APP_NOTIFICATION_SETTINGS' : 'App-Prefs:root=NOTIFICATIONS_ID') },
           { text: 'Cancel', style: 'cancel' },
         ]
       );
@@ -82,10 +82,10 @@ export async function applyScreenTimeLimit(appId: string, minutes: number): Prom
     const r = await ST.scheduleLimit(appId, minutes);
     if (r && r.success) return 'applied';
     // If failed, open settings
-    Linking.openURL('App-Prefs:root=SCREENTIME');
+    Linking.openURL(Platform.OS === 'android' ? 'android.settings.DIGITAL_WELLBEING' : 'App-Prefs:root=SCREENTIME');
     return 'opened_settings';
   } catch {
-    Linking.openURL('App-Prefs:root=SCREENTIME');
+    Linking.openURL(Platform.OS === 'android' ? 'android.settings.DIGITAL_WELLBEING' : 'App-Prefs:root=SCREENTIME');
     return 'opened_settings';
   }
 }

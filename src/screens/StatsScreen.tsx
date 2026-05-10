@@ -156,7 +156,7 @@ export default function StatsScreen({ data }: { data: AppData }) {
 
 const ss = StyleSheet.create({
   root: { flex: 1, backgroundColor: DARK.bg },
-  section: { paddingHorizontal: 20, marginBottom: 8, marginTop: 16 },
+  section: { paddingHorizontal: 20, marginBottom: 8, marginTop: 20 },
   sectionLabel: { color: DARK.label, fontSize: 10, letterSpacing: 2.5, textTransform: 'uppercase', fontWeight: '500' },
   sectionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   heroRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 2, marginTop: 8, marginBottom: 8 },

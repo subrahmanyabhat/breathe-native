@@ -111,7 +111,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
         </View>
       </View>
 
-      <ScrollView style={ss.scroll} contentContainerStyle={{ paddingBottom: 24 }}>
+      <ScrollView style={ss.scroll} contentContainerStyle={{ paddingBottom: 24, gap: 4 }}>
 
         {/* BANKED SCREENTIME hero */}
         <View style={ss.section}>
@@ -129,7 +129,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
         </View>
 
         {/* Today's mindful minutes */}
-        <View style={[ss.card, { marginHorizontal: 16, marginBottom: 14 }]}>
+        <View style={[ss.card, { marginHorizontal: 16, marginBottom: 20 }]}>
           <View style={ss.cardHeader}>
             <Text style={ss.cardTxt}>today's mindful minutes</Text>
             <Text style={ss.cardTxt}><Text style={{ color: DARK.teal, fontWeight: '600' }}>{todaySess.length}</Text><Text style={{ color: DARK.label }}>/10</Text></Text>
@@ -148,7 +148,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
         </View>
 
         {/* LOCKED APPS — matches reference screenshot */}
-        <View style={[ss.section, { paddingBottom: 0 }]}>
+        <View style={[ss.section, { paddingBottom: 0, marginTop: 4 }]}>
           <View style={ss.lockedCard}>
             {/* Header row */}
             <View style={ss.lockedHeader}>
@@ -335,14 +335,21 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
 
             <View style={[ss.reminderRow2, { opacity: reminderOn ? 1 : 0.4 }]}>
               <Text style={ss.reminderLabel}>Time</Text>
-              <TouchableOpacity onPress={() => {
-                // Cycle through common times
-                const times = ['06:00','07:00','08:00','09:00','10:00','18:00','20:00','21:00','22:00'];
-                const idx = times.indexOf(reminderTime);
-                setReminderTime(times[(idx + 1) % times.length]);
-              }} disabled={!reminderOn}>
-                <Text style={[ss.reminderTimeBtn, { color: DARK.teal }]}>{reminderTime} ↕</Text>
-              </TouchableOpacity>
+              <View style={{ flexDirection:'row', alignItems:'center', gap:10 }}>
+                {/* Hour − / + */}
+                <View style={{ alignItems:'center' }}>
+                  <TouchableOpacity disabled={!reminderOn} onPress={()=>{ const [h,m]=reminderTime.split(':').map(Number); setReminderTime(`${String((h-1+24)%24).padStart(2,'0')}:${String(m).padStart(2,'0')}`); }} style={ss.stepBtn2}><Text style={ss.stepTxt2}>+</Text></TouchableOpacity>
+                  <Text style={[ss.reminderTimeBtn,{color:DARK.teal}]}>{reminderTime.split(':')[0]}</Text>
+                  <TouchableOpacity disabled={!reminderOn} onPress={()=>{ const [h,m]=reminderTime.split(':').map(Number); setReminderTime(`${String((h+1)%24).padStart(2,'0')}:${String(m).padStart(2,'0')}`); }} style={ss.stepBtn2}><Text style={ss.stepTxt2}>−</Text></TouchableOpacity>
+                </View>
+                <Text style={[ss.reminderTimeBtn,{color:DARK.label}]}>:</Text>
+                {/* Minute − / + */}
+                <View style={{ alignItems:'center' }}>
+                  <TouchableOpacity disabled={!reminderOn} onPress={()=>{ const [h,m]=reminderTime.split(':').map(Number); setReminderTime(`${String(h).padStart(2,'0')}:${String((m+15)%60).padStart(2,'0')}`); }} style={ss.stepBtn2}><Text style={ss.stepTxt2}>+</Text></TouchableOpacity>
+                  <Text style={[ss.reminderTimeBtn,{color:DARK.teal}]}>{reminderTime.split(':')[1]}</Text>
+                  <TouchableOpacity disabled={!reminderOn} onPress={()=>{ const [h,m]=reminderTime.split(':').map(Number); setReminderTime(`${String(h).padStart(2,'0')}:${String((m-15+60)%60).padStart(2,'0')}`); }} style={ss.stepBtn2}><Text style={ss.stepTxt2}>−</Text></TouchableOpacity>
+                </View>
+              </View>
             </View>
 
             <TouchableOpacity style={[ss.reminderSaveBtn, { opacity: savingReminder ? 0.6 : 1 }]} onPress={() => saveReminder(reminderOn, reminderTime)} disabled={savingReminder}>
@@ -446,7 +453,9 @@ const ss = StyleSheet.create({
   reminderSheetSub: { color: DARK.text2, fontSize: 13, lineHeight: 18, marginBottom: 20 },
   reminderRow2: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: DARK.text4, borderWidth: 1, borderColor: DARK.border, borderRadius: 13, padding: 15, marginBottom: 10 },
   reminderLabel: { color: DARK.text, fontSize: 14, fontWeight: '500' },
-  reminderTimeBtn: { fontSize: 17, fontWeight: '700', letterSpacing: -0.5 },
+  reminderTimeBtn: { fontSize: 22, fontWeight: '700', letterSpacing: -0.5, textAlign:'center', minWidth:30 },
+  stepBtn2: { width:30, height:24, alignItems:'center', justifyContent:'center', backgroundColor:DARK.text4, borderRadius:6, borderWidth:1, borderColor:DARK.border },
+  stepTxt2: { color:DARK.text, fontSize:14, lineHeight:18, fontWeight:'600' },
   reminderSaveBtn: { backgroundColor: DARK.teal, borderRadius: 13, padding: 15, alignItems: 'center', marginTop: 6 },
   reminderSaveTxt: { color: '#07111e', fontSize: 15, fontWeight: '700' },
 });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Component } from 'react';
-import { StatusBar, View, Text, Modal, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
+import { StatusBar, View, Text, Modal, TouchableOpacity, ScrollView, StyleSheet, Alert, Platform } from 'react-native';
 import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -149,13 +149,14 @@ const pm = StyleSheet.create({
 });
 
 // ── Trial banner ──────────────────────────────────────────────────────────────
-function TrialBanner({ daysLeft }: { daysLeft: number }) {
+function TrialBanner({ daysLeft, onPress }: { daysLeft: number; onPress: () => void }) {
+  const insets = useSafeAreaInsets();
   return (
-    <View style={{ backgroundColor:'#a48ee8', paddingVertical:6, paddingHorizontal:16, alignItems:'center' }}>
+    <TouchableOpacity onPress={onPress} style={{ backgroundColor:'#a48ee8', paddingTop: insets.top + 6, paddingBottom:8, paddingHorizontal:16, alignItems:'center' }}>
       <Text style={{ color:'#fff', fontSize:12, fontWeight:'600' }}>
-        ✦ Free Trial — {daysLeft} day{daysLeft !== 1 ? 's' : ''} remaining
+        ✦ Free Trial — {daysLeft} day{daysLeft !== 1 ? 's' : ''} remaining · Upgrade →
       </Text>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -181,11 +182,36 @@ export default function App() {
     Alert.alert('🎉 Trial Started!', '7 days of full access. All screentime features unlocked.');
   };
 
-  const handleBuy = () => {
-    // Placeholder — real StoreKit purchase goes here
-    update({ ...data, premium: { ...data.premium, paid: true } });
-    setShowPremium(false);
-    Alert.alert('✓ Premium Activated', 'Thank you! All features unlocked.');
+  const handleBuy = async () => {
+    try {
+      const IAP = require('expo-iap');
+      // Product ID must match what you create in App Store Connect / Google Play
+      const PRODUCT_ID = Platform.OS === 'android' ? 'breathe_premium_monthly' : 'com.breathex.app.premium.monthly';
+      await IAP.initConnection();
+      const products = await IAP.getProducts([PRODUCT_ID]);
+      if (!products || products.length === 0) {
+        Alert.alert('Not Available', 'Purchase not configured yet. Contact support.');
+        return;
+      }
+      const result = await IAP.requestPurchase({ sku: PRODUCT_ID });
+      if (result) {
+        update({ ...data, premium: { ...data.premium, paid: true } });
+        setShowPremium(false);
+        Alert.alert('✓ Premium Activated', 'Thank you! All features unlocked.');
+      }
+    } catch (e: any) {
+      if (e?.code !== 'E_USER_CANCELLED') {
+        // Fallback for dev/testing — simulate purchase
+        Alert.alert(
+          'Complete Purchase',
+          'In production this opens the App Store / Play Store purchase sheet.\n\nFor testing: activate as purchased?',
+          [
+            { text: 'Simulate Purchase', onPress: () => { update({ ...data, premium: { ...data.premium, paid: true } }); setShowPremium(false); }},
+            { text: 'Cancel', style: 'cancel' },
+          ]
+        );
+      }
+    }
   };
 
   const startSession = (tech: Technique, targetApp?: string) => setSession({ tech, targetApp });
@@ -229,7 +255,7 @@ export default function App() {
     <ErrorBoundary>
       <SafeAreaProvider>
         <StatusBar barStyle="light-content" />
-        {hasTrial && <TrialBanner daysLeft={dLeft} />}
+        {hasTrial && <TrialBanner daysLeft={dLeft} onPress={() => setShowPremium(true)} />}
 
         <NavigationContainer theme={{ ...DarkTheme, colors: { ...DarkTheme.colors, background: DARK.bg, card: DARK.surf, text: DARK.text, border: DARK.border, primary: DARK.teal, notification: DARK.teal } }}>
           <Tab.Navigator

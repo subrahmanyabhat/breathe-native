@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Alert, Linking, Switch, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Alert, Linking, Switch, Modal, Platform } from 'react-native';
 import { applyScreenTimeLimit } from '../notifications';
 import { AppData, fmtHHMM } from '../storage';
 import { APPS, TECHNIQUES, Technique } from '../data';
@@ -128,18 +128,32 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPre
     <SafeAreaView style={s.root}>
       <ScrollView contentContainerStyle={{padding:20,paddingBottom:48}}>
 
-        {/* Auth status banner */}
-        <TouchableOpacity onPress={reqAuth} style={[s.authBanner,{borderColor:isAuth?'rgba(79,205,216,0.3)':'rgba(232,162,60,0.3)',backgroundColor:isAuth?'rgba(79,205,216,0.08)':'rgba(232,162,60,0.08)'}]}>
-          <Text style={{fontSize:16}}>{isAuth?'✓':'⚠️'}</Text>
-          <View style={{flex:1,marginLeft:10}}>
-            <Text style={{color:isAuth?DARK.teal:'#e8a23c',fontSize:13,fontWeight:'600'}}>
-              {isAuth?'Screen Time Authorized':'Screen Time Not Authorized'}
-            </Text>
-            <Text style={{color:DARK.text2,fontSize:11,marginTop:1}}>
-              {isAuth?'Native blocking active':'Tap to request permission → enables real app blocking'}
-            </Text>
+        {Platform.OS === 'android' ? (
+          /* Android: Digital Wellbeing setup card */
+          <View style={[s.authBanner,{borderColor:'rgba(100,200,100,0.3)',backgroundColor:'rgba(100,200,100,0.06)',marginBottom:14}]}>
+            <Text style={{fontSize:16}}>🤖</Text>
+            <View style={{flex:1,marginLeft:10}}>
+              <Text style={{color:'#6fc96f',fontSize:13,fontWeight:'600'}}>Android — Digital Wellbeing</Text>
+              <Text style={{color:DARK.text2,fontSize:11,marginTop:1}}>Set app timers in Digital Wellbeing settings</Text>
+            </View>
+            <TouchableOpacity onPress={()=>Linking.openURL('intent:#Intent;action=android.settings.DIGITAL_WELLBEING;end')} style={{backgroundColor:'rgba(100,200,100,0.15)',borderRadius:8,padding:6,paddingHorizontal:10}}>
+              <Text style={{color:'#6fc96f',fontSize:12,fontWeight:'600'}}>Open →</Text>
+            </TouchableOpacity>
           </View>
-        </TouchableOpacity>
+        ) : (
+          /* iOS: Screen Time auth banner */
+          <TouchableOpacity onPress={reqAuth} style={[s.authBanner,{borderColor:isAuth?'rgba(79,205,216,0.3)':'rgba(232,162,60,0.3)',backgroundColor:isAuth?'rgba(79,205,216,0.08)':'rgba(232,162,60,0.08)'}]}>
+            <Text style={{fontSize:16}}>{isAuth?'✓':'⚠️'}</Text>
+            <View style={{flex:1,marginLeft:10}}>
+              <Text style={{color:isAuth?DARK.teal:'#e8a23c',fontSize:13,fontWeight:'600'}}>
+                {isAuth?'Screen Time Authorized':'Screen Time Not Authorized'}
+              </Text>
+              <Text style={{color:DARK.text2,fontSize:11,marginTop:1}}>
+                {isAuth?'Native blocking active':'Tap to request permission → enables real app blocking'}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        )}
 
         <View style={s.poolCard}>
           <Text style={s.poolL}>POOL BALANCE</Text>
@@ -174,7 +188,7 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPre
                     if(result==='applied') Alert.alert('✓ Limit Applied',`${app.name} blocked after ${lim} min/day via Screen Time.`);
                     else Alert.alert('Opening Screen Time','Set the limit manually:\n1. App Limits → Add Limit\n2. Search: '+app.name+'\n3. Set '+lim+' min\n4. Enable "Block at End of Limit"');
                   }}>
-                    <Text style={s.applyTxt}>Apply</Text>
+                    <Text style={s.applyTxt}>{Platform.OS==='android'?'Digital Wellbeing →':'Apply to iPhone →'}</Text>
                   </TouchableOpacity>
                 </View>
               )}
