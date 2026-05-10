@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  SafeAreaView, Alert, Linking, Vibration,
+  SafeAreaView, Alert, Linking, Vibration, Modal, Switch, Platform,
 } from 'react-native';
+import { scheduleDailyReminder, cancelDailyReminder } from '../notifications';
 import { AppData } from '../storage';
 import { TECHNIQUES, APPS, Technique } from '../data';
 import { DARK } from '../theme';
@@ -21,6 +22,24 @@ interface Props {
 const TL_START = 6, TL_END = 22, TL_SLOTS = TL_END - TL_START;
 
 export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onShowPremium }: Props) {
+  const [showReminder, setShowReminder] = useState(false);
+  const [reminderTime, setReminderTime] = useState(data.reminder?.time || '08:00');
+  const [reminderOn, setReminderOn] = useState(!!data.reminder?.enabled);
+  const [savingReminder, setSavingReminder] = useState(false);
+
+  const saveReminder = async (enabled: boolean, time: string) => {
+    setSavingReminder(true);
+    if (enabled) {
+      const ok = await scheduleDailyReminder(time);
+      onUpdate({ ...data, reminder: { enabled: ok, time } });
+      if (ok) Alert.alert('✓ Reminder Set', `You'll be reminded every day at ${time} to breathe.`);
+    } else {
+      await cancelDailyReminder();
+      onUpdate({ ...data, reminder: { enabled: false, time } });
+    }
+    setSavingReminder(false);
+    setShowReminder(false);
+  };
   const [selTech, setSelTech] = useState(TECHNIQUES[0]);
   const [btab, setBtab] = useState<'practice' | 'learn'>('practice');
   const [expandedLearn, setExpandedLearn] = useState<string | null>(null);
@@ -275,6 +294,18 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
             })
           )}
         </View>
+
+        {/* Reminder row */}
+        <TouchableOpacity onPress={() => setShowReminder(true)} style={ss.reminderRow}>
+          <Text style={{ fontSize: 18 }}>🔔</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={ss.reminderTitle}>Daily Reminder</Text>
+            <Text style={ss.reminderSub}>
+              {data.reminder?.enabled ? `Every day at ${data.reminder.time} · tap to change` : 'Set a daily breathing alarm'}
+            </Text>
+          </View>
+          <View style={[ss.reminderDot, { backgroundColor: data.reminder?.enabled ? DARK.teal : DARK.text4 }]} />
+        </TouchableOpacity>
       </ScrollView>
 
       {/* Fixed bottom breathe button — not floating */}
@@ -284,6 +315,42 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
           <Text style={ss.beginCardSub}>{selTech.name} · {selTech.phases.map(p => p.dur).join('·')} · ~{cycleSeconds * 10}:00 reward</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Reminder Modal */}
+      <Modal visible={showReminder} transparent animationType="slide" onRequestClose={() => setShowReminder(false)}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'flex-end' }}>
+          <TouchableOpacity style={StyleSheet.absoluteFillObject} onPress={() => setShowReminder(false)} />
+          <View style={ss.reminderSheet}>
+            <View style={ss.reminderHandle} />
+            <Text style={ss.reminderSheetTitle}>Daily Reminder</Text>
+            <Text style={ss.reminderSheetSub}>Set a daily alarm to breathe. Scheduled as a repeating notification.</Text>
+
+            <View style={ss.reminderRow2}>
+              <View style={{ flex: 1 }}>
+                <Text style={ss.reminderLabel}>Enable reminder</Text>
+                <Text style={ss.reminderSub}>Fires every day at the set time</Text>
+              </View>
+              <Switch value={reminderOn} onValueChange={setReminderOn} trackColor={{ true: DARK.teal, false: DARK.text4 }} thumbColor="#fff" />
+            </View>
+
+            <View style={[ss.reminderRow2, { opacity: reminderOn ? 1 : 0.4 }]}>
+              <Text style={ss.reminderLabel}>Time</Text>
+              <TouchableOpacity onPress={() => {
+                // Cycle through common times
+                const times = ['06:00','07:00','08:00','09:00','10:00','18:00','20:00','21:00','22:00'];
+                const idx = times.indexOf(reminderTime);
+                setReminderTime(times[(idx + 1) % times.length]);
+              }} disabled={!reminderOn}>
+                <Text style={[ss.reminderTimeBtn, { color: DARK.teal }]}>{reminderTime} ↕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity style={[ss.reminderSaveBtn, { opacity: savingReminder ? 0.6 : 1 }]} onPress={() => saveReminder(reminderOn, reminderTime)} disabled={savingReminder}>
+              <Text style={ss.reminderSaveTxt}>{savingReminder ? 'Setting…' : reminderOn ? `Set Alarm for ${reminderTime}` : 'Save (off)'}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -369,4 +436,17 @@ const ss = StyleSheet.create({
   beginCard: { backgroundColor: 'rgba(44,92,152,0.92)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.13)', borderRadius: 15, paddingVertical: 18, paddingHorizontal: 20, alignItems: 'center' },
   beginCardTitle: { color: '#fff', fontSize: 16, fontWeight: '600', marginBottom: 4, letterSpacing: -0.3 },
   beginCardSub: { color: 'rgba(255,255,255,0.5)', fontSize: 11, letterSpacing: 0.3, fontFamily: 'Courier' },
+  reminderRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 14, borderTopWidth: 1, borderTopColor: DARK.border, marginTop: 8 },
+  reminderTitle: { color: DARK.text, fontSize: 14, fontWeight: '500' },
+  reminderSub: { color: DARK.text2, fontSize: 12, marginTop: 1 },
+  reminderDot: { width: 7, height: 7, borderRadius: 4, flexShrink: 0 },
+  reminderSheet: { backgroundColor: '#0d1b36', borderRadius: 28, padding: 24, paddingBottom: 44, borderWidth: 1, borderColor: DARK.border, borderBottomWidth: 0 },
+  reminderHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: DARK.text4, alignSelf: 'center', marginBottom: 22 },
+  reminderSheetTitle: { color: DARK.text, fontSize: 19, fontWeight: '700', marginBottom: 4 },
+  reminderSheetSub: { color: DARK.text2, fontSize: 13, lineHeight: 18, marginBottom: 20 },
+  reminderRow2: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: DARK.text4, borderWidth: 1, borderColor: DARK.border, borderRadius: 13, padding: 15, marginBottom: 10 },
+  reminderLabel: { color: DARK.text, fontSize: 14, fontWeight: '500' },
+  reminderTimeBtn: { fontSize: 17, fontWeight: '700', letterSpacing: -0.5 },
+  reminderSaveBtn: { backgroundColor: DARK.teal, borderRadius: 13, padding: 15, alignItems: 'center', marginTop: 6 },
+  reminderSaveTxt: { color: '#07111e', fontSize: 15, fontWeight: '700' },
 });

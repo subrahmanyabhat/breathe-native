@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Alert, Linking, Switch, Modal } from 'react-native';
+import { applyScreenTimeLimit } from '../notifications';
 import { AppData, fmtHHMM } from '../storage';
 import { APPS, TECHNIQUES, Technique } from '../data';
 import { DARK } from '../theme';
@@ -183,8 +184,12 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPre
                   <TouchableOpacity style={s.stepBtn} onPress={()=>onUpdate({...data,appLimits:{...al,[app.id]:nextStep(lim,-1)}})}><Text style={s.stepTxt}>−</Text></TouchableOpacity>
                   <Text style={s.limVal}>{lim}m</Text>
                   <TouchableOpacity style={s.stepBtn} onPress={()=>onUpdate({...data,appLimits:{...al,[app.id]:nextStep(lim,+1)}})}><Text style={s.stepTxt}>+</Text></TouchableOpacity>
-                  <TouchableOpacity style={s.applyBtn} onPress={()=>Linking.openURL('App-Prefs:root=SCREENTIME')}>
-                    <Text style={s.applyTxt}>Apply to iPhone →</Text>
+                  <TouchableOpacity style={s.applyBtn} onPress={async()=>{
+                    const result = await applyScreenTimeLimit(app.id, lim);
+                    if(result==='applied') Alert.alert('✓ Limit Applied',`${app.name} blocked after ${lim} min/day via Screen Time.`);
+                    else Alert.alert('Opening Screen Time','Set the limit manually:\n1. App Limits → Add Limit\n2. Search: '+app.name+'\n3. Set '+lim+' min\n4. Enable "Block at End of Limit"');
+                  }}>
+                    <Text style={s.applyTxt}>Apply</Text>
                   </TouchableOpacity>
                 </View>
               )}
