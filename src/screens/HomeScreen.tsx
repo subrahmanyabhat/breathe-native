@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  SafeAreaView, Alert, Linking,
+  SafeAreaView, Alert, Linking, Vibration,
 } from 'react-native';
 import { AppData } from '../storage';
 import { TECHNIQUES, APPS, Technique } from '../data';
@@ -119,38 +119,63 @@ export default function HomeScreen({ data, onUpdate, onStartSession }: Props) {
           </View>
         </View>
 
-        {/* LOCKED APPS */}
+        {/* LOCKED APPS — matches reference screenshot */}
         <View style={[ss.section, { paddingBottom: 0 }]}>
-          <View style={ss.sectionRow}>
-            <Text style={ss.sectionLabel}>LOCKED APPS</Text>
-            <TouchableOpacity onPress={handlePickApps}>
-              <Text style={[ss.sectionAction, { color: DARK.teal }]}>+ pick apps</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={[ss.card, { marginTop: 10, overflow: 'hidden' }]}>
-            {enabledApps.length === 0 ? (
-              <TouchableOpacity style={{ padding: 18, alignItems: 'center' }} onPress={handlePickApps}>
-                <Text style={{ color: DARK.teal, fontSize: 13, fontWeight: '600' }}>tap to pick apps to block →</Text>
+          <View style={ss.lockedCard}>
+            {/* Header row */}
+            <View style={ss.lockedHeader}>
+              <View style={ss.lockedIconBox}><Text style={{ fontSize: 18 }}>🔒</Text></View>
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <Text style={ss.lockedTitle}>Apps Blocked</Text>
+                <Text style={ss.lockedSub}>Complete a breathing session to unlock</Text>
+              </View>
+              <View style={ss.recDot} />
+            </View>
+
+            {/* Blocked Apps label + Manage */}
+            <View style={ss.lockedMeta}>
+              <Text style={ss.lockedMetaL}>Blocked Apps</Text>
+              <TouchableOpacity onPress={handlePickApps}>
+                <Text style={ss.lockedManage}>Manage →</Text>
               </TouchableOpacity>
-            ) : enabledApps.map((app, i) => {
-              const ae = appEarned[app.id] || 0;
-              const isOpen = ae > 0;
-              return (
-                <TouchableOpacity key={app.id} style={[ss.appRow, { borderBottomWidth: i < enabledApps.length - 1 ? 1 : 0, borderBottomColor: DARK.border }]} onPress={() => handleOpenApp(app)}>
-                  <View style={[ss.appIcon, { backgroundColor: app.color }]}>
-                    <Text style={ss.appInitials}>{app.initials}</Text>
-                    {!isOpen && <View style={ss.lockDot}><Text style={{ fontSize: 7 }}>🔒</Text></View>}
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={ss.appName}>{app.name}</Text>
-                    <Text style={[ss.appStatus, { color: isOpen ? DARK.teal : DARK.sealed }]}>
-                      {isOpen ? `${ae}:00 left · tap to open` : 'sealed · tap to breathe'}
-                    </Text>
-                  </View>
-                  <Text style={[ss.appAction, { color: isOpen ? DARK.teal : DARK.text4 }]}>{isOpen ? 'open' : '—'}</Text>
-                </TouchableOpacity>
-              );
-            })}
+            </View>
+
+            {/* App pills — horizontal scroll like screenshot */}
+            {enabledApps.length === 0 ? (
+              <TouchableOpacity onPress={handlePickApps} style={{ paddingBottom: 14 }}>
+                <Text style={{ color: DARK.teal, fontSize: 13, fontWeight: '600' }}>+ pick apps to block</Text>
+              </TouchableOpacity>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }} contentContainerStyle={{ gap: 8 }}>
+                {enabledApps.map(app => {
+                  const ae = appEarned[app.id] || 0;
+                  const isOpen = ae > 0;
+                  return (
+                    <TouchableOpacity key={app.id} onPress={() => handleOpenApp(app)}
+                      style={[ss.appPill, { borderColor: isOpen ? 'rgba(79,205,216,0.35)' : 'rgba(200,50,50,0.38)', backgroundColor: isOpen ? 'rgba(79,205,216,0.12)' : 'rgba(200,50,50,0.18)' }]}>
+                      <View style={[ss.pillIcon, { backgroundColor: app.color }]}>
+                        <Text style={ss.pillInitials}>{app.initials}</Text>
+                      </View>
+                      <Text style={ss.pillName}>{app.name}</Text>
+                      <Text style={{ fontSize: 12 }}>{isOpen ? '🔓' : '🔒'}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            )}
+
+            {/* Breathe to Unlock — blue CTA matching screenshot */}
+            <TouchableOpacity style={ss.unlockBtn} onPress={() => onStartSession(selTech)}>
+              <Text style={{ fontSize: 20 }}>⚡</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={ss.unlockTitle}>Breathe to Unlock Apps</Text>
+                <Text style={ss.unlockSub}>{selTech.name} · {selTech.phases.map(p => p.dur).join('·')}</Text>
+              </View>
+              <View style={ss.unlockBadge}>
+                <Text style={{ fontSize: 11 }}>⏱</Text>
+                <Text style={ss.unlockBadgeTxt}>{earned > 0 ? `${earned}m` : `${cycleSeconds * 10}:00`} unlock</Text>
+              </View>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -280,13 +305,25 @@ const ss = StyleSheet.create({
   tlSeg: { flex: 1, height: 5, borderRadius: 2 },
   tlLabels: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 14, paddingBottom: 12 },
   tlLabel: { color: DARK.label, fontSize: 9, letterSpacing: 0.5 },
-  appRow: { flexDirection: 'row', alignItems: 'center', gap: 13, padding: 12, paddingHorizontal: 15 },
-  appIcon: { width: 40, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center', position: 'relative' },
-  appInitials: { color: 'rgba(255,255,255,0.92)', fontSize: 11, fontWeight: '700' },
-  lockDot: { position: 'absolute', bottom: -2, right: -2, width: 14, height: 14, borderRadius: 7, backgroundColor: DARK.bg, alignItems: 'center', justifyContent: 'center' },
-  appName: { color: DARK.text, fontSize: 14, fontWeight: '500' },
-  appStatus: { fontSize: 12, marginTop: 1 },
-  appAction: { fontSize: 13, fontWeight: '600', letterSpacing: 0.3 },
+  // Locked apps card — matches screenshot
+  lockedCard: { backgroundColor: '#0d1520', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(220,60,60,0.20)', marginBottom: 4 },
+  lockedHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
+  lockedIconBox: { width: 40, height: 40, borderRadius: 11, backgroundColor: 'rgba(220,60,60,0.22)', borderWidth: 1, borderColor: 'rgba(220,60,60,0.40)', alignItems: 'center', justifyContent: 'center' },
+  lockedTitle: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  lockedSub: { color: 'rgba(255,255,255,0.42)', fontSize: 12, marginTop: 1 },
+  recDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#cc2200' },
+  lockedMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  lockedMetaL: { color: 'rgba(255,255,255,0.50)', fontSize: 13, fontWeight: '500' },
+  lockedManage: { color: '#4a90d9', fontSize: 13, fontWeight: '600' },
+  appPill: { flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1, borderRadius: 22, paddingHorizontal: 11, paddingVertical: 8 },
+  pillIcon: { width: 26, height: 26, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
+  pillInitials: { color: 'rgba(255,255,255,0.92)', fontSize: 10, fontWeight: '700' },
+  pillName: { color: 'rgba(255,255,255,0.88)', fontSize: 13, fontWeight: '500' },
+  unlockBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#2563eb', borderRadius: 13, padding: 14, gap: 10 },
+  unlockTitle: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  unlockSub: { color: 'rgba(255,255,255,0.60)', fontSize: 11, marginTop: 1, fontFamily: 'Courier' },
+  unlockBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4 },
+  unlockBadgeTxt: { color: '#fff', fontSize: 12, fontWeight: '600' },
   tabPill: { flexDirection: 'row', gap: 3, backgroundColor: DARK.text4, borderRadius: 20, padding: 3 },
   tabBtn: { borderRadius: 16, paddingHorizontal: 12, paddingVertical: 4 },
   tabBtnActive: { backgroundColor: DARK.surf, borderWidth: 1, borderColor: DARK.border },
