@@ -1,160 +1,131 @@
-import Foundation
+import ExpoModulesCore
 import FamilyControls
 import ManagedSettings
 import DeviceActivity
 import SwiftUI
 
-@objc(ScreenTimeModule)
-class ScreenTimeModule: NSObject {
-
+public class ScreenTimeModule: Module {
   private let store = ManagedSettingsStore()
-  private var selection = FamilyActivitySelection()
+  private var activitySelection = FamilyActivitySelection()
 
-  // MARK: - Authorization
+  public func definition() -> ModuleDefinition {
+    Name("ScreenTime")
 
-  @objc func requestAuthorization(_ resolve: @escaping RCTPromiseResolveBlock,
-                                   rejecter reject: @escaping RCTPromiseRejectBlock) {
-    if #available(iOS 16.0, *) {
-      Task {
-        do {
-          try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
-          resolve(["authorized": true])
-        } catch {
-          resolve(["authorized": false, "error": error.localizedDescription])
+    // ── Authorization ─────────────────────────────────────────────────────
+    AsyncFunction("requestAuthorization") { (promise: Promise) in
+      if #available(iOS 16.0, *) {
+        Task {
+          do {
+            try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
+            promise.resolve(["authorized": true])
+          } catch {
+            promise.resolve(["authorized": false, "error": error.localizedDescription])
+          }
+        }
+      } else {
+        promise.resolve(["authorized": false, "error": "Requires iOS 16.0+"])
+      }
+    }
+
+    Function("getAuthorizationStatus") { () -> String in
+      if #available(iOS 16.0, *) {
+        switch AuthorizationCenter.shared.authorizationStatus {
+        case .approved:      return "approved"
+        case .denied:        return "denied"
+        case .notDetermined: return "notDetermined"
+        @unknown default:    return "unknown"
         }
       }
-    } else {
-      resolve(["authorized": false, "error": "Requires iOS 16.0+"])
+      return "unavailable"
     }
-  }
 
-  @objc func getAuthorizationStatus() -> String {
-    if #available(iOS 16.0, *) {
-      switch AuthorizationCenter.shared.authorizationStatus {
-      case .approved:        return "approved"
-      case .denied:          return "denied"
-      case .notDetermined:   return "notDetermined"
-      @unknown default:      return "unknown"
+    // ── Native App Picker ─────────────────────────────────────────────────
+    AsyncFunction("showAppPicker") { (promise: Promise) in
+      if #available(iOS 16.0, *) {
+        DispatchQueue.main.async {
+          guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                let root = scene.windows.first?.rootViewController else {
+            promise.resolve(["selected": false, "appCount": 0])
+            return
+          }
+          var selection = FamilyActivitySelection()
+          let picker = FamilyActivityPicker(selection: Binding(
+            get: { selection },
+            set: { selection = $0 }
+          ))
+          let host = UIHostingController(rootView: picker)
+          host.modalPresentationStyle = .formSheet
+          root.present(host, animated: true)
+
+          // Poll for dismissal
+          DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { timer in
+              if host.isBeingDismissed || host.presentingViewController == nil {
+                timer.invalidate()
+                self.activitySelection = selection
+                let count = selection.applicationTokens.count + selection.categoryTokens.count
+                promise.resolve(["selected": count > 0, "appCount": count])
+              }
+            }
+          }
+        }
+      } else {
+        promise.resolve(["selected": false, "appCount": 0, "error": "Requires iOS 16.0+"])
       }
     }
-    return "unavailable"
-  }
 
-  // MARK: - App Picker
-  // Shows the native FamilyActivityPicker sheet.
-  // User selects the apps they want to block in our app.
-  @objc func showAppPicker(_ resolve: @escaping RCTPromiseResolveBlock,
-                            rejecter reject: @escaping RCTPromiseRejectBlock) {
-    if #available(iOS 16.0, *) {
-      DispatchQueue.main.async {
-        // Present SwiftUI picker via UIHostingController
-        guard let rootVC = UIApplication.shared
-          .connectedScenes
-          .compactMap({ $0 as? UIWindowScene })
-          .first?.windows
-          .first?.rootViewController else {
-          resolve(["selected": false, "appCount": 0])
+    // ── Shield (block) selected apps immediately ───────────────────────────
+    AsyncFunction("shieldApps") { (promise: Promise) in
+      if #available(iOS 16.0, *) {
+        let tokens = self.activitySelection.applicationTokens
+        let cats   = self.activitySelection.categoryTokens
+        if tokens.isEmpty && cats.isEmpty {
+          promise.resolve(["success": false, "error": "No apps selected. Use showAppPicker first."])
           return
         }
+        self.store.shield.applications = tokens.isEmpty ? nil : tokens
+        self.store.shield.applicationCategories = cats.isEmpty ? nil :
+          ShieldSettings.ActivityCategoryPolicy.specific(cats)
+        promise.resolve(["success": true])
+      } else {
+        promise.resolve(["success": false, "error": "Requires iOS 16.0+"])
+      }
+    }
 
-        var pickerSelection = FamilyActivitySelection()
-        let picker = FamilyActivityPicker(selection: Binding(
-          get: { pickerSelection },
-          set: { pickerSelection = $0 }
-        ))
-        let hostingVC = UIHostingController(rootView: picker)
-        hostingVC.modalPresentationStyle = .formSheet
+    // ── Unshield (unblock) all apps ───────────────────────────────────────
+    AsyncFunction("unshieldApps") { (promise: Promise) in
+      if #available(iOS 16.0, *) {
+        self.store.shield.applications = nil
+        self.store.shield.applicationCategories = nil
+        promise.resolve(["success": true])
+      } else {
+        promise.resolve(["success": false, "error": "Requires iOS 16.0+"])
+      }
+    }
 
-        hostingVC.presentationController?.delegate = nil
-        rootVC.present(hostingVC, animated: true)
-
-        // When dismissed, save selection and report
-        hostingVC.onDismiss = {
-          self.selection = pickerSelection
-          let count = pickerSelection.applicationTokens.count + pickerSelection.categoryTokens.count
-          resolve(["selected": count > 0, "appCount": count])
+    // ── DeviceActivity schedule (auto-shield after X min/day) ─────────────
+    AsyncFunction("scheduleLimit") { (minutes: Int, promise: Promise) in
+      if #available(iOS 16.0, *) {
+        let center = DeviceActivityCenter()
+        let name   = DeviceActivityName("breathe.daily.limit")
+        let schedule = DeviceActivitySchedule(
+          intervalStart: DateComponents(hour: 0, minute: 0),
+          intervalEnd:   DateComponents(hour: 23, minute: 59),
+          repeats: true
+        )
+        let event = DeviceActivityEvent(
+          applications: self.activitySelection.applicationTokens,
+          threshold: DateComponents(minute: minutes)
+        )
+        do {
+          try center.startMonitoring(name, during: schedule, events: [.threshold: event])
+          promise.resolve(["success": true])
+        } catch {
+          promise.resolve(["success": false, "error": error.localizedDescription])
         }
+      } else {
+        promise.resolve(["success": false, "error": "Requires iOS 16.0+"])
       }
-    } else {
-      resolve(["selected": false, "appCount": 0, "error": "Requires iOS 16.0+"])
     }
-  }
-
-  // MARK: - Shield / Unshield
-
-  @objc func shieldApps(_ resolve: @escaping RCTPromiseResolveBlock,
-                         rejecter reject: @escaping RCTPromiseRejectBlock) {
-    if #available(iOS 16.0, *) {
-      store.shield.applications = selection.applicationTokens.isEmpty ? nil : selection.applicationTokens
-      store.shield.applicationCategories = selection.categoryTokens.isEmpty
-        ? nil
-        : ShieldSettings.ActivityCategoryPolicy.specific(selection.categoryTokens)
-      resolve(["success": true])
-    } else {
-      resolve(["success": false, "error": "Requires iOS 16.0+"])
-    }
-  }
-
-  @objc func unshieldApps(_ resolve: @escaping RCTPromiseResolveBlock,
-                           rejecter reject: @escaping RCTPromiseRejectBlock) {
-    if #available(iOS 16.0, *) {
-      store.shield.applications = nil
-      store.shield.applicationCategories = nil
-      resolve(["success": true])
-    } else {
-      resolve(["success": false, "error": "Requires iOS 16.0+"])
-    }
-  }
-
-  // MARK: - DeviceActivity Schedule (auto-shield after X minutes/day)
-
-  @objc func scheduleLimit(_ appId: String,
-                            minutes: Int,
-                            resolver resolve: @escaping RCTPromiseResolveBlock,
-                            rejecter reject: @escaping RCTPromiseRejectBlock) {
-    if #available(iOS 16.0, *) {
-      let center = DeviceActivityCenter()
-      let activityName = DeviceActivityName(rawValue: "breathe.\(appId).daily")
-
-      // Schedule: resets at midnight, threshold at X minutes
-      let schedule = DeviceActivitySchedule(
-        intervalStart: DateComponents(hour: 0, minute: 0),
-        intervalEnd: DateComponents(hour: 23, minute: 59),
-        repeats: true,
-        warningTime: DateComponents(minute: 5)
-      )
-
-      let threshold = DateComponents(minute: minutes)
-
-      do {
-        try center.startMonitoring(activityName, during: schedule,
-          events: [.threshold: DeviceActivityEvent(
-            applications: selection.applicationTokens,
-            threshold: threshold
-          )])
-        resolve(["success": true])
-      } catch {
-        resolve(["success": false, "error": error.localizedDescription])
-      }
-    } else {
-      resolve(["success": false, "error": "Requires iOS 16.0+"])
-    }
-  }
-
-  // MARK: - React Native bridge boilerplate
-
-  @objc static func requiresMainQueueSetup() -> Bool { true }
-}
-
-// Extension to detect VC dismissal
-extension UIHostingController {
-  private static var onDismissKey = "onDismiss"
-  var onDismiss: (() -> Void)? {
-    get { objc_getAssociatedObject(self, &UIHostingController.onDismissKey) as? () -> Void }
-    set { objc_setAssociatedObject(self, &UIHostingController.onDismissKey, newValue, .OBJC_ASSOCIATION_RETAIN) }
-  }
-  open override func viewDidDisappear(_ animated: Bool) {
-    super.viewDidDisappear(animated)
-    onDismiss?()
   }
 }

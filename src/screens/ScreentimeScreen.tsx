@@ -53,37 +53,7 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPre
   const unshieldAll = async () => { setLoading(true); const r=await doUnshield() as any; if(r.success) onUpdate({...data,stShieldEnabled:false}); setLoading(false); };
   const spend = (id:string,m:number) => { const a={...ae}; if((a[id]||0)>=m){a[id]=(a[id]||0)-m; onUpdate({...data,appEarned:a,spentMin:(data.spentMin||0)+m});} };
 
-  // ─── ONBOARDING ───────────────────────────────────────────────────────────
-  if (!isAuth) return (
-    <SafeAreaView style={s.root}>
-      <ScrollView contentContainerStyle={{padding:24,paddingBottom:48}}>
-        <View style={{alignItems:'center',marginBottom:28}}>
-          <View style={s.onbIcon}><Text style={{fontSize:34}}>🔒</Text></View>
-          <Text style={s.h1}>Block distracting apps</Text>
-          <Text style={s.sub}>Breathe to unlock.{'\n'}1 min breathing = 10 min screen time.</Text>
-        </View>
-        {[
-          {n:'01',title:'Enable Screen Time',desc:'Grants permission to manage app limits from inside this app.',btn:'Enable →',fn:reqAuth},
-          {n:'02',title:'Pick apps to block',desc:'Select Instagram, TikTok, YouTube — any apps that drain your time.',btn:'Pick Apps →',fn:pickApps},
-          {n:'03',title:'Block apps now',desc:'Apps are immediately shielded. Breathe sessions unlock them.',btn:'Block Apps →',fn:shieldAll},
-        ].map(step=>(
-          <View key={step.n} style={s.onbStep}>
-            <View style={s.badge}><Text style={s.badgeTxt}>{step.n}</Text></View>
-            <View style={{flex:1}}>
-              <Text style={s.stepTitle}>{step.title}</Text>
-              <Text style={s.stepDesc}>{step.desc}</Text>
-              <TouchableOpacity style={s.tealBtn} onPress={step.fn} disabled={loading}><Text style={s.tealBtnTxt}>{step.btn}</Text></TouchableOpacity>
-            </View>
-          </View>
-        ))}
-        <View style={s.yearCard}>
-          <Text style={s.yearLabel}>AVERAGE PERSON — SOCIAL MEDIA PER YEAR</Text>
-          <Text style={s.yearBig}>38 days</Text>
-          <Text style={s.yearSub}>2.5 hrs/day × 365 = 912 hours spent on social apps</Text>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
+  // Auth status — shown as inline banner, not a gate
 
   // ─── APPS BLOCKED (matches screenshot) ────────────────────────────────────
   if (isShield) return (
@@ -157,6 +127,20 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPre
     <>
     <SafeAreaView style={s.root}>
       <ScrollView contentContainerStyle={{padding:20,paddingBottom:48}}>
+
+        {/* Auth status banner */}
+        <TouchableOpacity onPress={reqAuth} style={[s.authBanner,{borderColor:isAuth?'rgba(79,205,216,0.3)':'rgba(232,162,60,0.3)',backgroundColor:isAuth?'rgba(79,205,216,0.08)':'rgba(232,162,60,0.08)'}]}>
+          <Text style={{fontSize:16}}>{isAuth?'✓':'⚠️'}</Text>
+          <View style={{flex:1,marginLeft:10}}>
+            <Text style={{color:isAuth?DARK.teal:'#e8a23c',fontSize:13,fontWeight:'600'}}>
+              {isAuth?'Screen Time Authorized':'Screen Time Not Authorized'}
+            </Text>
+            <Text style={{color:DARK.text2,fontSize:11,marginTop:1}}>
+              {isAuth?'Native blocking active':'Tap to request permission → enables real app blocking'}
+            </Text>
+          </View>
+        </TouchableOpacity>
+
         <View style={s.poolCard}>
           <Text style={s.poolL}>POOL BALANCE</Text>
           <Text style={s.poolN}>{fmtHHMM(earned)}</Text>
@@ -277,6 +261,7 @@ const s = StyleSheet.create({
   spendBtn:{borderRadius:8,paddingHorizontal:10,paddingVertical:6,borderWidth:1},
   spendBtnTxt:{fontSize:12,fontWeight:'600'},
   // setup
+  authBanner:{flexDirection:'row',alignItems:'center',borderWidth:1,borderRadius:13,padding:13,marginBottom:14},
   blockBtn:{flexDirection:'row',alignItems:'center',justifyContent:'center',gap:8,backgroundColor:'rgba(220,60,60,0.15)',borderWidth:1,borderColor:'rgba(220,60,60,0.35)',borderRadius:14,padding:16,marginBottom:8},
   blockBtnTxt:{color:'#e05555',fontSize:15,fontWeight:'700'},
   limCard:{backgroundColor:DARK.surf,borderWidth:1,borderColor:DARK.border,borderRadius:13,overflow:'hidden'},

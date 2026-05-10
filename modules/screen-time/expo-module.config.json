@@ -1,0 +1,7 @@
+{
+  "name": "ScreenTime",
+  "platforms": ["ios"],
+  "ios": {
+    "modules": ["ScreenTimeModule"]
+  }
+}

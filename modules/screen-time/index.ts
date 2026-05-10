@@ -1,48 +1,58 @@
-import { NativeModules, Platform } from 'react-native';
+import { Platform } from 'react-native';
 
-const { ScreenTimeModule } = NativeModules;
+// Use Expo Modules API — module is compiled by EAS when expo-module.config.json exists
+let _module: any = null;
+function getModule() {
+  if (_module) return _module;
+  try {
+    const { requireNativeModule } = require('expo-modules-core');
+    _module = requireNativeModule('ScreenTime');
+    return _module;
+  } catch {
+    return null;
+  }
+}
 
 export type AuthStatus = 'approved' | 'denied' | 'notDetermined' | 'unavailable';
 
-export interface ShieldResult {
-  success: boolean;
-  error?: string;
+export function getAuthorizationStatus(): AuthStatus {
+  if (Platform.OS !== 'ios') return 'unavailable';
+  const m = getModule();
+  if (!m) return 'unavailable';
+  try { return m.getAuthorizationStatus(); } catch { return 'unavailable'; }
 }
 
-// Request FamilyControls authorization (iOS 16+)
 export async function requestAuthorization(): Promise<{ authorized: boolean; error?: string }> {
   if (Platform.OS !== 'ios') return { authorized: false, error: 'iOS only' };
-  if (!ScreenTimeModule) return { authorized: false, error: 'Native module not available — build with EAS' };
-  return ScreenTimeModule.requestAuthorization();
+  const m = getModule();
+  if (!m) return { authorized: false, error: 'Native module not compiled — rebuild with EAS' };
+  try { return await m.requestAuthorization(); } catch (e: any) { return { authorized: false, error: e.message }; }
 }
 
-// Get current authorization status
-export function getAuthorizationStatus(): AuthStatus {
-  if (Platform.OS !== 'ios' || !ScreenTimeModule) return 'unavailable';
-  return ScreenTimeModule.getAuthorizationStatus();
+export async function showAppPicker(): Promise<{ selected: boolean; appCount: number; error?: string }> {
+  if (Platform.OS !== 'ios') return { selected: false, appCount: 0 };
+  const m = getModule();
+  if (!m) return { selected: false, appCount: 0, error: 'Native module not available' };
+  try { return await m.showAppPicker(); } catch (e: any) { return { selected: false, appCount: 0, error: e.message }; }
 }
 
-// Present native FamilyActivityPicker — user selects which apps to block
-// Returns opaque token stored for shielding
-export async function showAppPicker(): Promise<{ selected: boolean; appCount: number }> {
-  if (Platform.OS !== 'ios' || !ScreenTimeModule) return { selected: false, appCount: 0 };
-  return ScreenTimeModule.showAppPicker();
+export async function shieldApps(): Promise<{ success: boolean; error?: string }> {
+  if (Platform.OS !== 'ios') return { success: false };
+  const m = getModule();
+  if (!m) return { success: false, error: 'Native module not available' };
+  try { return await m.shieldApps(); } catch (e: any) { return { success: false, error: e.message }; }
 }
 
-// Shield (block) previously selected apps
-export async function shieldApps(): Promise<ShieldResult> {
-  if (Platform.OS !== 'ios' || !ScreenTimeModule) return { success: false, error: 'iOS only' };
-  return ScreenTimeModule.shieldApps();
+export async function unshieldApps(): Promise<{ success: boolean; error?: string }> {
+  if (Platform.OS !== 'ios') return { success: false };
+  const m = getModule();
+  if (!m) return { success: false, error: 'Native module not available' };
+  try { return await m.unshieldApps(); } catch (e: any) { return { success: false, error: e.message }; }
 }
 
-// Remove shield (unblock apps) — call when user earns screentime
-export async function unshieldApps(): Promise<ShieldResult> {
-  if (Platform.OS !== 'ios' || !ScreenTimeModule) return { success: false, error: 'iOS only' };
-  return ScreenTimeModule.unshieldApps();
-}
-
-// Schedule auto-shield after X minutes of usage (DeviceActivitySchedule)
-export async function scheduleLimit(appId: string, minutesPerDay: number): Promise<ShieldResult> {
-  if (Platform.OS !== 'ios' || !ScreenTimeModule) return { success: false };
-  return ScreenTimeModule.scheduleLimit(appId, minutesPerDay);
+export async function scheduleLimit(minutes: number): Promise<{ success: boolean; error?: string }> {
+  if (Platform.OS !== 'ios') return { success: false };
+  const m = getModule();
+  if (!m) return { success: false, error: 'Native module not available' };
+  try { return await m.scheduleLimit(minutes); } catch (e: any) { return { success: false, error: e.message }; }
 }
