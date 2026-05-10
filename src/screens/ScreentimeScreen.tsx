@@ -177,7 +177,7 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession }: Pro
                   <TouchableOpacity style={s.stepBtn} onPress={()=>onUpdate({...data,appLimits:{...al,[app.id]:nextStep(lim,-1)}})}><Text style={s.stepTxt}>−</Text></TouchableOpacity>
                   <Text style={s.limVal}>{lim}m</Text>
                   <TouchableOpacity style={s.stepBtn} onPress={()=>onUpdate({...data,appLimits:{...al,[app.id]:nextStep(lim,+1)}})}><Text style={s.stepTxt}>+</Text></TouchableOpacity>
-                  <TouchableOpacity style={s.applyBtn} onPress={()=>Alert.alert(`Set ${app.name} to ${lim}m/day`,'1. App Limits → Add Limit\n2. Search: '+app.name+'\n3. Set '+lim+' min\n4. Enable "Block at End of Limit"',[{text:'Open Screen Time',onPress:()=>Linking.openURL('App-Prefs:root=SCREENTIME')},{text:'Cancel',style:'cancel'}])}>
+                  <TouchableOpacity style={s.applyBtn} onPress={()=>Linking.openURL('App-Prefs:root=SCREENTIME')}>
                     <Text style={s.applyTxt}>Apply to iPhone →</Text>
                   </TouchableOpacity>
                 </View>
