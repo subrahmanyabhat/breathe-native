@@ -53,39 +53,61 @@ function PremiumModal({ visible, onClose, onTrial, onBuy, hasTrial }: {
           <View style={pm.handle} />
 
           {/* Icon + heading */}
-          <View style={pm.iconWrap}>
-            <Text style={{ fontSize: 28 }}>✦</Text>
-          </View>
-          <Text style={pm.h1}>Unlock Premium</Text>
-          <Text style={pm.sub}>Breathe your way to more time.{'\n'}Block apps. Earn screentime back.</Text>
+          <View style={pm.iconWrap}><Text style={{ fontSize: 28 }}>✦</Text></View>
+          <Text style={pm.h1}>Breathe Premium</Text>
+          <Text style={pm.sub}>Block distracting apps. Earn screentime back by breathing.</Text>
 
-          {/* Benefits */}
-          <View style={pm.benefits}>
+          {/* FREE vs PREMIUM comparison */}
+          <View style={pm.table}>
+            <View style={pm.tableHeader}>
+              <Text style={[pm.tableCol, { flex: 2 }]}>Feature</Text>
+              <Text style={[pm.tableCol, pm.tableColFree]}>Free</Text>
+              <Text style={[pm.tableCol, pm.tableColPrem]}>Premium</Text>
+            </View>
             {[
-              ['⏱', '1 min breathing = 10 min screentime'],
-              ['🔒', 'Block Instagram, TikTok, YouTube, X'],
-              ['🔔', 'Daily reminders & streak protection'],
-              ['📊', 'Session analytics & insights'],
-            ].map(([icon, text]) => (
-              <View key={text} style={pm.benefit}>
-                <Text style={pm.benefitIcon}>{icon}</Text>
-                <Text style={pm.benefitTxt}>{text}</Text>
+              ['All breathing techniques',     true,  true],
+              ['Session tracking & streaks',   true,  true],
+              ['Basic stats',                  true,  true],
+              ['Block Instagram / TikTok',     false, true],
+              ['Earn screentime by breathing', false, true],
+              ['1 min = 10 min screen time',   false, true],
+              ['Daily alarm reminders',        false, true],
+              ['Year in review analytics',     false, true],
+              ['Unlimited session history',    false, true],
+            ].map(([label, free, prem]) => (
+              <View key={label as string} style={pm.tableRow}>
+                <Text style={[pm.tableCell, { flex: 2 }]}>{label as string}</Text>
+                <Text style={[pm.tableCell, pm.tableCheck, !free && pm.tableCross]}>{free ? '✓' : '✕'}</Text>
+                <Text style={[pm.tableCell, pm.tableCheck, { color: '#a48ee8' }]}>{prem ? '✓' : '✕'}</Text>
               </View>
             ))}
           </View>
 
-          {/* CTAs */}
-          {!hasTrial && (
+          {/* Pricing */}
+          <View style={pm.priceBox}>
+            <View style={pm.priceRow}>
+              <View>
+                <Text style={pm.priceLabel}>Monthly</Text>
+                <Text style={pm.priceAmt}>₹99 <Text style={pm.pricePer}>/month</Text></Text>
+              </View>
+              <TouchableOpacity style={pm.buyBtn} onPress={onBuy}>
+                <Text style={pm.buyBtnTxt}>{hasTrial ? 'Buy Now' : 'Subscribe'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Trial CTA */}
+          {!hasTrial ? (
             <TouchableOpacity style={pm.trialBtn} onPress={onTrial}>
-              <Text style={pm.trialBtnTxt}>Start 7-Day Free Trial</Text>
+              <Text style={pm.trialBtnTxt}>🎁  Start 7-Day Free Trial</Text>
+              <Text style={pm.trialBtnSub}>Then ₹99/month · cancel anytime</Text>
             </TouchableOpacity>
+          ) : (
+            <View style={pm.trialActive}>
+              <Text style={pm.trialActiveTxt}>✓ Free trial active — upgrade to keep access</Text>
+            </View>
           )}
-          <TouchableOpacity style={[pm.buyBtn, hasTrial && pm.trialBtn]} onPress={onBuy}>
-            <Text style={[pm.buyBtnTxt, hasTrial && pm.trialBtnTxt]}>
-              {hasTrial ? 'Upgrade Now — $4.99/mo' : '$4.99 / month  ·  $29.99 / year'}
-            </Text>
-          </TouchableOpacity>
-          <Text style={pm.fine}>Cancel anytime · No ads · Secure payment</Text>
+          <Text style={pm.fine}>Cancel anytime · No ads · Secure payment · ₹99/month after trial</Text>
         </View>
       </View>
     </Modal>
@@ -93,21 +115,37 @@ function PremiumModal({ visible, onClose, onTrial, onBuy, hasTrial }: {
 }
 
 const pm = StyleSheet.create({
-  overlay: { flex:1, backgroundColor:'rgba(0,0,0,0.75)', justifyContent:'flex-end' },
-  sheet: { backgroundColor:'#0d1b36', borderRadius:28, padding:28, borderWidth:1, borderColor:'rgba(255,255,255,0.08)', borderBottomWidth:0 },
-  handle: { width:40, height:4, borderRadius:2, backgroundColor:'rgba(255,255,255,0.10)', alignSelf:'center', marginBottom:24 },
-  iconWrap: { width:60, height:60, borderRadius:18, backgroundColor:'linear-gradient(135deg,#a48ee8,#5ec4e0)' as any, alignItems:'center', justifyContent:'center', alignSelf:'center', marginBottom:14, backgroundColor:'rgba(164,142,232,0.25)', borderWidth:1, borderColor:'rgba(164,142,232,0.4)' },
-  h1: { color:'#fff', fontSize:22, fontWeight:'700', textAlign:'center', marginBottom:8, letterSpacing:-0.5 },
-  sub: { color:'rgba(255,255,255,0.50)', fontSize:14, textAlign:'center', lineHeight:21, marginBottom:22 },
-  benefits: { gap:8, marginBottom:24 },
-  benefit: { flexDirection:'row', alignItems:'center', gap:12, backgroundColor:'rgba(255,255,255,0.04)', borderWidth:1, borderColor:'rgba(255,255,255,0.07)', borderRadius:12, padding:13 },
-  benefitIcon: { fontSize:17, flexShrink:0 },
-  benefitTxt: { color:'rgba(255,255,255,0.88)', fontSize:14, flex:1 },
-  trialBtn: { backgroundColor:'#a48ee8', borderRadius:15, padding:17, alignItems:'center', marginBottom:10, shadowColor:'#a48ee8', shadowOpacity:0.4, shadowRadius:16, shadowOffset:{width:0,height:6} },
-  trialBtnTxt: { color:'#fff', fontSize:16, fontWeight:'700' },
-  buyBtn: { backgroundColor:'rgba(255,255,255,0.07)', borderWidth:1, borderColor:'rgba(255,255,255,0.10)', borderRadius:15, padding:15, alignItems:'center', marginBottom:12 },
-  buyBtnTxt: { color:'rgba(255,255,255,0.55)', fontSize:14, fontWeight:'500' },
-  fine: { color:'rgba(255,255,255,0.25)', fontSize:11, textAlign:'center' },
+  overlay: { flex:1, backgroundColor:'rgba(0,0,0,0.80)', justifyContent:'flex-end' },
+  sheet: { backgroundColor:'#0d1b36', borderRadius:28, padding:24, paddingBottom:0, borderWidth:1, borderColor:'rgba(255,255,255,0.08)', borderBottomWidth:0, maxHeight:'92%' },
+  handle: { width:40, height:4, borderRadius:2, backgroundColor:'rgba(255,255,255,0.10)', alignSelf:'center', marginBottom:20 },
+  iconWrap: { width:56, height:56, borderRadius:16, alignItems:'center', justifyContent:'center', alignSelf:'center', marginBottom:12, backgroundColor:'rgba(164,142,232,0.22)', borderWidth:1, borderColor:'rgba(164,142,232,0.4)' },
+  h1: { color:'#fff', fontSize:22, fontWeight:'700', textAlign:'center', marginBottom:6, letterSpacing:-0.5 },
+  sub: { color:'rgba(255,255,255,0.48)', fontSize:13, textAlign:'center', lineHeight:20, marginBottom:18 },
+  // Comparison table
+  table: { backgroundColor:'rgba(255,255,255,0.03)', borderRadius:14, borderWidth:1, borderColor:'rgba(255,255,255,0.07)', overflow:'hidden', marginBottom:16 },
+  tableHeader: { flexDirection:'row', paddingHorizontal:12, paddingVertical:10, borderBottomWidth:1, borderBottomColor:'rgba(255,255,255,0.07)', backgroundColor:'rgba(255,255,255,0.04)' },
+  tableCol: { color:'rgba(255,255,255,0.40)', fontSize:11, fontWeight:'600', textAlign:'center', letterSpacing:0.5, textTransform:'uppercase' },
+  tableColFree: { flex:1, textAlign:'center' },
+  tableColPrem: { flex:1, textAlign:'center', color:'rgba(164,142,232,0.80)' },
+  tableRow: { flexDirection:'row', paddingHorizontal:12, paddingVertical:9, borderBottomWidth:1, borderBottomColor:'rgba(255,255,255,0.05)' },
+  tableCell: { color:'rgba(255,255,255,0.70)', fontSize:13, flex:1 },
+  tableCheck: { flex:1, textAlign:'center', color:'rgba(79,205,216,0.90)', fontWeight:'700', fontSize:14 },
+  tableCross: { color:'rgba(255,255,255,0.20)' },
+  // Pricing
+  priceBox: { backgroundColor:'rgba(164,142,232,0.10)', borderWidth:1, borderColor:'rgba(164,142,232,0.22)', borderRadius:14, padding:16, marginBottom:12 },
+  priceRow: { flexDirection:'row', alignItems:'center', justifyContent:'space-between' },
+  priceLabel: { color:'rgba(164,142,232,0.70)', fontSize:11, textTransform:'uppercase', letterSpacing:1, marginBottom:4 },
+  priceAmt: { color:'#fff', fontSize:26, fontWeight:'700' },
+  pricePer: { color:'rgba(255,255,255,0.45)', fontSize:14, fontWeight:'400' },
+  // Buttons
+  trialBtn: { backgroundColor:'#a48ee8', borderRadius:15, paddingVertical:16, paddingHorizontal:20, alignItems:'center', marginBottom:10, shadowColor:'#a48ee8', shadowOpacity:0.35, shadowRadius:14, shadowOffset:{width:0,height:5} },
+  trialBtnTxt: { color:'#fff', fontSize:16, fontWeight:'700', marginBottom:2 },
+  trialBtnSub: { color:'rgba(255,255,255,0.65)', fontSize:11 },
+  trialActive: { backgroundColor:'rgba(79,205,216,0.10)', borderWidth:1, borderColor:'rgba(79,205,216,0.25)', borderRadius:12, padding:12, alignItems:'center', marginBottom:10 },
+  trialActiveTxt: { color:'#4fcdd8', fontSize:13, fontWeight:'500' },
+  buyBtn: { backgroundColor:'rgba(164,142,232,0.25)', borderWidth:1, borderColor:'rgba(164,142,232,0.40)', borderRadius:12, paddingVertical:10, paddingHorizontal:16, alignItems:'center' },
+  buyBtnTxt: { color:'#a48ee8', fontSize:14, fontWeight:'700' },
+  fine: { color:'rgba(255,255,255,0.20)', fontSize:11, textAlign:'center', paddingBottom:32, paddingTop:8 },
 });
 
 // ── Trial banner ──────────────────────────────────────────────────────────────
