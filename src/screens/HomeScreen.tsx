@@ -146,7 +146,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession }: Props) {
                 <Text style={{ color: DARK.teal, fontSize: 13, fontWeight: '600' }}>+ pick apps to block</Text>
               </TouchableOpacity>
             ) : (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }} contentContainerStyle={{ gap: 8 }}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ height: 46, marginBottom: 14 }} contentContainerStyle={{ gap: 8, alignItems: 'center' }}>
                 {enabledApps.map(app => {
                   const ae = appEarned[app.id] || 0;
                   const isOpen = ae > 0;
