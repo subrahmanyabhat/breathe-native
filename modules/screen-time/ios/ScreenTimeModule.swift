@@ -127,5 +127,23 @@ public class ScreenTimeModule: Module {
         promise.resolve(["success": false, "error": "Requires iOS 16.0+"])
       }
     }
+
+    // ── Read today's Screen Time usage ────────────────────────────────────────
+    // NOTE: Full per-app data requires DeviceActivityReport app extension.
+    // This returns the authorization status so JS can show the report UI.
+    AsyncFunction("requestUsageAccess") { (promise: Promise) in
+      if #available(iOS 16.0, *) {
+        Task {
+          do {
+            try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
+            promise.resolve(["granted": true])
+          } catch {
+            promise.resolve(["granted": false, "error": error.localizedDescription])
+          }
+        }
+      } else {
+        promise.resolve(["granted": false, "error": "Requires iOS 16.0+"])
+      }
+    }
   }
 }
