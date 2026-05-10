@@ -1,0 +1,11 @@
+{
+  "name": "@breathe/screen-time",
+  "version": "1.0.0",
+  "description": "Screen Time native module for Breathe app",
+  "main": "index.ts",
+  "scripts": {},
+  "peerDependencies": {
+    "expo": "*",
+    "expo-modules-core": "*"
+  }
+}

@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 
-// Use Expo Modules API — module is compiled by EAS when expo-module.config.json exists
+// Package name: @breathe/screen-time  (listed in package.json as file:./modules/screen-time)
+// expo-module.config.json tells EAS to compile ScreenTimeModule.swift
 let _module: any = null;
 function getModule() {
   if (_module) return _module;
@@ -9,7 +10,7 @@ function getModule() {
     _module = requireNativeModule('ScreenTime');
     return _module;
   } catch {
-    return null;
+    return null; // not compiled yet — needs EAS build with FamilyControls entitlement
   }
 }
 
