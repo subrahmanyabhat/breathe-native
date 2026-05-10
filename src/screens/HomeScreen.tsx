@@ -83,7 +83,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession }: Props) {
         </View>
       </View>
 
-      <ScrollView style={ss.scroll} contentContainerStyle={{ paddingBottom: 160 }}>
+      <ScrollView style={ss.scroll} contentContainerStyle={{ paddingBottom: 24 }}>
 
         {/* BANKED SCREENTIME hero */}
         <View style={ss.section}>
@@ -243,9 +243,9 @@ export default function HomeScreen({ data, onUpdate, onStartSession }: Props) {
         </View>
       </ScrollView>
 
-      {/* Sticky begin session */}
-      <View style={ss.stickyBottom}>
-        <TouchableOpacity style={[ss.beginCard, { borderColor: 'rgba(255,255,255,0.13)' }]} onPress={() => onStartSession(selTech)}>
+      {/* Fixed bottom breathe button — not floating */}
+      <View style={ss.fixedBottom}>
+        <TouchableOpacity style={ss.beginCard} onPress={() => onStartSession(selTech)}>
           <Text style={ss.beginCardTitle}>begin session</Text>
           <Text style={ss.beginCardSub}>{selTech.name} · {selTech.phases.map(p => p.dur).join('·')} · ~{cycleSeconds * 10}:00 reward</Text>
         </TouchableOpacity>
@@ -317,8 +317,8 @@ const ss = StyleSheet.create({
   learnExpandedSec: { color: DARK.label, fontSize: 9, letterSpacing: 1.8, textTransform: 'uppercase', fontWeight: '500', marginBottom: 10 },
   startBtn: { borderRadius: 10, paddingVertical: 12, alignItems: 'center' },
   startBtnTxt: { fontSize: 13, fontWeight: '700' },
-  stickyBottom: { position: 'absolute', bottom: 88, left: 0, right: 0, paddingHorizontal: 16 },
-  beginCard: { backgroundColor: 'rgba(44,92,152,0.85)', borderWidth: 1, borderRadius: 15, paddingVertical: 18, paddingHorizontal: 20, alignItems: 'center' },
+  fixedBottom: { paddingHorizontal: 16, paddingVertical: 10, paddingBottom: 12, borderTopWidth: 1, borderTopColor: DARK.border, backgroundColor: DARK.bg },
+  beginCard: { backgroundColor: 'rgba(44,92,152,0.92)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.13)', borderRadius: 15, paddingVertical: 18, paddingHorizontal: 20, alignItems: 'center' },
   beginCardTitle: { color: '#fff', fontSize: 16, fontWeight: '600', marginBottom: 4, letterSpacing: -0.3 },
   beginCardSub: { color: 'rgba(255,255,255,0.5)', fontSize: 11, letterSpacing: 0.3, fontFamily: 'Courier' },
 });
