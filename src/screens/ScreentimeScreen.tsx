@@ -14,9 +14,9 @@ const STEPS = [5,10,15,20,30,45,60,90,120];
 const nextStep = (v: number, dir: number) => { const i = STEPS.indexOf(v); return STEPS[Math.max(0, Math.min(STEPS.length-1, (i<0?2:i)+dir))]; };
 const EMOJIS: Record<string,string> = { instagram:'📸', tiktok:'🎵', youtube:'▶️', twitter:'𝕏' };
 
-interface Props { data: AppData; onUpdate:(d:AppData)=>void; onStartSession:(t:Technique,app?:string)=>void; }
+interface Props { data: AppData; onUpdate:(d:AppData)=>void; onStartSession:(t:Technique,app?:string)=>void; isPrem?:boolean; onShowPremium?:()=>void; }
 
-export default function ScreentimeScreen({ data, onUpdate, onStartSession }: Props) {
+export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPrem, onShowPremium }: Props) {
   const [status,  setStatus]  = useState(safeSTStatus);
   const [loading, setLoading] = useState(false);
   const isAuth   = status === 'approved';

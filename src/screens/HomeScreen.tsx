@@ -14,11 +14,13 @@ interface Props {
   data: AppData;
   onUpdate: (d: AppData) => void;
   onStartSession: (tech: Technique, targetApp?: string) => void;
+  isPrem?: boolean;
+  onShowPremium?: () => void;
 }
 
 const TL_START = 6, TL_END = 22, TL_SLOTS = TL_END - TL_START;
 
-export default function HomeScreen({ data, onUpdate, onStartSession }: Props) {
+export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onShowPremium }: Props) {
   const [selTech, setSelTech] = useState(TECHNIQUES[0]);
   const [btab, setBtab] = useState<'practice' | 'learn'>('practice');
   const [expandedLearn, setExpandedLearn] = useState<string | null>(null);
@@ -77,9 +79,16 @@ export default function HomeScreen({ data, onUpdate, onStartSession }: Props) {
           <View style={[ss.logoBox, { backgroundColor: DARK.teal }]} />
           <Text style={ss.logoTxt}>breathe</Text>
         </View>
-        <View style={ss.dayBadge}>
-          <View style={[ss.dayDot, { backgroundColor: streak > 0 ? DARK.teal : DARK.label }]} />
-          <Text style={ss.dayTxt}>day {streak}</Text>
+        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+          {!isPrem && (
+            <TouchableOpacity onPress={onShowPremium} style={ss.premBtn}>
+              <Text style={ss.premBtnTxt}>✦ Premium</Text>
+            </TouchableOpacity>
+          )}
+          <View style={ss.dayBadge}>
+            <View style={[ss.dayDot, { backgroundColor: streak > 0 ? DARK.teal : DARK.label }]} />
+            <Text style={ss.dayTxt}>day {streak}</Text>
+          </View>
         </View>
       </View>
 
@@ -286,6 +295,8 @@ const ss = StyleSheet.create({
   logoBox: { width: 18, height: 18, borderRadius: 5 },
   logoTxt: { color: DARK.text, fontSize: 17, fontWeight: '600', letterSpacing: -0.3 },
   dayBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: DARK.text4, borderWidth: 1, borderColor: DARK.border, borderRadius: 20, paddingHorizontal: 11, paddingVertical: 5 },
+  premBtn: { backgroundColor: 'rgba(164,142,232,0.18)', borderWidth: 1, borderColor: 'rgba(164,142,232,0.40)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5 },
+  premBtnTxt: { color: '#a48ee8', fontSize: 12, fontWeight: '700' },
   dayDot: { width: 6, height: 6, borderRadius: 3 },
   dayTxt: { color: DARK.text2, fontSize: 12, fontWeight: '500' },
   scroll: { flex: 1 },
