@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Alert, Linking, Switch } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Alert, Linking, Switch, Modal } from 'react-native';
 import { AppData, fmtHHMM } from '../storage';
 import { APPS, TECHNIQUES, Technique } from '../data';
 import { DARK } from '../theme';
@@ -34,7 +34,13 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession }: Pro
     else Alert.alert('Denied', 'Grant access in Settings.', [{text:'Open Settings',onPress:()=>Linking.openURL('App-Prefs:root=SCREENTIME')},{text:'Cancel',style:'cancel'}]);
     setLoading(false);
   };
-  const pickApps = async () => { if (!isAuth){await reqAuth();return;} const r=await doPick() as any; if(r.selected) Alert.alert(`${r.appCount} apps selected`,'Tap Block Apps to activate.'); };
+  const [showManualPick, setShowManualPick] = useState(false);
+  const pickApps = async () => {
+    if (!isAuth){await reqAuth();return;}
+    const r=await doPick() as any;
+    if(r.selected) Alert.alert(`${r.appCount} apps selected`,'Tap Block Apps to activate.');
+    else setShowManualPick(true); // fallback: show manual toggle UI
+  };
   const shieldAll = async () => {
     if (!isAuth){await reqAuth();return;}
     setLoading(true);
@@ -154,7 +160,7 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession }: Pro
           <Text style={s.poolN}>{fmtHHMM(earned)}</Text>
           <Text style={s.poolS}>1 min breathing = 10 min screen</Text>
         </View>
-        <TouchableOpacity style={[s.tealBtn,{marginBottom:10,alignSelf:'stretch',alignItems:'center'}]} onPress={pickApps}><Text style={s.tealBtnTxt}>⚙  Change App Selection</Text></TouchableOpacity>
+        <TouchableOpacity style={[s.tealBtn,{marginBottom:10,alignSelf:'stretch',alignItems:'center'}]} onPress={()=>setShowManualPick(true)}><Text style={s.tealBtnTxt}>⚙  Select Apps to Block</Text></TouchableOpacity>
         <TouchableOpacity style={s.blockBtn} onPress={shieldAll} disabled={loading}>
           <Text style={{fontSize:20}}>🔒</Text>
           <Text style={s.blockBtnTxt}>{loading?'Blocking…':'Block Apps Now'}</Text>
@@ -187,6 +193,34 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession }: Pro
         })}
       </ScrollView>
     </SafeAreaView>
+    <Modal visible={showManualPick} transparent animationType='slide' onRequestClose={()=>setShowManualPick(false)}>
+      <View style={{flex:1,backgroundColor:'rgba(0,0,0,0.75)',justifyContent:'flex-end'}}>
+        <View style={{backgroundColor:'#0d1b36',borderRadius:24,padding:24,paddingBottom:40,borderWidth:1,borderColor:'rgba(255,255,255,0.08)'}}>
+          <View style={{width:40,height:4,borderRadius:2,backgroundColor:DARK.text4,alignSelf:'center',marginBottom:20}}/>
+          <Text style={{color:DARK.text,fontSize:19,fontWeight:'700',marginBottom:4}}>Select Apps to Block</Text>
+          <Text style={{color:DARK.text2,fontSize:13,marginBottom:20,lineHeight:18}}>Toggle apps to include them in your Blocked Apps list.</Text>
+          {APPS.map(app=>{
+            const on=!!en[app.id];
+            return(
+              <TouchableOpacity key={app.id} onPress={()=>onUpdate({...data,appEnabled:{...en,[app.id]:!on}})}
+                style={{flexDirection:'row',alignItems:'center',gap:14,backgroundColor:on?`${app.color}18`:DARK.text4,borderWidth:1,borderColor:on?`${app.color}55`:DARK.border,borderRadius:14,padding:14,marginBottom:10}}>
+                <View style={{width:42,height:42,borderRadius:11,backgroundColor:app.color,alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                  <Text style={{color:'rgba(255,255,255,0.92)',fontSize:12,fontWeight:'700'}}>{app.initials}</Text>
+                </View>
+                <View style={{flex:1}}>
+                  <Text style={{color:DARK.text,fontSize:15,fontWeight:'600'}}>{app.name}</Text>
+                  <Text style={{color:DARK.text2,fontSize:12}}>{on?'will be blocked':'not tracked'}</Text>
+                </View>
+                <Switch value={on} onValueChange={()=>onUpdate({...data,appEnabled:{...en,[app.id]:!on}})} trackColor={{true:DARK.teal,false:DARK.text4}} thumbColor="#fff"/>
+              </TouchableOpacity>
+            );
+          })}
+          <TouchableOpacity onPress={()=>setShowManualPick(false)} style={{backgroundColor:DARK.teal,borderRadius:13,padding:15,alignItems:'center',marginTop:4}}>
+            <Text style={{color:'#07111e',fontSize:15,fontWeight:'700'}}>Done</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
