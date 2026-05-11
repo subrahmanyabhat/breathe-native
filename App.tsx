@@ -11,7 +11,9 @@ import HomeScreen from './src/screens/HomeScreen';
 import StatsScreen from './src/screens/StatsScreen';
 import ScreentimeScreen from './src/screens/ScreentimeScreen';
 import SessionScreen from './src/screens/SessionScreen';
+import OnboardingScreen from './src/screens/OnboardingScreen';
 import { Technique } from './src/data';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 enableScreens();
 
@@ -33,11 +35,11 @@ class ErrorBoundary extends Component<{children: React.ReactNode}, {error: strin
 
 // ── Premium helpers ───────────────────────────────────────────────────────────
 const isPremActive = (p: AppData['premium']) =>
-  p?.paid || (p?.trial && p?.trialStart && (Date.now() - new Date(p.trialStart).getTime()) / 86400000 < 7);
+  p?.paid || (p?.trial && p?.trialStart && (Date.now() - new Date(p.trialStart).getTime()) / 3600000 < 1);
 
 const trialDaysLeft = (p: AppData['premium']) => {
   if (!p?.trial || !p?.trialStart) return 0;
-  return Math.max(0, 7 - Math.floor((Date.now() - new Date(p.trialStart).getTime()) / 86400000));
+  return Math.max(0, 1 - Math.floor((Date.now() - new Date(p.trialStart).getTime()) / 3600000));
 };
 
 // ── PremiumModal ──────────────────────────────────────────────────────────────
@@ -166,9 +168,17 @@ export default function App() {
   const [data,        setData]        = useState<AppData>({ ...DEFAULT });
   const [session,     setSession]     = useState<{ tech: Technique; targetApp?: string } | null>(null);
   const [loaded,      setLoaded]      = useState(false);
-  const [showPremium, setShowPremium] = useState(false);
+  const [showPremium,  setShowPremium]  = useState(false);
+  const [showOnboard,  setShowOnboard]  = useState(false);
+  const [isDark,       setIsDark]       = useState(true);
+  const toggleTheme   = () => setIsDark(d => !d);
+  const BG = isDark ? '#07111e' : '#e8f0ff';
+  const SURF = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.95)';
 
-  useEffect(() => { load().then(d => { setData(d); setLoaded(true); }); }, []);
+  useEffect(() => {
+    load().then(d => { setData(d); setLoaded(true); });
+    AsyncStorage.getItem('breathe_onboarded').then(v => { if (!v) setShowOnboard(true); });
+  }, []);
 
   const update = (d: AppData) => { setData(d); save(d); };
 
@@ -186,7 +196,7 @@ export default function App() {
     try {
       const IAP = require('expo-iap');
       // Product ID must match what you create in App Store Connect / Google Play
-      const PRODUCT_ID = Platform.OS === 'android' ? 'breathe_premium_monthly' : 'com.breathex.app.premium.monthly';
+      const PRODUCT_ID = Platform.OS === 'android' ? 'breathe_premium_monthlyv1' : 'com.breathex.app.premium.monthlyv1';
       await IAP.initConnection();
       const products = await IAP.getProducts([PRODUCT_ID]);
       if (!products || products.length === 0) {
@@ -240,7 +250,17 @@ export default function App() {
     setSession(null);
   };
 
-  if (!loaded) return <View style={{ flex: 1, backgroundColor: DARK.bg }} />;
+  if (!loaded) return <View style={{ flex: 1, backgroundColor: '#06101e' }} />;
+
+  if (showOnboard) return (
+    <SafeAreaProvider>
+      <StatusBar barStyle="light-content" />
+      <OnboardingScreen onDone={() => {
+        AsyncStorage.setItem('breathe_onboarded', '1');
+        setShowOnboard(false);
+      }} />
+    </SafeAreaProvider>
+  );
 
   if (session) {
     return (
@@ -257,11 +277,11 @@ export default function App() {
         <StatusBar barStyle="light-content" />
         {hasTrial && <TrialBanner daysLeft={dLeft} onPress={() => setShowPremium(true)} />}
 
-        <NavigationContainer theme={{ ...DarkTheme, colors: { ...DarkTheme.colors, background: DARK.bg, card: DARK.surf, text: DARK.text, border: DARK.border, primary: DARK.teal, notification: DARK.teal } }}>
+        <NavigationContainer theme={{ ...DarkTheme, colors: { ...DarkTheme.colors, background: BG, card: SURF, text: DARK.text, border: DARK.border, primary: DARK.teal, notification: DARK.teal } }}>
           <Tab.Navigator
             screenOptions={({ route }) => ({
               headerShown: false,
-              tabBarStyle: { backgroundColor: 'rgba(7,17,30,0.97)', borderTopColor: DARK.border, borderTopWidth: 1, paddingBottom: 6, height: 80 },
+              tabBarStyle: { backgroundColor: isDark ? 'rgba(7,17,30,0.97)' : 'rgba(232,240,255,0.97)', borderTopColor: DARK.border, borderTopWidth: 1, paddingBottom: 6, height: 80 },
               tabBarActiveTintColor: DARK.teal,
               tabBarInactiveTintColor: DARK.label,
               tabBarLabelStyle: { fontSize: 10, letterSpacing: 0.6 },
@@ -281,6 +301,7 @@ export default function App() {
                 <HomeScreen
                   data={data} onUpdate={update} onStartSession={startSession}
                   isPrem={isPrem} onShowPremium={() => setShowPremium(true)}
+                  isDark={isDark} onToggleTheme={toggleTheme}
                 />
               )}
             </Tab.Screen>
