@@ -181,27 +181,24 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
               </TouchableOpacity>
             </View>
 
-            {/* All 4 app icons — always visible, lock badge overlay */}
-            <View style={ss.appIconGrid}>
+            {/* App chips — icon + name + lock symbol */}
+            <View style={ss.appChipsWrap}>
               {APPS.map(app => {
                 const enabled = !!data.appEnabled?.[app.id];
                 const ae = appEarned[app.id] || 0;
                 const isOpen = ae > 0;
                 return (
-                  <TouchableOpacity key={app.id} style={ss.appIconItem} onPress={() => enabled ? handleOpenApp(app) : handlePickApps()}>
-                    <View style={{ position: 'relative' }}>
-                      <View style={[ss.appIconBox, { backgroundColor: app.color, borderWidth: enabled ? 2 : 0, borderColor: isOpen ? 'rgba(79,205,216,0.6)' : 'rgba(220,60,60,0.5)', opacity: enabled ? 1 : 0.3 }]}>
-                        <Text style={ss.appIconInitials}>{app.initials}</Text>
-                      </View>
-                      {enabled && (
-                        <View style={[ss.appBadge, { borderColor: isOpen ? 'rgba(79,205,216,0.6)' : 'rgba(220,60,60,0.5)' }]}>
-                          <Text style={{ fontSize: 8 }}>{isOpen ? '🔓' : '🔒'}</Text>
-                        </View>
-                      )}
+                  <TouchableOpacity key={app.id} onPress={() => enabled ? handleOpenApp(app) : handlePickApps()}
+                    style={[ss.appChip, {
+                      backgroundColor: isOpen ? 'rgba(79,205,216,0.10)' : enabled ? 'rgba(200,50,50,0.14)' : 'rgba(255,255,255,0.04)',
+                      borderColor: isOpen ? 'rgba(79,205,216,0.40)' : enabled ? 'rgba(220,60,60,0.35)' : 'rgba(255,255,255,0.08)',
+                      opacity: enabled ? 1 : 0.45,
+                    }]}>
+                    <View style={[ss.chipIcon, { backgroundColor: app.color }]}>
+                      <Text style={ss.chipInitials}>{app.initials}</Text>
                     </View>
-                    <Text style={[ss.appIconLabel, { color: enabled ? (isOpen ? 'rgba(79,205,216,0.9)' : 'rgba(255,255,255,0.55)') : 'rgba(255,255,255,0.2)' }]}>
-                      {app.name}
-                    </Text>
+                    <Text style={ss.chipName}>{app.name}</Text>
+                    <Text style={{ fontSize: 11 }}>{isOpen ? '🔓' : '🔒'}</Text>
                   </TouchableOpacity>
                 );
               })}
@@ -323,13 +320,6 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Fixed bottom breathe button — not floating */}
-      <View style={ss.fixedBottom}>
-        <TouchableOpacity style={ss.beginCard} onPress={() => onStartSession(selTech)}>
-          <Text style={ss.beginCardTitle}>begin session</Text>
-          <Text style={ss.beginCardSub}>{selTech.name} · {selTech.phases.map(p => p.dur).join('·')} · ~{cycleSeconds * 10}:00 reward</Text>
-        </TouchableOpacity>
-      </View>
 
       {/* Reminder Modal */}
       <Modal visible={showReminder} transparent animationType="slide" onRequestClose={() => setShowReminder(false)}>
@@ -445,13 +435,12 @@ const ss = StyleSheet.create({
   lockedMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   lockedMetaL: { color: 'rgba(255,255,255,0.50)', fontSize: 13, fontWeight: '500' },
   lockedManage: { color: '#4a90d9', fontSize: 13, fontWeight: '600' },
-  // App icon grid
-  appIconGrid: { flexDirection: 'row', gap: 8, marginBottom: 10 },
-  appIconItem: { flex: 1, alignItems: 'center', gap: 5 },
-  appIconBox: { width: 46, height: 46, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  appIconInitials: { color: 'rgba(255,255,255,0.92)', fontSize: 12, fontWeight: '700' },
-  appIconLabel: { fontSize: 10, fontWeight: '500', textAlign: 'center' },
-  appBadge: { position: 'absolute', top: -5, right: -5, width: 18, height: 18, borderRadius: 9, backgroundColor: '#0d1520', borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  // App chips
+  appChipsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 },
+  appChip: { flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1.5, borderRadius: 20, paddingVertical: 7, paddingHorizontal: 10 },
+  chipIcon: { width: 22, height: 22, borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
+  chipInitials: { color: 'rgba(255,255,255,0.92)', fontSize: 9, fontWeight: '700' },
+  chipName: { color: 'rgba(255,255,255,0.85)', fontSize: 12, fontWeight: '500' },
   appPill: { flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1, borderRadius: 22, paddingHorizontal: 11, paddingVertical: 8 },
   pillIcon: { width: 26, height: 26, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
   pillInitials: { color: 'rgba(255,255,255,0.92)', fontSize: 10, fontWeight: '700' },
