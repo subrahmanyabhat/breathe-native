@@ -282,10 +282,10 @@ export default function App() {
           <Tab.Navigator
             screenOptions={({ route }) => ({
               headerShown: false,
-              tabBarStyle: { backgroundColor: th.navBg, borderTopColor: th.border, borderTopWidth: 1, paddingBottom: 6, height: 80 },
-              tabBarActiveTintColor: th.teal,
-              tabBarInactiveTintColor: th.label,
-              tabBarLabelStyle: { fontSize: 10, letterSpacing: 0.6 },
+              tabBarStyle: { backgroundColor: th.navBg, borderTopWidth: 0, paddingBottom: 6, height: 80 },
+              tabBarActiveTintColor: 'rgba(100,160,200,0.92)',
+              tabBarInactiveTintColor: 'rgba(100,140,180,0.38)',
+              tabBarLabelStyle: { fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase' },
               tabBarIcon: ({ color, focused }) => {
                 const icons: Record<string, [string, string]> = {
                   Home:       ['home',              'home-outline'],
@@ -322,16 +322,16 @@ export default function App() {
                   <TouchableOpacity
                     onPress={() => startSession(TECHNIQUES[0])}
                     style={{
-                      width: 58, height: 58, borderRadius: 29,
-                      backgroundColor: th.teal,
+                      width: 68, height: 68, borderRadius: 34,
+                      backgroundColor: '#5b80a0',
                       alignItems: 'center', justifyContent: 'center',
-                      marginBottom: 24,
-                      shadowColor: th.teal, shadowOpacity: 0.55,
-                      shadowRadius: 14, shadowOffset: { width: 0, height: 4 },
-                      elevation: 8,
+                      marginBottom: 22,
+                      shadowColor: '#5b8fb9', shadowOpacity: 0.55,
+                      shadowRadius: 22, shadowOffset: { width: 0, height: 4 },
+                      elevation: 10,
                     }}
                   >
-                    <Text style={{ fontSize: 24 }}>🌬️</Text>
+                    <Text style={{ fontFamily: 'Georgia', fontStyle: 'italic', fontSize: 16, color: '#0f1e30', fontWeight: '400', letterSpacing: -0.2 }}>breathe</Text>
                   </TouchableOpacity>
                 ),
               }}
