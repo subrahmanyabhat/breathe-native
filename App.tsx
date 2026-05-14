@@ -283,15 +283,15 @@ export default function App() {
             screenOptions={({ route }) => ({
               headerShown: false,
               tabBarStyle: { backgroundColor: th.navBg, borderTopWidth: 0, paddingBottom: 6, height: 80 },
-              tabBarActiveTintColor: 'rgba(100,160,200,0.92)',
-              tabBarInactiveTintColor: 'rgba(100,140,180,0.38)',
+              tabBarActiveTintColor: 'rgba(130,175,215,0.95)',
+              tabBarInactiveTintColor: 'rgba(100,145,180,0.48)',
               tabBarLabelStyle: { fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase' },
               tabBarIcon: ({ color, focused }) => {
                 const icons: Record<string, [string, string]> = {
                   Home:       ['home',              'home-outline'],
                   Stats:      ['bar-chart',         'bar-chart-outline'],
                   Time:       ['shield-checkmark',  'shield-checkmark-outline'],
-                  Settings:   ['settings',          'settings-outline'],
+                  Settings:   ['settings-sharp',    'settings-outline'],
                 };
                 const [active, inactive] = icons[route.name] ?? ['ellipse', 'ellipse-outline'];
                 return <Ionicons name={(focused ? active : inactive) as any} size={22} color={color} />;
