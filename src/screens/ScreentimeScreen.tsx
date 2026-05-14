@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Alert, Linking, Switch, Modal, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Linking, Switch, Modal, Platform } from 'react-native';
 import { applyScreenTimeLimit } from '../notifications';
 import { AppData, fmtHHMM } from '../storage';
 import { APPS, TECHNIQUES, Technique } from '../data';
@@ -57,7 +58,7 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPre
 
   // ─── APPS BLOCKED (matches screenshot) ────────────────────────────────────
   if (isShield) return (
-    <SafeAreaView style={s.root}>
+    <SafeAreaView style={s.root} edges={["top","bottom"]}>
       <ScrollView contentContainerStyle={{padding:20,paddingBottom:48}}>
         <View style={s.blockedCard}>
           <View style={s.blockedTop}>
@@ -125,7 +126,7 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPre
   // ─── SETUP VIEW ───────────────────────────────────────────────────────────
   return (
     <>
-    <SafeAreaView style={s.root}>
+    <SafeAreaView style={s.root} edges={["top","bottom"]}>
       <ScrollView contentContainerStyle={{padding:20,paddingBottom:48}}>
 
         {Platform.OS === 'android' ? (
@@ -136,7 +137,7 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPre
               <Text style={{color:'#6fc96f',fontSize:13,fontWeight:'600'}}>Android — Digital Wellbeing</Text>
               <Text style={{color:DARK.text2,fontSize:11,marginTop:1}}>Set app timers in Digital Wellbeing settings</Text>
             </View>
-            <TouchableOpacity onPress={()=>Linking.openURL('intent:#Intent;action=android.settings.DIGITAL_WELLBEING;end')} style={{backgroundColor:'rgba(100,200,100,0.15)',borderRadius:8,padding:6,paddingHorizontal:10}}>
+            <TouchableOpacity onPress={()=>Linking.openURL('intent://settings#Intent;scheme=android.settings;action=android.settings.ACTION_DIGITAL_WELLBEING_SETTINGS;end')} style={{backgroundColor:'rgba(100,200,100,0.15)',borderRadius:8,padding:6,paddingHorizontal:10}}>
               <Text style={{color:'#6fc96f',fontSize:12,fontWeight:'600'}}>Open →</Text>
             </TouchableOpacity>
           </View>
@@ -243,7 +244,7 @@ const s = StyleSheet.create({
   tealBtnTxt:{color:DARK.teal,fontSize:13,fontWeight:'600'},
   yearCard:{backgroundColor:'rgba(232,162,60,0.08)',borderWidth:1,borderColor:'rgba(232,162,60,0.2)',borderRadius:14,padding:18,marginTop:8},
   yearLabel:{color:'rgba(232,162,60,0.7)',fontSize:9,letterSpacing:1.8,textTransform:'uppercase',marginBottom:6},
-  yearBig:{color:'#e8a23c',fontSize:38,fontWeight:'300',marginBottom:4},
+  yearBig:{color:'#e8a23c',fontSize:32,fontWeight:'300',marginBottom:2},
   yearSub:{color:'rgba(232,162,60,0.55)',fontSize:12,lineHeight:18},
   // blocked
   blockedCard:{backgroundColor:'#0d1520',borderRadius:20,padding:18,marginBottom:14,borderWidth:1,borderColor:'rgba(220,60,60,0.22)'},

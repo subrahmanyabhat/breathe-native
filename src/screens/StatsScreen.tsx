@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { AppData, calcStreak, last7, fmtHHMM, todayStr } from '../storage';
 import { TECHNIQUES } from '../data';
 import { DARK } from '../theme';
@@ -29,7 +30,7 @@ export default function StatsScreen({ data }: { data: AppData }) {
   const weekSess = data.sessions.filter(s => { const d = new Date(); d.setDate(d.getDate() - 6); return new Date(s.date) >= d; }).length;
 
   return (
-    <SafeAreaView style={ss.root}>
+    <SafeAreaView style={ss.root} edges={["top","bottom"]}>
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
 
         {/* TOTAL BREATHED hero */}
@@ -156,11 +157,11 @@ export default function StatsScreen({ data }: { data: AppData }) {
 
 const ss = StyleSheet.create({
   root: { flex: 1, backgroundColor: DARK.bg },
-  section: { paddingHorizontal: 20, marginBottom: 8, marginTop: 20 },
+  section: { paddingHorizontal: 20, marginBottom: 8, marginTop: 14 },
   sectionLabel: { color: DARK.label, fontSize: 10, letterSpacing: 2.5, textTransform: 'uppercase', fontWeight: '500' },
   sectionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   heroRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 2, marginTop: 8, marginBottom: 8 },
-  heroNum: { color: DARK.text, fontSize: 56, fontWeight: '300', letterSpacing: -2, lineHeight: 62 },
+  heroNum: { color: DARK.text, fontSize: 46, fontWeight: '300', letterSpacing: -1.5, lineHeight: 52 },
   heroUnit: { color: DARK.text2, fontSize: 14, marginBottom: 8, marginLeft: 6 },
   subRow: { flexDirection: 'row' },
   subTxt: { fontSize: 13, fontWeight: '500' },
@@ -175,7 +176,7 @@ const ss = StyleSheet.create({
   pairCard: { flex: 1, borderWidth: 1, borderRadius: 13, padding: 16 },
   pairLabel: { color: DARK.label, fontSize: 9, letterSpacing: 1.8, textTransform: 'uppercase', marginBottom: 8 },
   pairNumRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 5, marginBottom: 4 },
-  pairNum: { fontSize: 38, fontWeight: '300', letterSpacing: -1.5 },
+  pairNum: { fontSize: 32, fontWeight: '300', letterSpacing: -1 },
   pairUnit: { fontSize: 12, marginBottom: 5 },
   pairSub: { fontSize: 11 },
   dayRow: { flexDirection: 'row', alignItems: 'center', gap: 13, padding: 11, paddingHorizontal: 15 },

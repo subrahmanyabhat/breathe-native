@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  SafeAreaView, Alert, Linking, Vibration, Modal, Switch, Platform,
+  Alert, Linking, Vibration, Modal, Switch, Platform,
 } from 'react-native';
 import { scheduleDailyReminder, cancelDailyReminder } from '../notifications';
 import { AppData } from '../storage';
@@ -17,11 +18,13 @@ interface Props {
   onStartSession: (tech: Technique, targetApp?: string) => void;
   isPrem?: boolean;
   onShowPremium?: () => void;
+  isDark?: boolean;
+  onToggleTheme?: () => void;
 }
 
 const TL_START = 6, TL_END = 22, TL_SLOTS = TL_END - TL_START;
 
-export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onShowPremium }: Props) {
+export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onShowPremium, isDark = true, onToggleTheme }: Props) {
   const [showReminder, setShowReminder] = useState(false);
   const [reminderTime, setReminderTime] = useState(data.reminder?.time || '08:00');
   const [reminderOn, setReminderOn] = useState(!!data.reminder?.enabled);
@@ -91,7 +94,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
   };
 
   return (
-    <SafeAreaView style={ss.root}>
+    <SafeAreaView style={ss.root} edges={["top","bottom"]}>
       {/* Header */}
       <View style={ss.header}>
         <View style={ss.logoRow}>
@@ -104,6 +107,9 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
               <Text style={ss.premBtnTxt}>✦ Premium</Text>
             </TouchableOpacity>
           )}
+          <TouchableOpacity onPress={onToggleTheme} style={ss.dayBadge}>
+            <Text style={{ fontSize: 14 }}>{isDark ? '☀️' : '🌙'}</Text>
+          </TouchableOpacity>
           <View style={ss.dayBadge}>
             <View style={[ss.dayDot, { backgroundColor: streak > 0 ? DARK.teal : DARK.label }]} />
             <Text style={ss.dayTxt}>day {streak}</Text>
@@ -111,7 +117,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
         </View>
       </View>
 
-      <ScrollView style={ss.scroll} contentContainerStyle={{ paddingBottom: 24, gap: 4 }}>
+      <ScrollView style={ss.scroll} contentContainerStyle={{ paddingBottom: 16, gap: 6 }}>
 
         {/* BANKED SCREENTIME hero */}
         <View style={ss.section}>
@@ -129,7 +135,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
         </View>
 
         {/* Today's mindful minutes */}
-        <View style={[ss.card, { marginHorizontal: 16, marginBottom: 20 }]}>
+        <View style={[ss.card, { marginHorizontal: 16, marginBottom: 10 }]}>
           <View style={ss.cardHeader}>
             <Text style={ss.cardTxt}>today's mindful minutes</Text>
             <Text style={ss.cardTxt}><Text style={{ color: DARK.teal, fontWeight: '600' }}>{todaySess.length}</Text><Text style={{ color: DARK.label }}>/10</Text></Text>
@@ -174,7 +180,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
                 <Text style={{ color: DARK.teal, fontSize: 13, fontWeight: '600' }}>+ pick apps to block</Text>
               </TouchableOpacity>
             ) : (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ height: 46, marginBottom: 14 }} contentContainerStyle={{ gap: 8, alignItems: 'center' }}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ height: 38, marginBottom: 8 }} contentContainerStyle={{ gap: 8, alignItems: 'center' }}>
                 {enabledApps.map(app => {
                   const ae = appEarned[app.id] || 0;
                   const isOpen = ae > 0;
@@ -364,7 +370,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
 
 const ss = StyleSheet.create({
   root: { flex: 1, backgroundColor: DARK.bg },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 8 },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   logoBox: { width: 18, height: 18, borderRadius: 5 },
   logoTxt: { color: DARK.text, fontSize: 17, fontWeight: '600', letterSpacing: -0.3 },
@@ -374,13 +380,13 @@ const ss = StyleSheet.create({
   dayDot: { width: 6, height: 6, borderRadius: 3 },
   dayTxt: { color: DARK.text2, fontSize: 12, fontWeight: '500' },
   scroll: { flex: 1 },
-  section: { paddingHorizontal: 20, marginBottom: 8 },
+  section: { paddingHorizontal: 20, marginBottom: 6 },
   sectionLabel: { color: DARK.label, fontSize: 10, letterSpacing: 2.5, textTransform: 'uppercase', fontWeight: '500', marginBottom: 2 },
   sectionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 },
   sectionAction: { fontSize: 12, fontWeight: '600' },
-  heroRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 2, marginBottom: 8 },
-  heroNum: { color: DARK.text, fontSize: 58, fontWeight: '300', letterSpacing: -2, lineHeight: 64 },
-  heroUnit: { color: DARK.text2, fontSize: 15, marginBottom: 8, marginLeft: 6 },
+  heroRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 2, marginBottom: 6 },
+  heroNum: { color: DARK.text, fontSize: 46, fontWeight: '300', letterSpacing: -1.5, lineHeight: 52 },
+  heroUnit: { color: DARK.text2, fontSize: 13, marginBottom: 6, marginLeft: 5 },
   earnedRow: { flexDirection: 'row', gap: 16 },
   earnedTxt: { fontSize: 13, fontWeight: '500' },
   card: { backgroundColor: DARK.surf, borderWidth: 1, borderColor: DARK.border, borderRadius: 13 },
@@ -391,9 +397,9 @@ const ss = StyleSheet.create({
   tlLabels: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 14, paddingBottom: 12 },
   tlLabel: { color: DARK.label, fontSize: 9, letterSpacing: 0.5 },
   // Locked apps card — matches screenshot
-  lockedCard: { backgroundColor: '#0d1520', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(220,60,60,0.20)', marginBottom: 4 },
-  lockedHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
-  lockedIconBox: { width: 40, height: 40, borderRadius: 11, backgroundColor: 'rgba(220,60,60,0.22)', borderWidth: 1, borderColor: 'rgba(220,60,60,0.40)', alignItems: 'center', justifyContent: 'center' },
+  lockedCard: { backgroundColor: '#0d1520', borderRadius: 15, padding: 12, borderWidth: 1, borderColor: 'rgba(220,60,60,0.20)', marginBottom: 4 },
+  lockedHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  lockedIconBox: { width: 34, height: 34, borderRadius: 9, backgroundColor: 'rgba(220,60,60,0.22)', borderWidth: 1, borderColor: 'rgba(220,60,60,0.40)', alignItems: 'center', justifyContent: 'center' },
   lockedTitle: { color: '#fff', fontSize: 16, fontWeight: '700' },
   lockedSub: { color: 'rgba(255,255,255,0.42)', fontSize: 12, marginTop: 1 },
   recDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#cc2200' },
