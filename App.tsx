@@ -12,6 +12,7 @@ import StatsScreen from './src/screens/StatsScreen';
 import ScreentimeScreen from './src/screens/ScreentimeScreen';
 import SessionScreen from './src/screens/SessionScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
 import { Technique } from './src/data';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -170,6 +171,7 @@ export default function App() {
   const [loaded,      setLoaded]      = useState(false);
   const [showPremium,  setShowPremium]  = useState(false);
   const [showOnboard,  setShowOnboard]  = useState(false);
+  const [sound,       setSound]       = useState(true);
   const [isDark,       setIsDark]       = useState(true);
   const toggleTheme = () => setIsDark(d => !d);
   const th = isDark ? DARK : LIGHT;
@@ -280,15 +282,16 @@ export default function App() {
           <Tab.Navigator
             screenOptions={({ route }) => ({
               headerShown: false,
-              tabBarStyle: { backgroundColor: th.navBg, borderTopColor: DARK.border, borderTopWidth: 1, paddingBottom: 6, height: 80 },
-              tabBarActiveTintColor: DARK.teal,
-              tabBarInactiveTintColor: DARK.label,
+              tabBarStyle: { backgroundColor: th.navBg, borderTopColor: th.border, borderTopWidth: 1, paddingBottom: 6, height: 80 },
+              tabBarActiveTintColor: th.teal,
+              tabBarInactiveTintColor: th.label,
               tabBarLabelStyle: { fontSize: 10, letterSpacing: 0.6 },
               tabBarIcon: ({ color, focused }) => {
                 const icons: Record<string, [string, string]> = {
                   Home:       ['home',              'home-outline'],
                   Stats:      ['bar-chart',         'bar-chart-outline'],
-                  Screentime: ['shield-checkmark',  'shield-checkmark-outline'],
+                  Time:       ['shield-checkmark',  'shield-checkmark-outline'],
+                  Settings:   ['settings',          'settings-outline'],
                 };
                 const [active, inactive] = icons[route.name] ?? ['ellipse', 'ellipse-outline'];
                 return <Ionicons name={(focused ? active : inactive) as any} size={22} color={color} />;
@@ -300,20 +303,60 @@ export default function App() {
                 <HomeScreen
                   data={data} onUpdate={update} onStartSession={startSession}
                   th={th} isPrem={isPrem} onShowPremium={() => setShowPremium(true)}
-                  th={th} isDark={isDark} onToggleTheme={toggleTheme}
+                  isDark={isDark} onToggleTheme={toggleTheme}
                 />
               )}
             </Tab.Screen>
             <Tab.Screen name="Stats">
               {() => <StatsScreen data={data} th={th} />}
             </Tab.Screen>
-            <Tab.Screen name="Screentime"
+
+            {/* Centre FAB — floating breathe button */}
+            <Tab.Screen
+              name="Breathe"
+              listeners={{ tabPress: (e) => { e.preventDefault(); startSession(TECHNIQUES[0]); } }}
+              options={{
+                tabBarLabel: '',
+                tabBarIcon: () => null,
+                tabBarButton: () => (
+                  <TouchableOpacity
+                    onPress={() => startSession(TECHNIQUES[0])}
+                    style={{
+                      width: 58, height: 58, borderRadius: 29,
+                      backgroundColor: th.teal,
+                      alignItems: 'center', justifyContent: 'center',
+                      marginBottom: 24,
+                      shadowColor: th.teal, shadowOpacity: 0.55,
+                      shadowRadius: 14, shadowOffset: { width: 0, height: 4 },
+                      elevation: 8,
+                    }}
+                  >
+                    <Text style={{ fontSize: 24 }}>🌬️</Text>
+                  </TouchableOpacity>
+                ),
+              }}
+            >
+              {() => null}
+            </Tab.Screen>
+
+            <Tab.Screen name="Time"
               options={{ tabBarBadge: !isPrem ? '' : undefined, tabBarBadgeStyle: { backgroundColor: '#a48ee8', minWidth: 8, height: 8, borderRadius: 4 } }}
             >
               {() => (
                 <ScreentimeScreen
                   data={data} onUpdate={update} onStartSession={startSession}
                   th={th} isPrem={isPrem} onShowPremium={() => setShowPremium(true)}
+                />
+              )}
+            </Tab.Screen>
+            <Tab.Screen name="Settings">
+              {() => (
+                <SettingsScreen
+                  data={data} onUpdate={update} th={th}
+                  isDark={isDark} onToggleTheme={toggleTheme}
+                  sound={sound} onToggleSound={() => setSound(s => !s)}
+                  onShowPremium={() => setShowPremium(true)}
+                  onResetOnboarding={() => setShowOnboard(true)}
                 />
               )}
             </Tab.Screen>
