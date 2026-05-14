@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Alert, Linking, Vibration, Modal, Switch, Platform, StyleSheet,
+  Alert, Linking, Vibration, Modal, Switch, Platform,
 } from 'react-native';
 import { scheduleDailyReminder, cancelDailyReminder } from '../notifications';
 import { AppData } from '../storage';
@@ -176,17 +176,19 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
             {/* Blocked Apps label + Manage */}
             <View style={ss.lockedMeta}>
               <Text style={ss.lockedMetaL}>Blocked Apps</Text>
-              <TouchableOpacity onPress={handlePickApps}>
+              <TouchableOpacity onPress={() => {
+                  if (Platform.OS === 'ios') Linking.openURL('App-Prefs:root=SCREENTIME');
+                  else Linking.openURL('intent://settings#Intent;scheme=android.settings;action=android.settings.ACTION_DIGITAL_WELLBEING_SETTINGS;end');
+                }}>
                 <Text style={ss.lockedManage}>Manage →</Text>
               </TouchableOpacity>
             </View>
 
-            {/* App chips — icon + name + lock symbol */}
-            <View style={ss.appChipsWrap}>
+            {/* App chips — single horizontal scroll line */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 10 }} contentContainerStyle={{ gap: 8, alignItems: 'center' }}>
               {APPS.map(app => {
                 const enabled = !!data.appEnabled?.[app.id];
-                const ae = appEarned[app.id] || 0;
-                const isOpen = ae > 0;
+                const isOpen = earned > 0;
                 return (
                   <TouchableOpacity key={app.id} onPress={() => enabled ? handleOpenApp(app) : handlePickApps()}
                     style={[ss.appChip, {
@@ -202,7 +204,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
                   </TouchableOpacity>
                 );
               })}
-            </View>
+            </ScrollView>
 
             {/* Breathe to Unlock — blue CTA matching screenshot */}
             <TouchableOpacity style={ss.unlockBtn} onPress={() => onStartSession(selTech)}>
@@ -436,7 +438,7 @@ const ss = StyleSheet.create({
   lockedMetaL: { color: 'rgba(255,255,255,0.50)', fontSize: 13, fontWeight: '500' },
   lockedManage: { color: '#4a90d9', fontSize: 13, fontWeight: '600' },
   // App chips
-  appChipsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 },
+  appChipsWrap: { flexDirection: 'row', gap: 8, marginBottom: 10 },
   appChip: { flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1.5, borderRadius: 20, paddingVertical: 7, paddingHorizontal: 10 },
   chipIcon: { width: 22, height: 22, borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
   chipInitials: { color: 'rgba(255,255,255,0.92)', fontSize: 9, fontWeight: '700' },
