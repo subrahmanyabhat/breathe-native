@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Alert, Linking, Vibration, Modal, Switch, Platform,
+  Alert, Linking, Vibration, Modal, Switch, Platform, StyleSheet,
 } from 'react-native';
 import { scheduleDailyReminder, cancelDailyReminder } from '../notifications';
 import { AppData } from '../storage';
@@ -70,12 +70,19 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
   };
 
   const handlePickApps = async () => {
-    if (stStatus !== 'approved') { handleRequestST(); return; }
-    const res = await ScreenTime.showAppPicker();
-    if (res.selected) {
-      Alert.alert('Apps Selected', `${res.appCount} app(s) configured for blocking. Breathe sessions will shield them when your limit is reached.`);
+    // Try native FamilyActivityPicker first
+    if (stStatus === 'approved') {
+      const res = await ScreenTime.showAppPicker();
+      if (res.selected) {
+        Alert.alert('Apps Selected', `${res.appCount} app(s) selected for blocking.`);
+        return;
+      }
     }
+    // Fall back to manual toggle sheet
+    setShowManualAppPicker(true);
   };
+
+  const [showManualAppPicker, setShowManualAppPicker] = useState(false);
 
   const handleOpenApp = (app: typeof APPS[0]) => {
     const ae = appEarned[app.id] || 0;
@@ -174,29 +181,31 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
               </TouchableOpacity>
             </View>
 
-            {/* App pills — horizontal scroll like screenshot */}
-            {enabledApps.length === 0 ? (
-              <TouchableOpacity onPress={handlePickApps} style={{ paddingBottom: 14 }}>
-                <Text style={{ color: DARK.teal, fontSize: 13, fontWeight: '600' }}>+ pick apps to block</Text>
-              </TouchableOpacity>
-            ) : (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ height: 38, marginBottom: 8 }} contentContainerStyle={{ gap: 8, alignItems: 'center' }}>
-                {enabledApps.map(app => {
-                  const ae = appEarned[app.id] || 0;
-                  const isOpen = ae > 0;
-                  return (
-                    <TouchableOpacity key={app.id} onPress={() => handleOpenApp(app)}
-                      style={[ss.appPill, { borderColor: isOpen ? 'rgba(79,205,216,0.35)' : 'rgba(200,50,50,0.38)', backgroundColor: isOpen ? 'rgba(79,205,216,0.12)' : 'rgba(200,50,50,0.18)' }]}>
-                      <View style={[ss.pillIcon, { backgroundColor: app.color }]}>
-                        <Text style={ss.pillInitials}>{app.initials}</Text>
+            {/* All 4 app icons — always visible, lock badge overlay */}
+            <View style={ss.appIconGrid}>
+              {APPS.map(app => {
+                const enabled = !!data.appEnabled?.[app.id];
+                const ae = appEarned[app.id] || 0;
+                const isOpen = ae > 0;
+                return (
+                  <TouchableOpacity key={app.id} style={ss.appIconItem} onPress={() => enabled ? handleOpenApp(app) : handlePickApps()}>
+                    <View style={{ position: 'relative' }}>
+                      <View style={[ss.appIconBox, { backgroundColor: app.color, borderWidth: enabled ? 2 : 0, borderColor: isOpen ? 'rgba(79,205,216,0.6)' : 'rgba(220,60,60,0.5)', opacity: enabled ? 1 : 0.3 }]}>
+                        <Text style={ss.appIconInitials}>{app.initials}</Text>
                       </View>
-                      <Text style={ss.pillName}>{app.name}</Text>
-                      <Text style={{ fontSize: 12 }}>{isOpen ? '🔓' : '🔒'}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-            )}
+                      {enabled && (
+                        <View style={[ss.appBadge, { borderColor: isOpen ? 'rgba(79,205,216,0.6)' : 'rgba(220,60,60,0.5)' }]}>
+                          <Text style={{ fontSize: 8 }}>{isOpen ? '🔓' : '🔒'}</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={[ss.appIconLabel, { color: enabled ? (isOpen ? 'rgba(79,205,216,0.9)' : 'rgba(255,255,255,0.55)') : 'rgba(255,255,255,0.2)' }]}>
+                      {app.name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
 
             {/* Breathe to Unlock — blue CTA matching screenshot */}
             <TouchableOpacity style={ss.unlockBtn} onPress={() => onStartSession(selTech)}>
@@ -364,6 +373,36 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
           </View>
         </View>
       </Modal>
+    {/* Manual app selector modal (fallback when FamilyActivityPicker unavailable) */}
+    <Modal visible={showManualAppPicker} transparent animationType="slide" onRequestClose={() => setShowManualAppPicker(false)}>
+      <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.75)', justifyContent:'flex-end' }}>
+        <TouchableOpacity style={StyleSheet.absoluteFillObject} onPress={() => setShowManualAppPicker(false)} />
+        <View style={{ backgroundColor:'#0d1b36', borderRadius:24, padding:22, paddingBottom:40, borderWidth:1, borderColor:'rgba(255,255,255,0.08)' }}>
+          <View style={{ width:40,height:4,borderRadius:2,backgroundColor:DARK.text4,alignSelf:'center',marginBottom:18 }}/>
+          <Text style={{ color:DARK.text, fontSize:18, fontWeight:'700', marginBottom:4 }}>Select Apps to Block</Text>
+          <Text style={{ color:DARK.text2, fontSize:13, marginBottom:18, lineHeight:18 }}>Toggle apps to add them to your blocked list.</Text>
+          {APPS.map(app => {
+            const on = !!data.appEnabled?.[app.id];
+            return (
+              <TouchableOpacity key={app.id} onPress={() => onUpdate({ ...data, appEnabled:{ ...(data.appEnabled||{}), [app.id]: !on } })}
+                style={{ flexDirection:'row', alignItems:'center', gap:14, backgroundColor:on?`${app.color}18`:DARK.text4, borderWidth:1, borderColor:on?`${app.color}55`:DARK.border, borderRadius:13, padding:13, marginBottom:9 }}>
+                <View style={{ width:40,height:40,borderRadius:10,backgroundColor:app.color,alignItems:'center',justifyContent:'center',flexShrink:0 }}>
+                  <Text style={{ color:'rgba(255,255,255,0.92)',fontSize:12,fontWeight:'700' }}>{app.initials}</Text>
+                </View>
+                <View style={{ flex:1 }}>
+                  <Text style={{ color:DARK.text, fontSize:15, fontWeight:'600' }}>{app.name}</Text>
+                  <Text style={{ color:DARK.text2, fontSize:11 }}>{on?'will be blocked':'not tracked'}</Text>
+                </View>
+                <Switch value={on} onValueChange={() => onUpdate({ ...data, appEnabled:{ ...(data.appEnabled||{}), [app.id]: !on } })} trackColor={{ true:DARK.teal, false:DARK.text4 }} thumbColor="#fff" />
+              </TouchableOpacity>
+            );
+          })}
+          <TouchableOpacity onPress={() => setShowManualAppPicker(false)} style={{ backgroundColor:DARK.teal, borderRadius:12, padding:14, alignItems:'center', marginTop:4 }}>
+            <Text style={{ color:'#07111e', fontSize:15, fontWeight:'700' }}>Done</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
     </SafeAreaView>
   );
 }
@@ -406,6 +445,13 @@ const ss = StyleSheet.create({
   lockedMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   lockedMetaL: { color: 'rgba(255,255,255,0.50)', fontSize: 13, fontWeight: '500' },
   lockedManage: { color: '#4a90d9', fontSize: 13, fontWeight: '600' },
+  // App icon grid
+  appIconGrid: { flexDirection: 'row', gap: 8, marginBottom: 10 },
+  appIconItem: { flex: 1, alignItems: 'center', gap: 5 },
+  appIconBox: { width: 46, height: 46, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  appIconInitials: { color: 'rgba(255,255,255,0.92)', fontSize: 12, fontWeight: '700' },
+  appIconLabel: { fontSize: 10, fontWeight: '500', textAlign: 'center' },
+  appBadge: { position: 'absolute', top: -5, right: -5, width: 18, height: 18, borderRadius: 9, backgroundColor: '#0d1520', borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
   appPill: { flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1, borderRadius: 22, paddingHorizontal: 11, paddingVertical: 8 },
   pillIcon: { width: 26, height: 26, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
   pillInitials: { color: 'rgba(255,255,255,0.92)', fontSize: 10, fontWeight: '700' },
