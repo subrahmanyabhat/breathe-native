@@ -164,20 +164,20 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
 
         {/* LOCKED APPS — matches reference screenshot */}
         <View style={[ss.section, { paddingBottom: 0, marginTop: 4 }]}>
-          <View style={ss.lockedCard}>
+          <View style={[ss.lockedCard, { backgroundColor: th.id === 'dark' ? '#0d1520' : '#fff1f1', borderColor: 'rgba(220,60,60,0.22)' }]}>
             {/* Header row */}
             <View style={ss.lockedHeader}>
-              <View style={ss.lockedIconBox}><Text style={{ fontSize: 18 }}>🔒</Text></View>
+              <View style={[ss.lockedIconBox, { backgroundColor: 'rgba(220,60,60,0.18)', borderColor: 'rgba(220,60,60,0.38)' }]}><Text style={{ fontSize: 18 }}>🔒</Text></View>
               <View style={{ flex: 1, marginLeft: 10 }}>
-                <Text style={ss.lockedTitle}>Apps Blocked</Text>
-                <Text style={ss.lockedSub}>Complete a breathing session to unlock</Text>
+                <Text style={[ss.lockedTitle, { color: th.text }]}>Apps Blocked</Text>
+                <Text style={[ss.lockedSub, { color: th.text2 }]}>Complete a breathing session to unlock</Text>
               </View>
               <View style={ss.recDot} />
             </View>
 
             {/* Blocked Apps label + Manage */}
             <View style={ss.lockedMeta}>
-              <Text style={ss.lockedMetaL}>Blocked Apps</Text>
+              <Text style={[ss.lockedMetaL, { color: th.text2 }]}>Blocked Apps</Text>
               <TouchableOpacity onPress={() => {
                   if (Platform.OS === 'ios') Linking.openURL('App-Prefs:root=SCREENTIME');
                   else Linking.openURL('intent://settings#Intent;scheme=android.settings;action=android.settings.ACTION_DIGITAL_WELLBEING_SETTINGS;end');
@@ -194,14 +194,14 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
                 return (
                   <TouchableOpacity key={app.id} onPress={() => enabled ? handleOpenApp(app) : handlePickApps()}
                     style={[ss.appChip, {
-                      backgroundColor: isOpen ? 'rgba(79,205,216,0.10)' : enabled ? 'rgba(200,50,50,0.14)' : 'rgba(255,255,255,0.04)',
-                      borderColor: isOpen ? 'rgba(79,205,216,0.40)' : enabled ? 'rgba(220,60,60,0.35)' : 'rgba(255,255,255,0.08)',
+                      backgroundColor: isOpen ? `${th.teal}18` : enabled ? 'rgba(200,50,50,0.14)' : th.text4,
+                      borderColor: isOpen ? `${th.teal}55` : enabled ? 'rgba(220,60,60,0.35)' : th.border,
                       opacity: enabled ? 1 : 0.45,
                     }]}>
                     <View style={[ss.chipIcon, { backgroundColor: app.color }]}>
                       <Text style={ss.chipInitials}>{app.initials}</Text>
                     </View>
-                    <Text style={ss.chipName}>{app.name}</Text>
+                    <Text style={[ss.chipName, { color: th.text }]}>{app.name}</Text>
                     <Text style={{ fontSize: 11 }}>{isOpen ? '🔓' : '🔒'}</Text>
                   </TouchableOpacity>
                 );
@@ -430,14 +430,14 @@ const makeStyles_ss = (th: Theme) => StyleSheet.create({
   tlLabels: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 14, paddingBottom: 12 },
   tlLabel: { color: th.label, fontSize: 9, letterSpacing: 0.5 },
   // Locked apps card — matches screenshot
-  lockedCard: { backgroundColor: '#0d1520', borderRadius: 15, padding: 12, borderWidth: 1, borderColor: 'rgba(220,60,60,0.20)', marginBottom: 4 },
+  lockedCard: { borderRadius: 15, padding: 12, borderWidth: 1, marginBottom: 4 },
   lockedHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  lockedIconBox: { width: 34, height: 34, borderRadius: 9, backgroundColor: 'rgba(220,60,60,0.22)', borderWidth: 1, borderColor: 'rgba(220,60,60,0.40)', alignItems: 'center', justifyContent: 'center' },
-  lockedTitle: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  lockedSub: { color: 'rgba(255,255,255,0.42)', fontSize: 12, marginTop: 1 },
+  lockedIconBox: { width: 34, height: 34, borderRadius: 9, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  lockedTitle: { fontSize: 16, fontWeight: '700' },
+  lockedSub: { fontSize: 12, marginTop: 1 },
   recDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#cc2200' },
   lockedMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  lockedMetaL: { color: 'rgba(255,255,255,0.50)', fontSize: 13, fontWeight: '500' },
+  lockedMetaL: { fontSize: 13, fontWeight: '500' },
   lockedManage: { color: '#4a90d9', fontSize: 13, fontWeight: '600' },
   // App chips
   appChipsWrap: { flexDirection: 'row', gap: 8, marginBottom: 10 },
