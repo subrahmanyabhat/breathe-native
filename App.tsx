@@ -6,7 +6,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import { enableScreens } from 'react-native-screens';
 import { Ionicons } from '@expo/vector-icons';
 import { load, save, AppData, DEFAULT } from './src/storage';
-import { DARK } from './src/theme';
+import { DARK, LIGHT, Theme } from './src/theme';
 import HomeScreen from './src/screens/HomeScreen';
 import StatsScreen from './src/screens/StatsScreen';
 import ScreentimeScreen from './src/screens/ScreentimeScreen';
@@ -43,15 +43,15 @@ const trialDaysLeft = (p: AppData['premium']) => {
 };
 
 // ── PremiumModal ──────────────────────────────────────────────────────────────
-function PremiumModal({ visible, onClose, onTrial, onBuy, hasTrial }: {
-  visible: boolean; onClose:()=>void; onTrial:()=>void; onBuy:()=>void; hasTrial: boolean;
+function PremiumModal({ visible, onClose, onTrial, onBuy, hasTrial, isDarkMode = true }: {
+  visible: boolean; onClose:()=>void; onTrial:()=>void; onBuy:()=>void; hasTrial: boolean; isDarkMode?: boolean;
 }) {
   const insets = useSafeAreaInsets();
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={pm.overlay}>
         <TouchableOpacity style={StyleSheet.absoluteFillObject} onPress={onClose} />
-        <View style={[pm.sheet, { paddingBottom: insets.bottom + 24 }]}>
+        <View style={[pm.sheet, { paddingBottom: insets.bottom + 24, backgroundColor: isDarkMode ? '#0d1b36' : '#fff' }]}>
           <View style={pm.handle} />
 
           {/* Icon + heading */}
@@ -118,7 +118,7 @@ function PremiumModal({ visible, onClose, onTrial, onBuy, hasTrial }: {
 
 const pm = StyleSheet.create({
   overlay: { flex:1, backgroundColor:'rgba(0,0,0,0.80)', justifyContent:'flex-end' },
-  sheet: { backgroundColor:'#0d1b36', borderRadius:28, padding:24, paddingBottom:0, borderWidth:1, borderColor:'rgba(255,255,255,0.08)', borderBottomWidth:0, maxHeight:'92%' },
+  sheet: { backgroundColor: '#0d1b36', borderRadius:28, padding:24, paddingBottom:0, borderWidth:1, borderColor:'rgba(255,255,255,0.08)', borderBottomWidth:0, maxHeight:'92%' },
   handle: { width:40, height:4, borderRadius:2, backgroundColor:'rgba(255,255,255,0.10)', alignSelf:'center', marginBottom:20 },
   iconWrap: { width:56, height:56, borderRadius:16, alignItems:'center', justifyContent:'center', alignSelf:'center', marginBottom:12, backgroundColor:'rgba(164,142,232,0.22)', borderWidth:1, borderColor:'rgba(164,142,232,0.4)' },
   h1: { color:'#fff', fontSize:22, fontWeight:'700', textAlign:'center', marginBottom:6, letterSpacing:-0.5 },
@@ -171,9 +171,8 @@ export default function App() {
   const [showPremium,  setShowPremium]  = useState(false);
   const [showOnboard,  setShowOnboard]  = useState(false);
   const [isDark,       setIsDark]       = useState(true);
-  const toggleTheme   = () => setIsDark(d => !d);
-  const BG = isDark ? '#07111e' : '#e8f0ff';
-  const SURF = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.95)';
+  const toggleTheme = () => setIsDark(d => !d);
+  const th = isDark ? DARK : LIGHT;
 
   useEffect(() => {
     load().then(d => { setData(d); setLoaded(true); });
@@ -266,7 +265,7 @@ export default function App() {
     return (
       <SafeAreaProvider>
         <StatusBar barStyle="light-content" />
-        <SessionScreen tech={session.tech} targetApp={session.targetApp} onDone={endSession} onBack={() => setSession(null)} />
+        <SessionScreen tech={session.tech} targetApp={session.targetApp} onDone={endSession} onBack={() => setSession(null)} th={DARK} />
       </SafeAreaProvider>
     );
   }
@@ -277,11 +276,11 @@ export default function App() {
         <StatusBar barStyle="light-content" />
         {hasTrial && <TrialBanner daysLeft={dLeft} onPress={() => setShowPremium(true)} />}
 
-        <NavigationContainer theme={{ ...DarkTheme, colors: { ...DarkTheme.colors, background: BG, card: SURF, text: DARK.text, border: DARK.border, primary: DARK.teal, notification: DARK.teal } }}>
+        <NavigationContainer theme={{ ...DarkTheme, colors: { ...DarkTheme.colors, background: th.bg, card: th.surf, text: DARK.text, border: DARK.border, primary: DARK.teal, notification: DARK.teal } }}>
           <Tab.Navigator
             screenOptions={({ route }) => ({
               headerShown: false,
-              tabBarStyle: { backgroundColor: isDark ? 'rgba(7,17,30,0.97)' : 'rgba(232,240,255,0.97)', borderTopColor: DARK.border, borderTopWidth: 1, paddingBottom: 6, height: 80 },
+              tabBarStyle: { backgroundColor: th.navBg, borderTopColor: DARK.border, borderTopWidth: 1, paddingBottom: 6, height: 80 },
               tabBarActiveTintColor: DARK.teal,
               tabBarInactiveTintColor: DARK.label,
               tabBarLabelStyle: { fontSize: 10, letterSpacing: 0.6 },
@@ -300,13 +299,13 @@ export default function App() {
               {() => (
                 <HomeScreen
                   data={data} onUpdate={update} onStartSession={startSession}
-                  isPrem={isPrem} onShowPremium={() => setShowPremium(true)}
-                  isDark={isDark} onToggleTheme={toggleTheme}
+                  th={th} isPrem={isPrem} onShowPremium={() => setShowPremium(true)}
+                  th={th} isDark={isDark} onToggleTheme={toggleTheme}
                 />
               )}
             </Tab.Screen>
             <Tab.Screen name="Stats">
-              {() => <StatsScreen data={data} />}
+              {() => <StatsScreen data={data} th={th} />}
             </Tab.Screen>
             <Tab.Screen name="Screentime"
               options={{ tabBarBadge: !isPrem ? '' : undefined, tabBarBadgeStyle: { backgroundColor: '#a48ee8', minWidth: 8, height: 8, borderRadius: 4 } }}
@@ -314,7 +313,7 @@ export default function App() {
               {() => (
                 <ScreentimeScreen
                   data={data} onUpdate={update} onStartSession={startSession}
-                  isPrem={isPrem} onShowPremium={() => setShowPremium(true)}
+                  th={th} isPrem={isPrem} onShowPremium={() => setShowPremium(true)}
                 />
               )}
             </Tab.Screen>
@@ -324,6 +323,7 @@ export default function App() {
         <PremiumModal
           visible={showPremium}
           hasTrial={hasTrial}
+          isDarkMode={isDark}
           onClose={() => setShowPremium(false)}
           onTrial={handleTrial}
           onBuy={handleBuy}

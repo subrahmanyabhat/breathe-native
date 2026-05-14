@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View, Text, StyleSheet, Animated, Easing, TouchableOpacity,
-  SafeAreaView, Platform, Vibration,
+  Platform, Vibration,
 } from 'react-native';
-import { DARK } from '../theme';
+import { DARK, Theme } from '../theme';
 import { Technique, APPS } from '../data';
 
 // Use built-in Vibration — no expo-haptics enum crash risk
@@ -15,9 +16,10 @@ interface Props {
   targetApp?: string;
   onDone: (techId: string, minutes: number, cycles: number, targetApp?: string) => void;
   onBack: () => void;
+  th?: Theme;
 }
 
-export default function SessionScreen({ tech, targetApp, onDone, onBack }: Props) {
+export default function SessionScreen({ tech, targetApp, onDone, onBack, th = DARK }: Props) {
   const [running, setRunning] = useState(false);
   const [phaseIdx, setPhaseIdx] = useState(0);
   const [count, setCount] = useState(tech.phases[0].dur);
@@ -89,16 +91,16 @@ export default function SessionScreen({ tech, targetApp, onDone, onBack }: Props
 
   if (showComplete) {
     return (
-      <SafeAreaView style={[ss.root, { justifyContent: 'center', alignItems: 'center', padding: 24 }]}>
+      <SafeAreaView style={[ss.root, { justifyContent: 'center', alignItems: 'center', padding: 24 }]} edges={["top","bottom"]}>
         <View style={[ss.completeCard, { borderColor: tech.accent }]}>
           <Text style={[ss.completeTick, { color: tech.accent }]}>✦</Text>
           <Text style={ss.completeTitle}>session complete</Text>
           <Text style={[ss.completeSub, { color: 'rgba(255,255,255,0.5)' }]}>{tech.name}</Text>
           <View style={ss.completeRow}>
             {[{ l: 'cycles', v: String(cycles) }, { l: 'minutes', v: String(sessMin) }, { l: 'earned', v: `+${earned}m`, hi: true }].map(s => (
-              <View key={s.l} style={[ss.completeStat, { borderColor: DARK.border }]}>
+              <View key={s.l} style={[ss.completeStat, { borderColor: th.border }]}>
                 <Text style={ss.completeStatL}>{s.l}</Text>
-                <Text style={[ss.completeStatV, { color: s.hi ? tech.accent : DARK.text }]}>{s.v}</Text>
+                <Text style={[ss.completeStatV, { color: s.hi ? tech.accent : th.text }]}>{s.v}</Text>
               </View>
             ))}
           </View>
@@ -121,7 +123,7 @@ export default function SessionScreen({ tech, targetApp, onDone, onBack }: Props
   });
 
   return (
-    <SafeAreaView style={ss.root}>
+    <SafeAreaView style={ss.root} edges={["top","bottom"]}>
       {/* Top bar */}
       <View style={ss.topBar}>
         <TouchableOpacity style={ss.backBtn} onPress={onBack}>
@@ -210,13 +212,13 @@ export default function SessionScreen({ tech, targetApp, onDone, onBack }: Props
 }
 
 const ss = StyleSheet.create({
-  root: { flex: 1, backgroundColor: DARK.bg },
+  root: { flex: 1, backgroundColor: th.bg },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 },
-  backBtn: { backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: DARK.border, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8 },
-  backTxt: { color: DARK.text2, fontSize: 13 },
+  backBtn: { backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: th.border, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8 },
+  backTxt: { color: th.text2, fontSize: 13 },
   techName: { fontSize: 12, fontWeight: '600', letterSpacing: 1 },
-  cycleBadge: { backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: DARK.border, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8, minWidth: 52, alignItems: 'center' },
-  cycleTxt: { color: DARK.text2, fontSize: 12 },
+  cycleBadge: { backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: th.border, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8, minWidth: 52, alignItems: 'center' },
+  cycleTxt: { color: th.text2, fontSize: 12 },
   orbContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   bloom: { position: 'absolute', width: 360, height: 360, borderRadius: 180, backgroundColor: 'rgba(79,205,216,0.04)' },
   ring: { position: 'absolute', width: 250, height: 250, borderRadius: 125, borderWidth: 1 },
@@ -231,15 +233,15 @@ const ss = StyleSheet.create({
   bottom: { paddingHorizontal: 24, paddingBottom: 52, alignItems: 'center' },
   beginBtn: { borderRadius: 50, paddingVertical: 17, paddingHorizontal: 56, shadowOpacity: 0.45, shadowRadius: 20, shadowOffset: { width: 0, height: 6 } },
   beginTxt: { color: '#07111e', fontSize: 16, fontWeight: '700', letterSpacing: -0.3 },
-  endBtn: { backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: DARK.border, borderRadius: 50, paddingVertical: 13, paddingHorizontal: 36 },
-  endTxt: { color: DARK.text2, fontSize: 14 },
+  endBtn: { backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: th.border, borderRadius: 50, paddingVertical: 13, paddingHorizontal: 36 },
+  endTxt: { color: th.text2, fontSize: 14 },
   completeCard: { backgroundColor: '#0d1b36', borderRadius: 24, padding: 28, width: '100%', borderWidth: 1, alignItems: 'center' },
   completeTick: { fontSize: 28, marginBottom: 14 },
-  completeTitle: { color: DARK.text, fontSize: 20, fontWeight: '700', marginBottom: 4 },
+  completeTitle: { color: th.text, fontSize: 20, fontWeight: '700', marginBottom: 4 },
   completeSub: { fontSize: 13, marginBottom: 20 },
   completeRow: { flexDirection: 'row', gap: 10, marginBottom: 16, width: '100%' },
   completeStat: { flex: 1, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 13, padding: 13, alignItems: 'center', borderWidth: 1 },
-  completeStatL: { color: DARK.label, fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 },
+  completeStatL: { color: th.label, fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 },
   completeStatV: { fontSize: 22, fontWeight: '700', letterSpacing: -0.5 },
   btn: { width: '100%', borderRadius: 13, paddingVertical: 14, alignItems: 'center' },
   btnTxt: { fontSize: 15, fontWeight: '700' },

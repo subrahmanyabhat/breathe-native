@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
@@ -7,7 +7,7 @@ import {
 import { scheduleDailyReminder, cancelDailyReminder } from '../notifications';
 import { AppData } from '../storage';
 import { TECHNIQUES, APPS, Technique } from '../data';
-import { DARK } from '../theme';
+import { DARK, Theme } from '../theme';
 import { calcStreak, todayStr, fmtHHMM } from '../storage';
 import * as ScreenTime from '../../modules/screen-time';
 const safeSTStatus = () => { try { return ScreenTime.getAuthorizationStatus(); } catch { return 'unavailable'; } };
@@ -20,11 +20,12 @@ interface Props {
   onShowPremium?: () => void;
   isDark?: boolean;
   onToggleTheme?: () => void;
+  th?: Theme;
 }
 
 const TL_START = 6, TL_END = 22, TL_SLOTS = TL_END - TL_START;
 
-export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onShowPremium, isDark = true, onToggleTheme }: Props) {
+export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onShowPremium, isDark = true, onToggleTheme, th = DARK }: Props) {
   const [showReminder, setShowReminder] = useState(false);
   const [reminderTime, setReminderTime] = useState(data.reminder?.time || '08:00');
   const [reminderOn, setReminderOn] = useState(!!data.reminder?.enabled);
@@ -48,6 +49,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
   const [expandedLearn, setExpandedLearn] = useState<string | null>(null);
   const [stStatus, setStStatus] = useState<string>(safeSTStatus);
 
+  const ss = makeStyles_ss(th);
   const streak = calcStreak(data.sessions);
   const today = todayStr();
   const todaySess = data.sessions.filter(s => s.date === today);
@@ -105,7 +107,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
       {/* Header */}
       <View style={ss.header}>
         <View style={ss.logoRow}>
-          <View style={[ss.logoBox, { backgroundColor: DARK.teal }]} />
+          <View style={[ss.logoBox, { backgroundColor: th.teal }]} />
           <Text style={ss.logoTxt}>breathe</Text>
         </View>
         <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
@@ -118,7 +120,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
             <Text style={{ fontSize: 14 }}>{isDark ? '☀️' : '🌙'}</Text>
           </TouchableOpacity>
           <View style={ss.dayBadge}>
-            <View style={[ss.dayDot, { backgroundColor: streak > 0 ? DARK.teal : DARK.label }]} />
+            <View style={[ss.dayDot, { backgroundColor: streak > 0 ? th.teal : th.label }]} />
             <Text style={ss.dayTxt}>day {streak}</Text>
           </View>
         </View>
@@ -131,13 +133,13 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
           <Text style={ss.sectionLabel}>BANKED SCREENTIME</Text>
           <View style={ss.heroRow}>
             <Text style={ss.heroNum}>{fmtHHMM(earned).split(':')[0]}</Text>
-            <Text style={[ss.heroNum, { color: DARK.label }]}>:</Text>
+            <Text style={[ss.heroNum, { color: th.label }]}>:</Text>
             <Text style={ss.heroNum}>{fmtHHMM(earned).split(':')[1]}</Text>
             <Text style={ss.heroUnit}>min</Text>
           </View>
           <View style={ss.earnedRow}>
-            <Text style={[ss.earnedTxt, { color: DARK.earned }]}>+{fmtHHMM(earned)} earned</Text>
-            <Text style={[ss.earnedTxt, { color: DARK.spent }]}>  −{fmtHHMM(spent)} spent</Text>
+            <Text style={[ss.earnedTxt, { color: th.earned }]}>+{fmtHHMM(earned)} earned</Text>
+            <Text style={[ss.earnedTxt, { color: th.spent }]}>  −{fmtHHMM(spent)} spent</Text>
           </View>
         </View>
 
@@ -145,14 +147,14 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
         <View style={[ss.card, { marginHorizontal: 16, marginBottom: 10 }]}>
           <View style={ss.cardHeader}>
             <Text style={ss.cardTxt}>today's mindful minutes</Text>
-            <Text style={ss.cardTxt}><Text style={{ color: DARK.teal, fontWeight: '600' }}>{todaySess.length}</Text><Text style={{ color: DARK.label }}>/10</Text></Text>
+            <Text style={ss.cardTxt}><Text style={{ color: th.teal, fontWeight: '600' }}>{todaySess.length}</Text><Text style={{ color: th.label }}>/10</Text></Text>
           </View>
           <View style={ss.tlRow}>
             {Array.from({ length: TL_SLOTS }, (_, i) => {
               const h = TL_START + i;
               const active = activeHours.has(h);
               const curr = h === nowHour;
-              return <View key={i} style={[ss.tlSeg, { backgroundColor: active ? DARK.teal : curr ? DARK.teal + '35' : DARK.text4 }]} />;
+              return <View key={i} style={[ss.tlSeg, { backgroundColor: active ? th.teal : curr ? th.teal + '35' : th.text4 }]} />;
             })}
           </View>
           <View style={ss.tlLabels}>
@@ -241,9 +243,9 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
                 {TECHNIQUES.map(t => {
                   const active = selTech.id === t.id;
                   return (
-                    <TouchableOpacity key={t.id} onPress={() => setSelTech(t)} style={[ss.chip, { backgroundColor: active ? t.accent : DARK.text4, borderColor: active ? t.accent : DARK.border }]}>
-                      <Text style={[ss.chipTxt, { color: active ? '#07111e' : DARK.text2 }]}>{t.name}</Text>
-                      <Text style={[ss.chipTag, { color: active ? '#07111e99' : DARK.label }]}>{t.tag}</Text>
+                    <TouchableOpacity key={t.id} onPress={() => setSelTech(t)} style={[ss.chip, { backgroundColor: active ? t.accent : th.text4, borderColor: active ? t.accent : th.border }]}>
+                      <Text style={[ss.chipTxt, { color: active ? '#07111e' : th.text2 }]}>{t.name}</Text>
+                      <Text style={[ss.chipTag, { color: active ? '#07111e99' : th.label }]}>{t.tag}</Text>
                     </TouchableOpacity>
                   );
                 })}
@@ -297,7 +299,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
                     <View style={[ss.learnExpanded, { borderColor: 'rgba(255,255,255,0.07)' }]}>
                       <Text style={ss.learnExpandedSec}>HOW TO DO IT</Text>
                       {/* Steps omitted for brevity — rendered from TECHNIQUE_INFO in practice */}
-                      <Text style={{ color: DARK.text2, fontSize: 13, lineHeight: 20 }}>{t.desc}</Text>
+                      <Text style={{ color: th.text2, fontSize: 13, lineHeight: 20 }}>{t.desc}</Text>
                       <TouchableOpacity style={[ss.startBtn, { backgroundColor: t.accent, marginTop: 14 }]} onPress={() => { setSelTech(t); setBtab('practice'); }}>
                         <Text style={[ss.startBtnTxt, { color: '#07111e' }]}>start {t.name} →</Text>
                       </TouchableOpacity>
@@ -318,7 +320,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
               {data.reminder?.enabled ? `Every day at ${data.reminder.time} · tap to change` : 'Set a daily breathing alarm'}
             </Text>
           </View>
-          <View style={[ss.reminderDot, { backgroundColor: data.reminder?.enabled ? DARK.teal : DARK.text4 }]} />
+          <View style={[ss.reminderDot, { backgroundColor: data.reminder?.enabled ? th.teal : th.text4 }]} />
         </TouchableOpacity>
       </ScrollView>
 
@@ -337,7 +339,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
                 <Text style={ss.reminderLabel}>Enable reminder</Text>
                 <Text style={ss.reminderSub}>Fires every day at the set time</Text>
               </View>
-              <Switch value={reminderOn} onValueChange={setReminderOn} trackColor={{ true: DARK.teal, false: DARK.text4 }} thumbColor="#fff" />
+              <Switch value={reminderOn} onValueChange={setReminderOn} trackColor={{ true: th.teal, false: th.text4 }} thumbColor="#fff" />
             </View>
 
             <View style={[ss.reminderRow2, { opacity: reminderOn ? 1 : 0.4 }]}>
@@ -346,14 +348,14 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
                 {/* Hour − / + */}
                 <View style={{ alignItems:'center' }}>
                   <TouchableOpacity disabled={!reminderOn} onPress={()=>{ const [h,m]=reminderTime.split(':').map(Number); setReminderTime(`${String((h-1+24)%24).padStart(2,'0')}:${String(m).padStart(2,'0')}`); }} style={ss.stepBtn2}><Text style={ss.stepTxt2}>+</Text></TouchableOpacity>
-                  <Text style={[ss.reminderTimeBtn,{color:DARK.teal}]}>{reminderTime.split(':')[0]}</Text>
+                  <Text style={[ss.reminderTimeBtn,{color:th.teal}]}>{reminderTime.split(':')[0]}</Text>
                   <TouchableOpacity disabled={!reminderOn} onPress={()=>{ const [h,m]=reminderTime.split(':').map(Number); setReminderTime(`${String((h+1)%24).padStart(2,'0')}:${String(m).padStart(2,'0')}`); }} style={ss.stepBtn2}><Text style={ss.stepTxt2}>−</Text></TouchableOpacity>
                 </View>
-                <Text style={[ss.reminderTimeBtn,{color:DARK.label}]}>:</Text>
+                <Text style={[ss.reminderTimeBtn,{color:th.label}]}>:</Text>
                 {/* Minute − / + */}
                 <View style={{ alignItems:'center' }}>
                   <TouchableOpacity disabled={!reminderOn} onPress={()=>{ const [h,m]=reminderTime.split(':').map(Number); setReminderTime(`${String(h).padStart(2,'0')}:${String((m+15)%60).padStart(2,'0')}`); }} style={ss.stepBtn2}><Text style={ss.stepTxt2}>+</Text></TouchableOpacity>
-                  <Text style={[ss.reminderTimeBtn,{color:DARK.teal}]}>{reminderTime.split(':')[1]}</Text>
+                  <Text style={[ss.reminderTimeBtn,{color:th.teal}]}>{reminderTime.split(':')[1]}</Text>
                   <TouchableOpacity disabled={!reminderOn} onPress={()=>{ const [h,m]=reminderTime.split(':').map(Number); setReminderTime(`${String(h).padStart(2,'0')}:${String((m-15+60)%60).padStart(2,'0')}`); }} style={ss.stepBtn2}><Text style={ss.stepTxt2}>−</Text></TouchableOpacity>
                 </View>
               </View>
@@ -370,26 +372,26 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
       <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.75)', justifyContent:'flex-end' }}>
         <TouchableOpacity style={StyleSheet.absoluteFillObject} onPress={() => setShowManualAppPicker(false)} />
         <View style={{ backgroundColor:'#0d1b36', borderRadius:24, padding:22, paddingBottom:40, borderWidth:1, borderColor:'rgba(255,255,255,0.08)' }}>
-          <View style={{ width:40,height:4,borderRadius:2,backgroundColor:DARK.text4,alignSelf:'center',marginBottom:18 }}/>
-          <Text style={{ color:DARK.text, fontSize:18, fontWeight:'700', marginBottom:4 }}>Select Apps to Block</Text>
-          <Text style={{ color:DARK.text2, fontSize:13, marginBottom:18, lineHeight:18 }}>Toggle apps to add them to your blocked list.</Text>
+          <View style={{ width:40,height:4,borderRadius:2,backgroundColor:th.text4,alignSelf:'center',marginBottom:18 }}/>
+          <Text style={{ color:th.text, fontSize:18, fontWeight:'700', marginBottom:4 }}>Select Apps to Block</Text>
+          <Text style={{ color:th.text2, fontSize:13, marginBottom:18, lineHeight:18 }}>Toggle apps to add them to your blocked list.</Text>
           {APPS.map(app => {
             const on = !!data.appEnabled?.[app.id];
             return (
               <TouchableOpacity key={app.id} onPress={() => onUpdate({ ...data, appEnabled:{ ...(data.appEnabled||{}), [app.id]: !on } })}
-                style={{ flexDirection:'row', alignItems:'center', gap:14, backgroundColor:on?`${app.color}18`:DARK.text4, borderWidth:1, borderColor:on?`${app.color}55`:DARK.border, borderRadius:13, padding:13, marginBottom:9 }}>
+                style={{ flexDirection:'row', alignItems:'center', gap:14, backgroundColor:on?`${app.color}18`:th.text4, borderWidth:1, borderColor:on?`${app.color}55`:th.border, borderRadius:13, padding:13, marginBottom:9 }}>
                 <View style={{ width:40,height:40,borderRadius:10,backgroundColor:app.color,alignItems:'center',justifyContent:'center',flexShrink:0 }}>
                   <Text style={{ color:'rgba(255,255,255,0.92)',fontSize:12,fontWeight:'700' }}>{app.initials}</Text>
                 </View>
                 <View style={{ flex:1 }}>
-                  <Text style={{ color:DARK.text, fontSize:15, fontWeight:'600' }}>{app.name}</Text>
-                  <Text style={{ color:DARK.text2, fontSize:11 }}>{on?'will be blocked':'not tracked'}</Text>
+                  <Text style={{ color:th.text, fontSize:15, fontWeight:'600' }}>{app.name}</Text>
+                  <Text style={{ color:th.text2, fontSize:11 }}>{on?'will be blocked':'not tracked'}</Text>
                 </View>
-                <Switch value={on} onValueChange={() => onUpdate({ ...data, appEnabled:{ ...(data.appEnabled||{}), [app.id]: !on } })} trackColor={{ true:DARK.teal, false:DARK.text4 }} thumbColor="#fff" />
+                <Switch value={on} onValueChange={() => onUpdate({ ...data, appEnabled:{ ...(data.appEnabled||{}), [app.id]: !on } })} trackColor={{ true:th.teal, false:th.text4 }} thumbColor="#fff" />
               </TouchableOpacity>
             );
           })}
-          <TouchableOpacity onPress={() => setShowManualAppPicker(false)} style={{ backgroundColor:DARK.teal, borderRadius:12, padding:14, alignItems:'center', marginTop:4 }}>
+          <TouchableOpacity onPress={() => setShowManualAppPicker(false)} style={{ backgroundColor:th.teal, borderRadius:12, padding:14, alignItems:'center', marginTop:4 }}>
             <Text style={{ color:'#07111e', fontSize:15, fontWeight:'700' }}>Done</Text>
           </TouchableOpacity>
         </View>
@@ -399,34 +401,34 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
   );
 }
 
-const ss = StyleSheet.create({
-  root: { flex: 1, backgroundColor: DARK.bg },
+const makeStyles_ss = (th: Theme) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: th.bg },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 8 },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   logoBox: { width: 18, height: 18, borderRadius: 5 },
-  logoTxt: { color: DARK.text, fontSize: 17, fontWeight: '600', letterSpacing: -0.3 },
-  dayBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: DARK.text4, borderWidth: 1, borderColor: DARK.border, borderRadius: 20, paddingHorizontal: 11, paddingVertical: 5 },
+  logoTxt: { color: th.text, fontSize: 17, fontWeight: '600', letterSpacing: -0.3 },
+  dayBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: th.text4, borderWidth: 1, borderColor: th.border, borderRadius: 20, paddingHorizontal: 11, paddingVertical: 5 },
   premBtn: { backgroundColor: 'rgba(164,142,232,0.18)', borderWidth: 1, borderColor: 'rgba(164,142,232,0.40)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5 },
   premBtnTxt: { color: '#a48ee8', fontSize: 12, fontWeight: '700' },
   dayDot: { width: 6, height: 6, borderRadius: 3 },
-  dayTxt: { color: DARK.text2, fontSize: 12, fontWeight: '500' },
+  dayTxt: { color: th.text2, fontSize: 12, fontWeight: '500' },
   scroll: { flex: 1 },
   section: { paddingHorizontal: 20, marginBottom: 6 },
-  sectionLabel: { color: DARK.label, fontSize: 10, letterSpacing: 2.5, textTransform: 'uppercase', fontWeight: '500', marginBottom: 2 },
+  sectionLabel: { color: th.label, fontSize: 10, letterSpacing: 2.5, textTransform: 'uppercase', fontWeight: '500', marginBottom: 2 },
   sectionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 },
   sectionAction: { fontSize: 12, fontWeight: '600' },
   heroRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 2, marginBottom: 6 },
-  heroNum: { color: DARK.text, fontSize: 46, fontWeight: '300', letterSpacing: -1.5, lineHeight: 52 },
-  heroUnit: { color: DARK.text2, fontSize: 13, marginBottom: 6, marginLeft: 5 },
+  heroNum: { color: th.text, fontSize: 46, fontWeight: '300', letterSpacing: -1.5, lineHeight: 52 },
+  heroUnit: { color: th.text2, fontSize: 13, marginBottom: 6, marginLeft: 5 },
   earnedRow: { flexDirection: 'row', gap: 16 },
   earnedTxt: { fontSize: 13, fontWeight: '500' },
-  card: { backgroundColor: DARK.surf, borderWidth: 1, borderColor: DARK.border, borderRadius: 13 },
+  card: { backgroundColor: th.surf, borderWidth: 1, borderColor: th.border, borderRadius: 13 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, paddingBottom: 10 },
-  cardTxt: { color: DARK.text, fontSize: 13 },
+  cardTxt: { color: th.text, fontSize: 13 },
   tlRow: { flexDirection: 'row', gap: 2, paddingHorizontal: 14, marginBottom: 5 },
   tlSeg: { flex: 1, height: 5, borderRadius: 2 },
   tlLabels: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 14, paddingBottom: 12 },
-  tlLabel: { color: DARK.label, fontSize: 9, letterSpacing: 0.5 },
+  tlLabel: { color: th.label, fontSize: 9, letterSpacing: 0.5 },
   // Locked apps card — matches screenshot
   lockedCard: { backgroundColor: '#0d1520', borderRadius: 15, padding: 12, borderWidth: 1, borderColor: 'rgba(220,60,60,0.20)', marginBottom: 4 },
   lockedHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
@@ -452,15 +454,15 @@ const ss = StyleSheet.create({
   unlockSub: { color: 'rgba(255,255,255,0.60)', fontSize: 11, marginTop: 1, fontFamily: 'Courier' },
   unlockBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4 },
   unlockBadgeTxt: { color: '#fff', fontSize: 12, fontWeight: '600' },
-  tabPill: { flexDirection: 'row', gap: 3, backgroundColor: DARK.text4, borderRadius: 20, padding: 3 },
+  tabPill: { flexDirection: 'row', gap: 3, backgroundColor: th.text4, borderRadius: 20, padding: 3 },
   tabBtn: { borderRadius: 16, paddingHorizontal: 12, paddingVertical: 4 },
-  tabBtnActive: { backgroundColor: DARK.surf, borderWidth: 1, borderColor: DARK.border },
-  tabBtnTxt: { color: DARK.label, fontSize: 11, fontWeight: '400' },
-  tabBtnTxtActive: { color: DARK.text, fontWeight: '500' },
+  tabBtnActive: { backgroundColor: th.surf, borderWidth: 1, borderColor: th.border },
+  tabBtnTxt: { color: th.label, fontSize: 11, fontWeight: '400' },
+  tabBtnTxtActive: { color: th.text, fontWeight: '500' },
   chip: { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 4 },
   chipTxt: { fontSize: 13, fontWeight: '500' },
   chipTag: { fontSize: 11 },
-  techDetail: { backgroundColor: DARK.surf, borderWidth: 1, borderRadius: 13, padding: 14, marginBottom: 10 },
+  techDetail: { backgroundColor: th.surf, borderWidth: 1, borderRadius: 13, padding: 14, marginBottom: 10 },
   techDetailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   techDetailName: { color: 'rgba(255,255,255,0.88)', fontSize: 14, fontWeight: '600', marginBottom: 3 },
   techDetailDesc: { color: 'rgba(255,255,255,0.42)', fontSize: 12, lineHeight: 18, marginBottom: 8 },
@@ -478,27 +480,27 @@ const ss = StyleSheet.create({
   phaseBarBg: { flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 2 },
   phaseBarFill: { height: '100%' as any, borderRadius: 2, opacity: 0.7 },
   phaseBarDur: { color: 'rgba(255,255,255,0.28)', fontSize: 9, width: 16, textAlign: 'right' },
-  learnExpanded: { backgroundColor: DARK.surf, borderWidth: 1, borderTopWidth: 0, borderBottomLeftRadius: 13, borderBottomRightRadius: 13, padding: 16 },
-  learnExpandedSec: { color: DARK.label, fontSize: 9, letterSpacing: 1.8, textTransform: 'uppercase', fontWeight: '500', marginBottom: 10 },
+  learnExpanded: { backgroundColor: th.surf, borderWidth: 1, borderTopWidth: 0, borderBottomLeftRadius: 13, borderBottomRightRadius: 13, padding: 16 },
+  learnExpandedSec: { color: th.label, fontSize: 9, letterSpacing: 1.8, textTransform: 'uppercase', fontWeight: '500', marginBottom: 10 },
   startBtn: { borderRadius: 10, paddingVertical: 12, alignItems: 'center' },
   startBtnTxt: { fontSize: 13, fontWeight: '700' },
-  fixedBottom: { paddingHorizontal: 16, paddingVertical: 10, paddingBottom: 12, borderTopWidth: 1, borderTopColor: DARK.border, backgroundColor: DARK.bg },
+  fixedBottom: { paddingHorizontal: 16, paddingVertical: 10, paddingBottom: 12, borderTopWidth: 1, borderTopColor: th.border, backgroundColor: th.bg },
   beginCard: { backgroundColor: 'rgba(44,92,152,0.92)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.13)', borderRadius: 15, paddingVertical: 18, paddingHorizontal: 20, alignItems: 'center' },
   beginCardTitle: { color: '#fff', fontSize: 16, fontWeight: '600', marginBottom: 4, letterSpacing: -0.3 },
   beginCardSub: { color: 'rgba(255,255,255,0.5)', fontSize: 11, letterSpacing: 0.3, fontFamily: 'Courier' },
-  reminderRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 14, borderTopWidth: 1, borderTopColor: DARK.border, marginTop: 8 },
-  reminderTitle: { color: DARK.text, fontSize: 14, fontWeight: '500' },
-  reminderSub: { color: DARK.text2, fontSize: 12, marginTop: 1 },
+  reminderRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 14, borderTopWidth: 1, borderTopColor: th.border, marginTop: 8 },
+  reminderTitle: { color: th.text, fontSize: 14, fontWeight: '500' },
+  reminderSub: { color: th.text2, fontSize: 12, marginTop: 1 },
   reminderDot: { width: 7, height: 7, borderRadius: 4, flexShrink: 0 },
-  reminderSheet: { backgroundColor: '#0d1b36', borderRadius: 28, padding: 24, paddingBottom: 44, borderWidth: 1, borderColor: DARK.border, borderBottomWidth: 0 },
-  reminderHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: DARK.text4, alignSelf: 'center', marginBottom: 22 },
-  reminderSheetTitle: { color: DARK.text, fontSize: 19, fontWeight: '700', marginBottom: 4 },
-  reminderSheetSub: { color: DARK.text2, fontSize: 13, lineHeight: 18, marginBottom: 20 },
-  reminderRow2: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: DARK.text4, borderWidth: 1, borderColor: DARK.border, borderRadius: 13, padding: 15, marginBottom: 10 },
-  reminderLabel: { color: DARK.text, fontSize: 14, fontWeight: '500' },
+  reminderSheet: { backgroundColor: '#0d1b36', borderRadius: 28, padding: 24, paddingBottom: 44, borderWidth: 1, borderColor: th.border, borderBottomWidth: 0 },
+  reminderHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: th.text4, alignSelf: 'center', marginBottom: 22 },
+  reminderSheetTitle: { color: th.text, fontSize: 19, fontWeight: '700', marginBottom: 4 },
+  reminderSheetSub: { color: th.text2, fontSize: 13, lineHeight: 18, marginBottom: 20 },
+  reminderRow2: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: th.text4, borderWidth: 1, borderColor: th.border, borderRadius: 13, padding: 15, marginBottom: 10 },
+  reminderLabel: { color: th.text, fontSize: 14, fontWeight: '500' },
   reminderTimeBtn: { fontSize: 22, fontWeight: '700', letterSpacing: -0.5, textAlign:'center', minWidth:30 },
-  stepBtn2: { width:30, height:24, alignItems:'center', justifyContent:'center', backgroundColor:DARK.text4, borderRadius:6, borderWidth:1, borderColor:DARK.border },
-  stepTxt2: { color:DARK.text, fontSize:14, lineHeight:18, fontWeight:'600' },
-  reminderSaveBtn: { backgroundColor: DARK.teal, borderRadius: 13, padding: 15, alignItems: 'center', marginTop: 6 },
+  stepBtn2: { width:30, height:24, alignItems:'center', justifyContent:'center', backgroundColor:th.text4, borderRadius:6, borderWidth:1, borderColor:th.border },
+  stepTxt2: { color:th.text, fontSize:14, lineHeight:18, fontWeight:'600' },
+  reminderSaveBtn: { backgroundColor: th.teal, borderRadius: 13, padding: 15, alignItems: 'center', marginTop: 6 },
   reminderSaveTxt: { color: '#07111e', fontSize: 15, fontWeight: '700' },
 });
