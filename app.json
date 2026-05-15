@@ -17,9 +17,6 @@
         "NSFaceIDUsageDescription": "Used for Screen Time authentication",
         "ITSAppUsesNonExemptEncryption": false
       },
-      "entitlements": {
-        "com.apple.developer.family-controls": true
-      }
     },
     "android": {
       "package": "com.breathex.app",
@@ -43,9 +40,12 @@
           "sounds": []
         }
       ],
-      "./modules/screen-time/plugin"
     ],
-    "extra": {},
+    "extra": {
+      "eas": {
+        "projectId": "2504deea-f43b-4263-876d-f4c24651db14"
+      }
+    },
     "owner": "subrahmanya123"
   }
 }
