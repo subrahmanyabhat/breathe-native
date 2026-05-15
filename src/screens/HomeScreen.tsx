@@ -213,8 +213,12 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
                   <Text style={[ss.lockedTitle, { color: th.text }]}>Apps Blocked</Text>
                   <Text style={[ss.lockedSub, { color: th.text2 }]}>{earned > 0 ? `${earned}m banked · tap to open` : 'Breathe to unlock'}</Text>
                 </View>
-                <TouchableOpacity onPress={() => onUpdate({ ...data, stShieldEnabled: false })}>
-                  <Text style={{ color: '#4a90d9', fontSize: 12, fontWeight: '600' }}>Unblock</Text>
+                <TouchableOpacity onPress={async () => {
+                  // Re-open native picker to change selection
+                  const r = await ScreenTime.showAppPicker();
+                  if (!r.selected) onUpdate({ ...data, stShieldEnabled: false });
+                }}>
+                  <Text style={{ color: '#4a90d9', fontSize: 12, fontWeight: '600' }}>Manage →</Text>
                 </TouchableOpacity>
               </View>
 
