@@ -7,6 +7,47 @@ import { DARK, Theme } from '../theme';
 
 const TL_START = 6, TL_END = 22, TL_SLOTS = TL_END - TL_START;
 
+
+const makeStyles_ss = (th: Theme) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: th.bg },
+  section: { paddingHorizontal: 20, marginBottom: 8, marginTop: 14 },
+  sectionLabel: { color: th.label, fontSize: 10, letterSpacing: 2.5, textTransform: 'uppercase', fontWeight: '500' },
+  sectionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  heroRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 2, marginTop: 8, marginBottom: 8 },
+  heroNum: { color: th.text, fontSize: 46, fontWeight: '300', letterSpacing: -1.5, lineHeight: 52 },
+  heroUnit: { color: th.text2, fontSize: 14, marginBottom: 8, marginLeft: 6 },
+  subRow: { flexDirection: 'row' },
+  subTxt: { fontSize: 13, fontWeight: '500' },
+  card: { backgroundColor: th.surf, borderWidth: 1, borderColor: th.border, borderRadius: 13 },
+  cardRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, paddingBottom: 10 },
+  cardTxt: { color: th.text, fontSize: 13 },
+  tlRow: { flexDirection: 'row', gap: 2, paddingHorizontal: 14, marginBottom: 5 },
+  tlSeg: { flex: 1, height: 5, borderRadius: 2 },
+  tlLabels: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 14, paddingBottom: 12 },
+  tlLabel: { color: th.label, fontSize: 9 },
+  pairRow: { flexDirection: 'row', gap: 10 },
+  pairCard: { flex: 1, borderWidth: 1, borderRadius: 13, padding: 16 },
+  pairLabel: { color: th.label, fontSize: 9, letterSpacing: 1.8, textTransform: 'uppercase', marginBottom: 8 },
+  pairNumRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 5, marginBottom: 4 },
+  pairNum: { fontSize: 32, fontWeight: '300', letterSpacing: -1 },
+  pairUnit: { fontSize: 12, marginBottom: 5 },
+  pairSub: { fontSize: 11 },
+  dayRow: { flexDirection: 'row', alignItems: 'center', gap: 13, padding: 11, paddingHorizontal: 15 },
+  dayLabel: { fontSize: 12, width: 26 },
+  dayBarBg: { flex: 1, height: 4, backgroundColor: th.text4, borderRadius: 2, overflow: 'hidden' },
+  dayBarFill: { height: '100%' as any, borderRadius: 2 },
+  dayCount: { fontSize: 12, fontWeight: '600', width: 14, textAlign: 'right' },
+  techRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, paddingHorizontal: 15 },
+  techDot: { width: 8, height: 8, borderRadius: 4 },
+  techName: { color: th.text, fontSize: 13, fontWeight: '500', width: 68 },
+  techBarBg: { flex: 1, height: 4, backgroundColor: th.text4, borderRadius: 2, overflow: 'hidden' },
+  techBarFill: { height: '100%' as any, borderRadius: 2 },
+  techCount: { color: th.text2, fontSize: 12, width: 22, textAlign: 'right' },
+  goalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  goalBarBg: { height: 4, backgroundColor: th.text4, borderRadius: 2 },
+  goalBarFill: { height: '100%' as any, borderRadius: 2 },
+})
+
 export default function StatsScreen({ data, th = DARK }: { data: AppData; th?: Theme }) {
   const ss = makeStyles_ss(th);
   const streak = calcStreak(data.sessions);
@@ -155,43 +196,4 @@ export default function StatsScreen({ data, th = DARK }: { data: AppData; th?: T
     </SafeAreaView>
   );
 }
-
-const makeStyles_ss = (th: Theme) => StyleSheet.create({
-  root: { flex: 1, backgroundColor: th.bg },
-  section: { paddingHorizontal: 20, marginBottom: 8, marginTop: 14 },
-  sectionLabel: { color: th.label, fontSize: 10, letterSpacing: 2.5, textTransform: 'uppercase', fontWeight: '500' },
-  sectionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  heroRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 2, marginTop: 8, marginBottom: 8 },
-  heroNum: { color: th.text, fontSize: 46, fontWeight: '300', letterSpacing: -1.5, lineHeight: 52 },
-  heroUnit: { color: th.text2, fontSize: 14, marginBottom: 8, marginLeft: 6 },
-  subRow: { flexDirection: 'row' },
-  subTxt: { fontSize: 13, fontWeight: '500' },
-  card: { backgroundColor: th.surf, borderWidth: 1, borderColor: th.border, borderRadius: 13 },
-  cardRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, paddingBottom: 10 },
-  cardTxt: { color: th.text, fontSize: 13 },
-  tlRow: { flexDirection: 'row', gap: 2, paddingHorizontal: 14, marginBottom: 5 },
-  tlSeg: { flex: 1, height: 5, borderRadius: 2 },
-  tlLabels: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 14, paddingBottom: 12 },
-  tlLabel: { color: th.label, fontSize: 9 },
-  pairRow: { flexDirection: 'row', gap: 10 },
-  pairCard: { flex: 1, borderWidth: 1, borderRadius: 13, padding: 16 },
-  pairLabel: { color: th.label, fontSize: 9, letterSpacing: 1.8, textTransform: 'uppercase', marginBottom: 8 },
-  pairNumRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 5, marginBottom: 4 },
-  pairNum: { fontSize: 32, fontWeight: '300', letterSpacing: -1 },
-  pairUnit: { fontSize: 12, marginBottom: 5 },
-  pairSub: { fontSize: 11 },
-  dayRow: { flexDirection: 'row', alignItems: 'center', gap: 13, padding: 11, paddingHorizontal: 15 },
-  dayLabel: { fontSize: 12, width: 26 },
-  dayBarBg: { flex: 1, height: 4, backgroundColor: th.text4, borderRadius: 2, overflow: 'hidden' },
-  dayBarFill: { height: '100%' as any, borderRadius: 2 },
-  dayCount: { fontSize: 12, fontWeight: '600', width: 14, textAlign: 'right' },
-  techRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, paddingHorizontal: 15 },
-  techDot: { width: 8, height: 8, borderRadius: 4 },
-  techName: { color: th.text, fontSize: 13, fontWeight: '500', width: 68 },
-  techBarBg: { flex: 1, height: 4, backgroundColor: th.text4, borderRadius: 2, overflow: 'hidden' },
-  techBarFill: { height: '100%' as any, borderRadius: 2 },
-  techCount: { color: th.text2, fontSize: 12, width: 22, textAlign: 'right' },
-  goalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  goalBarBg: { height: 4, backgroundColor: th.text4, borderRadius: 2 },
-  goalBarFill: { height: '100%' as any, borderRadius: 2 },
-});
+;
