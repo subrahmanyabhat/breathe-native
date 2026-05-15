@@ -19,7 +19,45 @@ interface Props {
   th?: Theme;
 }
 
+
+const makeStyles_ss = (th: Theme) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: th.bg },
+  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 },
+  backBtn: { backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: th.border, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8 },
+  backTxt: { color: th.text2, fontSize: 13 },
+  techName: { fontSize: 12, fontWeight: '600', letterSpacing: 1 },
+  cycleBadge: { backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: th.border, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8, minWidth: 52, alignItems: 'center' },
+  cycleTxt: { color: th.text2, fontSize: 12 },
+  orbContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  bloom: { position: 'absolute', width: 360, height: 360, borderRadius: 180, backgroundColor: 'rgba(79,205,216,0.04)' },
+  ring: { position: 'absolute', width: 250, height: 250, borderRadius: 125, borderWidth: 1 },
+  orb: { width: 200, height: 200, borderRadius: 100, borderWidth: 1.5, backgroundColor: 'rgba(79,205,216,0.08)', alignItems: 'center', justifyContent: 'center', ...Platform.select({ ios: { shadowOpacity: 0.6, shadowRadius: 30, shadowOffset: { width: 0, height: 0 } } }) },
+  phaseLabel: { color: 'rgba(255,255,255,0.45)', fontSize: 12, fontWeight: '500', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 },
+  countNum: { fontSize: 46, fontWeight: '300', letterSpacing: -2 },
+  dotsRow: { flexDirection: 'row', gap: 8, alignItems: 'center', marginTop: 28 },
+  dot: { height: 7, borderRadius: 4 },
+  phaseLabels: { flexDirection: 'row', gap: 20, marginTop: 18 },
+  cyclesDone: { marginTop: 16, borderWidth: 1, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 5 },
+  cyclesDoneTxt: { fontSize: 12, fontWeight: '600' },
+  bottom: { paddingHorizontal: 24, paddingBottom: 52, alignItems: 'center' },
+  beginBtn: { borderRadius: 50, paddingVertical: 17, paddingHorizontal: 56, shadowOpacity: 0.45, shadowRadius: 20, shadowOffset: { width: 0, height: 6 } },
+  beginTxt: { color: '#07111e', fontSize: 16, fontWeight: '700', letterSpacing: -0.3 },
+  endBtn: { backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: th.border, borderRadius: 50, paddingVertical: 13, paddingHorizontal: 36 },
+  endTxt: { color: th.text2, fontSize: 14 },
+  completeCard: { backgroundColor: '#0d1b36', borderRadius: 24, padding: 28, width: '100%', borderWidth: 1, alignItems: 'center' },
+  completeTick: { fontSize: 28, marginBottom: 14 },
+  completeTitle: { color: th.text, fontSize: 20, fontWeight: '700', marginBottom: 4 },
+  completeSub: { fontSize: 13, marginBottom: 20 },
+  completeRow: { flexDirection: 'row', gap: 10, marginBottom: 16, width: '100%' },
+  completeStat: { flex: 1, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 13, padding: 13, alignItems: 'center', borderWidth: 1 },
+  completeStatL: { color: th.label, fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 },
+  completeStatV: { fontSize: 22, fontWeight: '700', letterSpacing: -0.5 },
+  btn: { width: '100%', borderRadius: 13, paddingVertical: 14, alignItems: 'center' },
+  btnTxt: { fontSize: 15, fontWeight: '700' },
+})
+
 export default function SessionScreen({ tech, targetApp, onDone, onBack, th = DARK }: Props) {
+  const ss = makeStyles_ss(th);
   const [running, setRunning] = useState(false);
   const [phaseIdx, setPhaseIdx] = useState(0);
   const [count, setCount] = useState(tech.phases[0].dur);
@@ -211,38 +249,4 @@ export default function SessionScreen({ tech, targetApp, onDone, onBack, th = DA
   );
 }
 
-const ss = StyleSheet.create({
-  root: { flex: 1, backgroundColor: th.bg },
-  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 },
-  backBtn: { backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: th.border, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8 },
-  backTxt: { color: th.text2, fontSize: 13 },
-  techName: { fontSize: 12, fontWeight: '600', letterSpacing: 1 },
-  cycleBadge: { backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: th.border, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8, minWidth: 52, alignItems: 'center' },
-  cycleTxt: { color: th.text2, fontSize: 12 },
-  orbContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  bloom: { position: 'absolute', width: 360, height: 360, borderRadius: 180, backgroundColor: 'rgba(79,205,216,0.04)' },
-  ring: { position: 'absolute', width: 250, height: 250, borderRadius: 125, borderWidth: 1 },
-  orb: { width: 200, height: 200, borderRadius: 100, borderWidth: 1.5, backgroundColor: 'rgba(79,205,216,0.08)', alignItems: 'center', justifyContent: 'center', ...Platform.select({ ios: { shadowOpacity: 0.6, shadowRadius: 30, shadowOffset: { width: 0, height: 0 } } }) },
-  phaseLabel: { color: 'rgba(255,255,255,0.45)', fontSize: 12, fontWeight: '500', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 },
-  countNum: { fontSize: 46, fontWeight: '300', letterSpacing: -2 },
-  dotsRow: { flexDirection: 'row', gap: 8, alignItems: 'center', marginTop: 28 },
-  dot: { height: 7, borderRadius: 4 },
-  phaseLabels: { flexDirection: 'row', gap: 20, marginTop: 18 },
-  cyclesDone: { marginTop: 16, borderWidth: 1, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 5 },
-  cyclesDoneTxt: { fontSize: 12, fontWeight: '600' },
-  bottom: { paddingHorizontal: 24, paddingBottom: 52, alignItems: 'center' },
-  beginBtn: { borderRadius: 50, paddingVertical: 17, paddingHorizontal: 56, shadowOpacity: 0.45, shadowRadius: 20, shadowOffset: { width: 0, height: 6 } },
-  beginTxt: { color: '#07111e', fontSize: 16, fontWeight: '700', letterSpacing: -0.3 },
-  endBtn: { backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: th.border, borderRadius: 50, paddingVertical: 13, paddingHorizontal: 36 },
-  endTxt: { color: th.text2, fontSize: 14 },
-  completeCard: { backgroundColor: '#0d1b36', borderRadius: 24, padding: 28, width: '100%', borderWidth: 1, alignItems: 'center' },
-  completeTick: { fontSize: 28, marginBottom: 14 },
-  completeTitle: { color: th.text, fontSize: 20, fontWeight: '700', marginBottom: 4 },
-  completeSub: { fontSize: 13, marginBottom: 20 },
-  completeRow: { flexDirection: 'row', gap: 10, marginBottom: 16, width: '100%' },
-  completeStat: { flex: 1, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 13, padding: 13, alignItems: 'center', borderWidth: 1 },
-  completeStatL: { color: th.label, fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 },
-  completeStatV: { fontSize: 22, fontWeight: '700', letterSpacing: -0.5 },
-  btn: { width: '100%', borderRadius: 13, paddingVertical: 14, alignItems: 'center' },
-  btnTxt: { fontSize: 15, fontWeight: '700' },
-});
+;

@@ -13,7 +13,7 @@ import ScreentimeScreen from './src/screens/ScreentimeScreen';
 import SessionScreen from './src/screens/SessionScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
-import { Technique } from './src/data';
+import { Technique, TECHNIQUES } from './src/data';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 enableScreens();
@@ -297,7 +297,7 @@ export default function App() {
         <StatusBar barStyle="light-content" />
         {hasTrial && <TrialBanner daysLeft={dLeft} onPress={() => setShowPremium(true)} />}
 
-        <NavigationContainer theme={{ ...DarkTheme, colors: { ...DarkTheme.colors, background: th.bg, card: th.surf, text: DARK.text, border: DARK.border, primary: DARK.teal, notification: DARK.teal } }}>
+        <NavigationContainer theme={{ ...DarkTheme, colors: { ...DarkTheme.colors, background: th.bg, card: th.surf, text: th.text, border: th.border, primary: th.teal, notification: th.teal } }}>
           <Tab.Navigator
             screenOptions={({ route }) => ({
               headerShown: false,
