@@ -162,65 +162,98 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
           </View>
         </View>
 
-        {/* LOCKED APPS — matches reference screenshot */}
+        {/* LOCKED APPS — two states */}
         <View style={[ss.section, { paddingBottom: 0, marginTop: 4 }]}>
-          <View style={[ss.lockedCard, { backgroundColor: th.id === 'dark' ? '#0d1520' : '#fff1f1', borderColor: 'rgba(220,60,60,0.22)' }]}>
-            {/* Header row */}
-            <View style={ss.lockedHeader}>
-              <View style={[ss.lockedIconBox, { backgroundColor: 'rgba(220,60,60,0.18)', borderColor: 'rgba(220,60,60,0.38)' }]}><Text style={{ fontSize: 18 }}>🔒</Text></View>
-              <View style={{ flex: 1, marginLeft: 10 }}>
-                <Text style={[ss.lockedTitle, { color: th.text }]}>Apps Blocked</Text>
-                <Text style={[ss.lockedSub, { color: th.text2 }]}>Complete a breathing session to unlock</Text>
+          {!data.stShieldEnabled ? (
+            /* ── STATE 1: Not blocked — wellness CTA ── */
+            <View style={{ backgroundColor: th.id === 'dark' ? 'rgba(79,205,216,0.06)' : 'rgba(8,145,178,0.05)', borderRadius: 15, padding: 14, borderWidth: 1, borderColor: `${th.teal}30` }}>
+              <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
+                <Text style={{ fontSize: 26, flexShrink: 0 }}>🌿</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: th.text, fontSize: 15, fontWeight: '700', marginBottom: 4 }}>Block Apps & Increase Wellness</Text>
+                  <Text style={{ color: th.text2, fontSize: 12, lineHeight: 18 }}>Shield distracting apps with Screen Time. Breathe to earn your time back.</Text>
+                </View>
               </View>
-              <View style={ss.recDot} />
-            </View>
-
-            {/* Blocked Apps label + Manage */}
-            <View style={ss.lockedMeta}>
-              <Text style={[ss.lockedMetaL, { color: th.text2 }]}>Blocked Apps</Text>
-              <TouchableOpacity onPress={() => {
-                  if (Platform.OS === 'ios') Linking.openURL('App-Prefs:root=SCREENTIME');
-                  else Linking.openURL('intent://settings#Intent;scheme=android.settings;action=android.settings.ACTION_DIGITAL_WELLBEING_SETTINGS;end');
-                }}>
-                <Text style={ss.lockedManage}>Manage →</Text>
+              {/* App icon row */}
+              <View style={{ flexDirection: 'row', gap: 8, marginBottom: 14 }}>
+                {APPS.map(app => (
+                  <View key={app.id} style={{ flex: 1, height: 38, borderRadius: 10, backgroundColor: app.color, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ color: 'rgba(255,255,255,0.92)', fontSize: 11, fontWeight: '700' }}>{app.initials}</Text>
+                  </View>
+                ))}
+              </View>
+              {/* Select & Block CTA */}
+              <TouchableOpacity
+                style={{ backgroundColor: th.teal, borderRadius: 12, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                onPress={async () => {
+                  // Try native FamilyActivityPicker first
+                  const r = await ScreenTime.showAppPicker();
+                  if (r.selected) {
+                    const shield = await ScreenTime.shieldApps();
+                    if (shield.success) {
+                      onUpdate({ ...data, stShieldEnabled: true });
+                      Alert.alert('✓ Apps Blocked', `${r.appCount} app(s) are now blocked. Breathe to unlock.`);
+                      return;
+                    }
+                  }
+                  // Fallback: manual picker + manual shield
+                  setShowManualAppPicker(true);
+                }}
+              >
+                <Text style={{ fontSize: 18 }}>📱</Text>
+                <Text style={{ color: '#07111e', fontSize: 15, fontWeight: '700' }}>Select & Block Apps</Text>
               </TouchableOpacity>
             </View>
+          ) : (
+            /* ── STATE 2: Blocked — locked apps card ── */
+            <View style={[ss.lockedCard, { backgroundColor: th.id === 'dark' ? '#0d1520' : '#fff1f1', borderColor: 'rgba(220,60,60,0.22)' }]}>
+              <View style={ss.lockedHeader}>
+                <View style={[ss.lockedIconBox, { backgroundColor: 'rgba(220,60,60,0.18)', borderColor: 'rgba(220,60,60,0.38)' }]}><Text style={{ fontSize: 18 }}>🔒</Text></View>
+                <View style={{ flex: 1, marginLeft: 10 }}>
+                  <Text style={[ss.lockedTitle, { color: th.text }]}>Apps Blocked</Text>
+                  <Text style={[ss.lockedSub, { color: th.text2 }]}>{earned > 0 ? `${earned}m banked · tap to open` : 'Breathe to unlock'}</Text>
+                </View>
+                <TouchableOpacity onPress={() => onUpdate({ ...data, stShieldEnabled: false })}>
+                  <Text style={{ color: '#4a90d9', fontSize: 12, fontWeight: '600' }}>Unblock</Text>
+                </TouchableOpacity>
+              </View>
 
-            {/* App chips — single horizontal scroll line */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 10 }} contentContainerStyle={{ gap: 8, alignItems: 'center' }}>
-              {APPS.map(app => {
-                const enabled = !!data.appEnabled?.[app.id];
-                const isOpen = earned > 0;
-                return (
-                  <TouchableOpacity key={app.id} onPress={() => enabled ? handleOpenApp(app) : handlePickApps()}
-                    style={[ss.appChip, {
-                      backgroundColor: isOpen ? `${th.teal}18` : enabled ? 'rgba(200,50,50,0.14)' : th.text4,
-                      borderColor: isOpen ? `${th.teal}55` : enabled ? 'rgba(220,60,60,0.35)' : th.border,
-                      opacity: enabled ? 1 : 0.45,
-                    }]}>
-                    <View style={[ss.chipIcon, { backgroundColor: app.color }]}>
-                      <Text style={ss.chipInitials}>{app.initials}</Text>
-                    </View>
-                    <Text style={[ss.chipName, { color: th.text }]}>{app.name}</Text>
-                    <Text style={{ fontSize: 11 }}>{isOpen ? '🔓' : '🔒'}</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 10 }} contentContainerStyle={{ gap: 8, alignItems: 'center' }}>
+                {APPS.filter(a => data.appEnabled?.[a.id]).map(app => {
+                  const isOpen = earned > 0;
+                  return (
+                    <TouchableOpacity key={app.id} onPress={() => handleOpenApp(app)}
+                      style={[ss.appChip, {
+                        backgroundColor: isOpen ? `${th.teal}18` : 'rgba(200,50,50,0.14)',
+                        borderColor: isOpen ? `${th.teal}55` : 'rgba(220,60,60,0.35)',
+                      }]}>
+                      <View style={[ss.chipIcon, { backgroundColor: app.color }]}>
+                        <Text style={ss.chipInitials}>{app.initials}</Text>
+                      </View>
+                      <Text style={[ss.chipName, { color: th.text }]}>{app.name}</Text>
+                      <Text style={{ fontSize: 11 }}>{isOpen ? '🔓' : '🔒'}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+                {APPS.filter(a => data.appEnabled?.[a.id]).length === 0 && (
+                  <TouchableOpacity onPress={() => setShowManualAppPicker(true)}>
+                    <Text style={{ color: th.teal, fontSize: 12, fontWeight: '600' }}>+ add apps</Text>
                   </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
+                )}
+              </ScrollView>
 
-            {/* Breathe to Unlock — blue CTA matching screenshot */}
-            <TouchableOpacity style={ss.unlockBtn} onPress={() => onStartSession(selTech)}>
-              <Text style={{ fontSize: 20 }}>⚡</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={ss.unlockTitle}>Breathe to Unlock Apps</Text>
-                <Text style={ss.unlockSub}>{selTech.name} · {selTech.phases.map(p => p.dur).join('·')}</Text>
-              </View>
-              <View style={ss.unlockBadge}>
-                <Text style={{ fontSize: 11 }}>⏱</Text>
-                <Text style={ss.unlockBadgeTxt}>{earned > 0 ? `${earned}m` : `${cycleSeconds * 10}:00`} unlock</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity style={ss.unlockBtn} onPress={() => onStartSession(selTech)}>
+                <Text style={{ fontSize: 18 }}>⚡</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={ss.unlockTitle}>Breathe to Unlock Apps</Text>
+                  <Text style={ss.unlockSub}>{selTech.name} · 1 min = 10 min screen</Text>
+                </View>
+                <View style={ss.unlockBadge}>
+                  <Text style={ss.unlockBadgeTxt}>{earned > 0 ? `${earned}m` : 'earn'}</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* BREATHING section */}
