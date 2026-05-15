@@ -17,6 +17,9 @@
         "NSFaceIDUsageDescription": "Used for Screen Time authentication",
         "ITSAppUsesNonExemptEncryption": false
       },
+      "entitlements": {
+        "com.apple.developer.family-controls": true
+      }
     },
     "android": {
       "package": "com.breathex.app",
@@ -40,6 +43,7 @@
           "sounds": []
         }
       ],
+      "./modules/screen-time/plugin"
     ],
     "extra": {
       "eas": {

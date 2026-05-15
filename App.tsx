@@ -196,28 +196,47 @@ export default function App() {
   const handleBuy = async () => {
     try {
       const IAP = require('expo-iap');
-      // Product ID must match what you create in App Store Connect / Google Play
-      const PRODUCT_ID = Platform.OS === 'android' ? 'breathe_premium_monthlyv1' : 'com.breathex.app.premium.monthlyv1';
+      const PRODUCT_ID = Platform.OS === 'android'
+        ? 'breathe_premium_monthlyv1'
+        : 'com.breathex.app.premium.monthlyv1';
+
       await IAP.initConnection();
-      const products = await IAP.getProducts([PRODUCT_ID]);
-      if (!products || products.length === 0) {
-        Alert.alert('Not Available', 'Purchase not configured yet. Contact support.');
+
+      // Listen for purchase completion
+      const purchaseSub = IAP.purchaseUpdatedListener(async (purchase: any) => {
+        if (purchase?.transactionReceipt) {
+          await IAP.finishTransaction({ purchase, isConsumable: false });
+          purchaseSub?.remove();
+          update({ ...data, premium: { ...data.premium, paid: true } });
+          setShowPremium(false);
+          Alert.alert('✓ Premium Activated', 'Thank you! All features unlocked.');
+        }
+      });
+
+      // Get subscriptions (not products)
+      const subs = await IAP.getSubscriptions([PRODUCT_ID]);
+      if (!subs || subs.length === 0) {
+        purchaseSub?.remove();
+        Alert.alert(
+          'Not Configured',
+          'Subscription not set up in App Store Connect yet.\n\nFor testing: activate as purchased?',
+          [
+            { text: 'Simulate', onPress: () => { update({ ...data, premium: { ...data.premium, paid: true } }); setShowPremium(false); } },
+            { text: 'Cancel', style: 'cancel' },
+          ]
+        );
         return;
       }
-      const result = await IAP.requestPurchase({ sku: PRODUCT_ID });
-      if (result) {
-        update({ ...data, premium: { ...data.premium, paid: true } });
-        setShowPremium(false);
-        Alert.alert('✓ Premium Activated', 'Thank you! All features unlocked.');
-      }
+
+      // requestSubscription is the correct API for expo-iap v4+
+      await IAP.requestSubscription({ sku: PRODUCT_ID });
     } catch (e: any) {
       if (e?.code !== 'E_USER_CANCELLED') {
-        // Fallback for dev/testing — simulate purchase
         Alert.alert(
-          'Complete Purchase',
-          'In production this opens the App Store / Play Store purchase sheet.\n\nFor testing: activate as purchased?',
+          'Purchase unavailable',
+          'Open App Store Connect, create the subscription product, then try again.\n\nFor testing:',
           [
-            { text: 'Simulate Purchase', onPress: () => { update({ ...data, premium: { ...data.premium, paid: true } }); setShowPremium(false); }},
+            { text: 'Simulate Purchase', onPress: () => { update({ ...data, premium: { ...data.premium, paid: true } }); setShowPremium(false); } },
             { text: 'Cancel', style: 'cancel' },
           ]
         );
