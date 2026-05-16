@@ -281,7 +281,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
               </View>
               {/* Select & Block CTA */}
               <TouchableOpacity
-                style={{ backgroundColor: th.teal, borderRadius: 12, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                style={{ backgroundColor: `${th.teal}18`, borderWidth: 1, borderColor: `${th.teal}44`, borderRadius: 12, padding: 13, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}
                 onPress={async () => {
                   // Try native FamilyActivityPicker first
                   const r = await ScreenTime.showAppPicker();
@@ -298,7 +298,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
                 }}
               >
                 <Text style={{ fontSize: 18 }}>📱</Text>
-                <Text style={{ color: th.id === 'dark' ? '#07111e' : '#fff', fontSize: 15, fontWeight: '700' }}>Select & Block Apps</Text>
+                <Text style={{ color: th.teal, fontSize: 14, fontWeight: '600' }}>Select & Block Apps</Text>
               </TouchableOpacity>
             </View>
           ) : (
