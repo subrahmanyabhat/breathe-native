@@ -279,14 +279,6 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
                   <Text style={{ color: th.text2, fontSize: 12, lineHeight: 18 }}>Select apps to limit. Set daily timers in Screen Time. Breathe to earn back access.</Text>
                 </View>
               </View>
-              {/* App icon row */}
-              <View style={{ flexDirection: 'row', gap: 8, marginBottom: 14 }}>
-                {APPS.map(app => (
-                  <View key={app.id} style={{ flex: 1, height: 38, borderRadius: 10, backgroundColor: app.color, alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={{ color: 'rgba(255,255,255,0.92)', fontSize: 11, fontWeight: '700' }}>{app.initials}</Text>
-                  </View>
-                ))}
-              </View>
               {/* Select & Block CTA */}
               <TouchableOpacity
                 style={{ backgroundColor: th.teal, borderRadius: 12, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}
