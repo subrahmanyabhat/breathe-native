@@ -507,6 +507,14 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
             <TouchableOpacity style={[ss.reminderSaveBtn, { opacity: savingReminder ? 0.6 : 1 }]} onPress={() => saveReminder(reminderOn, reminderTime)} disabled={savingReminder}>
               <Text style={ss.reminderSaveTxt}>{savingReminder ? 'Setting…' : reminderOn ? `Set Alarm for ${reminderTime}` : 'Save (off)'}</Text>
             </TouchableOpacity>
+
+            {/* Open Reminders App */}
+            <TouchableOpacity
+              style={{ marginTop: 10, paddingVertical: 12, alignItems: 'center', borderWidth: 1, borderColor: th.border, borderRadius: 12, backgroundColor: th.text4 }}
+              onPress={() => Linking.openURL('x-apple-reminderkit://')}
+            >
+              <Text style={{ color: th.teal, fontSize: 13, fontWeight: '600' }}>📅 Open Reminders App →</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
