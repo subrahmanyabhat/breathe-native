@@ -94,7 +94,7 @@ const makeStyles_ss = (th: Theme) => StyleSheet.create({
   techDetailPhase: { color: 'rgba(255,255,255,0.45)', fontSize: 11, fontFamily: 'Courier' },
   techEarn: { fontSize: 12, fontWeight: '600', marginBottom: 1 },
   techEarnSub: { color: 'rgba(255,255,255,0.30)', fontSize: 10 },
-  learnCard: { backgroundColor: '#0a1e40', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', borderRadius: 13, padding: 14 },
+  learnCard: { backgroundColor: th.surf, borderWidth: 1, borderColor: th.border, borderRadius: 13, padding: 14 },
   learnCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
   learnName: { color: 'rgba(255,255,255,0.90)', fontSize: 14, fontWeight: '600', marginTop: 5 },
   learnChevron: { fontSize: 13, marginTop: 4 },
@@ -117,7 +117,7 @@ const makeStyles_ss = (th: Theme) => StyleSheet.create({
   reminderTitle: { color: th.text, fontSize: 14, fontWeight: '500' },
   reminderSub: { color: th.text2, fontSize: 12, marginTop: 1 },
   reminderDot: { width: 7, height: 7, borderRadius: 4, flexShrink: 0 },
-  reminderSheet: { backgroundColor: '#0d1b36', borderRadius: 28, padding: 24, paddingBottom: 44, borderWidth: 1, borderColor: th.border, borderBottomWidth: 0 },
+  reminderSheet: { backgroundColor: th.sheetBg || th.surf, borderRadius: 28, padding: 24, paddingBottom: 44, borderWidth: 1, borderColor: th.border, borderBottomWidth: 0 },
   reminderHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: th.text4, alignSelf: 'center', marginBottom: 22 },
   reminderSheetTitle: { color: th.text, fontSize: 19, fontWeight: '700', marginBottom: 4 },
   reminderSheetSub: { color: th.text2, fontSize: 13, lineHeight: 18, marginBottom: 20 },
@@ -127,7 +127,7 @@ const makeStyles_ss = (th: Theme) => StyleSheet.create({
   stepBtn2: { width:30, height:24, alignItems:'center', justifyContent:'center', backgroundColor:th.text4, borderRadius:6, borderWidth:1, borderColor:th.border },
   stepTxt2: { color:th.text, fontSize:14, lineHeight:18, fontWeight:'600' },
   reminderSaveBtn: { backgroundColor: th.teal, borderRadius: 13, padding: 15, alignItems: 'center', marginTop: 6 },
-  reminderSaveTxt: { color: '#07111e', fontSize: 15, fontWeight: '700' },
+  reminderSaveTxt: { color: th.id === 'dark' ? '#07111e' : '#fff', fontSize: 15, fontWeight: '700' },
 })
 
 export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onShowPremium, isDark = true, onToggleTheme, th = DARK }: Props) {
@@ -276,7 +276,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
                 <Text style={{ fontSize: 26, flexShrink: 0 }}>🌿</Text>
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: th.text, fontSize: 15, fontWeight: '700', marginBottom: 4 }}>Block Apps & Increase Wellness</Text>
-                  <Text style={{ color: th.text2, fontSize: 12, lineHeight: 18 }}>Shield distracting apps with Screen Time. Breathe to earn your time back.</Text>
+                  <Text style={{ color: th.text2, fontSize: 12, lineHeight: 18 }}>Select apps to limit. Set daily timers in Screen Time. Breathe to earn back access.</Text>
                 </View>
               </View>
               {/* App icon row */}
@@ -306,7 +306,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
                 }}
               >
                 <Text style={{ fontSize: 18 }}>📱</Text>
-                <Text style={{ color: '#07111e', fontSize: 15, fontWeight: '700' }}>Select & Block Apps</Text>
+                <Text style={{ color: th.id === 'dark' ? '#07111e' : '#fff', fontSize: 15, fontWeight: '700' }}>Select & Block Apps</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -319,9 +319,10 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
                   <Text style={[ss.lockedSub, { color: th.text2 }]}>{earned > 0 ? `${earned}m banked · tap to open` : 'Breathe to unlock'}</Text>
                 </View>
                 <TouchableOpacity onPress={async () => {
-                  // Re-open native picker to change selection
                   const r = await ScreenTime.showAppPicker();
-                  if (!r.selected) onUpdate({ ...data, stShieldEnabled: false });
+                  if (r.selected) return; // picker used successfully
+                  // Fallback: show manual picker
+                  setShowManualAppPicker(true);
                 }}>
                   <Text style={{ color: '#4a90d9', fontSize: 12, fontWeight: '600' }}>Manage →</Text>
                 </TouchableOpacity>
@@ -513,7 +514,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
     <Modal visible={showManualAppPicker} transparent animationType="slide" onRequestClose={() => setShowManualAppPicker(false)}>
       <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.75)', justifyContent:'flex-end' }}>
         <TouchableOpacity style={StyleSheet.absoluteFillObject} onPress={() => setShowManualAppPicker(false)} />
-        <View style={{ backgroundColor:'#0d1b36', borderRadius:24, padding:22, paddingBottom:40, borderWidth:1, borderColor:'rgba(255,255,255,0.08)' }}>
+        <View style={{ backgroundColor: th.sheetBg || th.surf, borderRadius:24, padding:22, paddingBottom:40, borderWidth:1, borderColor: th.border }}>
           <View style={{ width:40,height:4,borderRadius:2,backgroundColor:th.text4,alignSelf:'center',marginBottom:18 }}/>
           <Text style={{ color:th.text, fontSize:18, fontWeight:'700', marginBottom:4 }}>Select Apps to Block</Text>
           <Text style={{ color:th.text2, fontSize:13, marginBottom:18, lineHeight:18 }}>Toggle apps to add them to your blocked list.</Text>
@@ -534,7 +535,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
             );
           })}
           <TouchableOpacity onPress={() => setShowManualAppPicker(false)} style={{ backgroundColor:th.teal, borderRadius:12, padding:14, alignItems:'center', marginTop:4 }}>
-            <Text style={{ color:'#07111e', fontSize:15, fontWeight:'700' }}>Done</Text>
+            <Text style={{ color: th.id === 'dark' ? '#07111e' : '#fff', fontSize:15, fontWeight:'700' }}>Done</Text>
           </TouchableOpacity>
         </View>
       </View>

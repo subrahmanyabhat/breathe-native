@@ -270,7 +270,7 @@ export default function App() {
     setSession(null);
   };
 
-  if (!loaded) return <View style={{ flex: 1, backgroundColor: '#06101e' }} />;
+  if (!loaded) return <View style={{ flex: 1, backgroundColor: DARK.bg }} />;
 
   if (showOnboard) return (
     <SafeAreaProvider>
@@ -286,7 +286,7 @@ export default function App() {
     return (
       <SafeAreaProvider>
         <StatusBar barStyle="light-content" />
-        <SessionScreen tech={session.tech} targetApp={session.targetApp} onDone={endSession} onBack={() => setSession(null)} th={DARK} />
+        <SessionScreen tech={session.tech} targetApp={session.targetApp} onDone={endSession} onBack={() => setSession(null)} th={th} />
       </SafeAreaProvider>
     );
   }

@@ -84,6 +84,11 @@ export default function SettingsScreen({ data, onUpdate, th = DARK, isDark = tru
 
         {/* Premium */}
         <Text style={[s.section, { color: th.label }]}>SUBSCRIPTION</Text>
+      {data.premium?.paid && (
+        <View style={{ marginHorizontal: 16, backgroundColor: `${th.teal}15`, borderWidth: 1, borderColor: `${th.teal}40`, borderRadius: 12, padding: 12, marginBottom: 8 }}>
+          <Text style={{ color: th.teal, fontSize: 13, fontWeight: '600', textAlign: 'center' }}>✦ Premium Active — All features unlocked</Text>
+        </View>
+      )}
         <View style={[s.group, { backgroundColor: th.surf, borderColor: th.border }]}>
           <Row
             label="Premium Plan"

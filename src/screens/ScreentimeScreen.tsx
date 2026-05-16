@@ -261,7 +261,7 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPre
     </SafeAreaView>
     <Modal visible={showManualPick} transparent animationType="slide" onRequestClose={()=>setShowManualPick(false)}>
       <View style={{flex:1,backgroundColor:'rgba(0,0,0,0.75)',justifyContent:'flex-end'}}>
-        <View style={{backgroundColor:'#0d1b36',borderRadius:24,padding:24,paddingBottom:40,borderWidth:1,borderColor:'rgba(255,255,255,0.08)'}}>
+        <View style={{backgroundColor:th.sheetBg||th.surf,borderRadius:24,padding:24,paddingBottom:40,borderWidth:1,borderColor:th.border}}>
           <View style={{width:40,height:4,borderRadius:2,backgroundColor:th.text4,alignSelf:'center',marginBottom:20}}/>
           <Text style={{color:th.text,fontSize:19,fontWeight:'700',marginBottom:4}}>Select Apps to Block</Text>
           <Text style={{color:th.text2,fontSize:13,marginBottom:20,lineHeight:18}}>Toggle apps to include them in your Blocked Apps list.</Text>
@@ -282,7 +282,7 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPre
             );
           })}
           <TouchableOpacity onPress={()=>setShowManualPick(false)} style={{backgroundColor:th.teal,borderRadius:13,padding:15,alignItems:'center',marginTop:4}}>
-            <Text style={{color:'#07111e',fontSize:15,fontWeight:'700'}}>Done</Text>
+            <Text style={{color:th.id==='dark'?'#07111e':'#fff',fontSize:15,fontWeight:'700'}}>Done</Text>
           </TouchableOpacity>
         </View>
       </View>

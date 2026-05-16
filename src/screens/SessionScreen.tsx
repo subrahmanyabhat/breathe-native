@@ -44,7 +44,7 @@ const makeStyles_ss = (th: Theme) => StyleSheet.create({
   beginTxt: { color: '#07111e', fontSize: 16, fontWeight: '700', letterSpacing: -0.3 },
   endBtn: { backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: th.border, borderRadius: 50, paddingVertical: 13, paddingHorizontal: 36 },
   endTxt: { color: th.text2, fontSize: 14 },
-  completeCard: { backgroundColor: '#0d1b36', borderRadius: 24, padding: 28, width: '100%', borderWidth: 1, alignItems: 'center' },
+  completeCard: { backgroundColor: th.sheetBg || th.surf, borderRadius: 24, padding: 28, width: '100%', borderWidth: 1, alignItems: 'center' },
   completeTick: { fontSize: 28, marginBottom: 14 },
   completeTitle: { color: th.text, fontSize: 20, fontWeight: '700', marginBottom: 4 },
   completeSub: { fontSize: 13, marginBottom: 20 },
@@ -53,7 +53,7 @@ const makeStyles_ss = (th: Theme) => StyleSheet.create({
   completeStatL: { color: th.label, fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 },
   completeStatV: { fontSize: 22, fontWeight: '700', letterSpacing: -0.5 },
   btn: { width: '100%', borderRadius: 13, paddingVertical: 14, alignItems: 'center' },
-  btnTxt: { fontSize: 15, fontWeight: '700' },
+  btnTxt: { fontSize: 15, fontWeight: '700', color: '#07111e' },
 })
 
 export default function SessionScreen({ tech, targetApp, onDone, onBack, th = DARK }: Props) {
