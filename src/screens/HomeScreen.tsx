@@ -150,7 +150,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
     setShowReminder(false);
   };
   const [selTech, setSelTech] = useState(TECHNIQUES[0]);
-  const [btab, setBtab] = useState<'practice' | 'learn'>('practice');
+  const [btab, setBtab] = useState<'Practice' | 'Learn'>('Practice');
   const [expandedLearn, setExpandedLearn] = useState<string | null>(null);
   const [stStatus, setStStatus] = useState<string>(safeSTStatus);
 
@@ -363,7 +363,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
           <View style={ss.sectionRow}>
             <Text style={ss.sectionLabel}>BREATHING</Text>
             <View style={ss.tabPill}>
-              {(['practice', 'learn'] as const).map(t => (
+              {(['Practice', 'Learn'] as const).map(t => (
                 <TouchableOpacity key={t} onPress={() => setBtab(t)} style={[ss.tabBtn, btab === t ? ss.tabBtnActive : {}]}>
                   <Text style={[ss.tabBtnTxt, btab === t ? ss.tabBtnTxtActive : {}]}>{t}</Text>
                 </TouchableOpacity>
@@ -371,7 +371,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
             </View>
           </View>
 
-          {btab === 'practice' ? (
+          {btab === 'Practice' ? (
             <>
               {/* Technique chips */}
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }} contentContainerStyle={{ gap: 8, paddingRight: 20 }}>
@@ -435,7 +435,7 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
                       <Text style={ss.learnExpandedSec}>HOW TO DO IT</Text>
                       {/* Steps omitted for brevity — rendered from TECHNIQUE_INFO in practice */}
                       <Text style={{ color: th.text2, fontSize: 13, lineHeight: 20 }}>{t.desc}</Text>
-                      <TouchableOpacity style={[ss.startBtn, { backgroundColor: t.accent, marginTop: 14 }]} onPress={() => { setSelTech(t); setBtab('practice'); }}>
+                      <TouchableOpacity style={[ss.startBtn, { backgroundColor: t.accent, marginTop: 14 }]} onPress={() => { setSelTech(t); setBtab('Practice'); }}>
                         <Text style={[ss.startBtnTxt, { color: '#07111e' }]}>start {t.name} →</Text>
                       </TouchableOpacity>
                     </View>

@@ -135,7 +135,7 @@ export default function SessionScreen({ tech, targetApp, onDone, onBack, th = DA
           <Text style={ss.completeTitle}>session complete</Text>
           <Text style={[ss.completeSub, { color: 'rgba(255,255,255,0.5)' }]}>{tech.name}</Text>
           <View style={ss.completeRow}>
-            {[{ l: 'cycles', v: String(cycles) }, { l: 'minutes', v: String(sessMin) }, { l: 'earned', v: `+${earned}m`, hi: true }].map(s => (
+            {[{ l: 'Cycles', v: String(cycles) }, { l: 'Minutes', v: String(sessMin) }, { l: 'Earned', v: `+${earned}m`, hi: true }].map(s => (
               <View key={s.l} style={[ss.completeStat, { borderColor: th.border }]}>
                 <Text style={ss.completeStatL}>{s.l}</Text>
                 <Text style={[ss.completeStatV, { color: s.hi ? tech.accent : th.text }]}>{s.v}</Text>
