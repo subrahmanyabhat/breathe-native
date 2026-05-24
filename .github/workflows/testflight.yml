@@ -90,44 +90,13 @@ jobs:
             -authenticationKeyID "${ASC_KEY_ID}" \
             -authenticationKeyIssuerID "${ASC_ISSUER_ID}"
 
-      - name: Export IPA
+      - name: Package IPA from archive
         run: |
-          cat > /tmp/ExportOptions.plist << 'PLIST'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>app-store</string>
-            <key>teamID</key>
-            <string>PT83LJRA65</string>
-            <key>compileBitcode</key>
-            <false/>
-            <key>signingStyle</key>
-            <string>manual</string>
-            <key>signingCertificate</key>
-            <string>iPhone Distribution</string>
-            <key>provisioningProfiles</key>
-            <dict>
-              <key>com.breathex.app</key>
-              <string>iOS Team Store Provisioning Profile: com.breathex.app</string>
-              <key>com.breathex.app.monitor</key>
-              <string>iOS Team Store Provisioning Profile: com.breathex.app.monitor</string>
-              <key>com.breathex.app.shield</key>
-              <string>iOS Team Store Provisioning Profile: com.breathex.app.shield</string>
-              <key>com.breathex.app.shieldaction</key>
-              <string>iOS Team Store Provisioning Profile: com.breathex.app.shieldaction</string>
-            </dict>
-            <key>uploadSymbols</key>
-            <true/>
-          </dict>
-          </plist>
-          PLIST
-
-          xcodebuild -exportArchive \
-            -archivePath ios/build/Breathe.xcarchive \
-            -exportOptionsPlist /tmp/ExportOptions.plist \
-            -exportPath ios/build/IPA
+          APP_PATH=$(find ios/build/Breathe.xcarchive/Products -name "*.app" | head -1)
+          mkdir -p ios/build/IPA/Payload
+          cp -r "$APP_PATH" ios/build/IPA/Payload/
+          cd ios/build/IPA && zip -qr Breathe.ipa Payload/
+          echo "IPA size: $(du -sh Breathe.ipa | cut -f1)"
 
       - name: Upload to TestFlight
         env:
