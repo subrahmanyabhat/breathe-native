@@ -786,6 +786,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C6F260DEA7B98813983ABC06 /* Pods-Breathe.release.xcconfig */;
 			buildSettings = {
+					CODE_SIGN_IDENTITY = "iPhone Distribution";
+					CODE_SIGN_STYLE = Manual;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Breathe/Breathe.entitlements;
@@ -805,6 +807,7 @@
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.breathex.app;
+					PROVISIONING_PROFILE = "ca71245d-76e6-4e84-a7e4-4585b14f0c12";
 				PRODUCT_NAME = Breathe;
 				SWIFT_OBJC_BRIDGING_HEADER = "Breathe/Breathe-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -839,13 +842,15 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = BreatheShield/BreatheShield.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+					CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = PT83LJRA65;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = BreatheShield/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.breathex.app.shield;
+					PROVISIONING_PROFILE = "c2d8e718-e9b0-4c63-99d9-5aedb2c17b7e";
 				PRODUCT_NAME = BreatheShield;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -861,13 +866,15 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = BreatheMonitor/BreatheMonitor.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+					CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = PT83LJRA65;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = BreatheMonitor/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.breathex.app.monitor;
+					PROVISIONING_PROFILE = "0e28dd2d-4c0f-4583-bea3-fe5fcd429c78";
 				PRODUCT_NAME = BreatheMonitor;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1067,13 +1074,15 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = BreatheShieldAction/BreatheShieldAction.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+					CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = PT83LJRA65;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = BreatheShieldAction/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.breathex.app.shieldaction;
+					PROVISIONING_PROFILE = "bce1d8bb-cd61-4e3a-9fb0-3822634fad2e";
 				PRODUCT_NAME = BreatheShieldAction;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
