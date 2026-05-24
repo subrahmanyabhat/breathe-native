@@ -25,6 +25,12 @@ jobs:
       - name: Install CocoaPods dependencies
         run: pod install --project-directory=ios
 
+      - name: Set build number
+        run: |
+          BUILD_NUMBER=$(( ${{ github.run_number }} + 100 ))
+          sed -i '' "s/CURRENT_PROJECT_VERSION = [0-9]*/CURRENT_PROJECT_VERSION = ${BUILD_NUMBER}/" \
+            ios/Breathe.xcodeproj/project.pbxproj
+
       - name: Patch ExpoModulesCore xcconfig
         run: |
           FILE="ios/Pods/Target Support Files/ExpoModulesCore/ExpoModulesCore.release.xcconfig"
