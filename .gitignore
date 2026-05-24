@@ -1,1 +1,10 @@
 node_modules/
+.DS_Store
+.expo/
+credentials/
+credentials.json
+ios/Pods/
+ios/build/
+CLAUDE_CONTEXT.md
+ONBOARDING.md
+docs/

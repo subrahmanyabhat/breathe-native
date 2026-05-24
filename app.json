@@ -12,6 +12,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.breathex.app",
+      "appleTeamId": "PT83LJRA65",
       "supportsTablet": false,
       "infoPlist": {
         "NSFaceIDUsageDescription": "Used for Screen Time authentication",

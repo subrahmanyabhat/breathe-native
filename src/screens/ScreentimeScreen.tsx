@@ -1,293 +1,315 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Linking, Switch, Modal, Platform } from 'react-native';
-import { applyScreenTimeLimit } from '../notifications';
-import { AppData, fmtHHMM } from '../storage';
-import { APPS, TECHNIQUES, Technique } from '../data';
+import { LinearGradient } from 'expo-linear-gradient';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Linking, Platform, AppState } from 'react-native';
+import { AppData, last7 } from '../storage';
+import { TECHNIQUES, Technique } from '../data';
 import { DARK, Theme } from '../theme';
+import { AppTokenView, scheduleSlotMonitoring, stopSlotMonitoring } from '../../modules/screen-time';
 
 const safeSTStatus = () => { try { return require('../../modules/screen-time').getAuthorizationStatus(); } catch { return 'unavailable'; } };
 const doAuth     = async () => { try { return await require('../../modules/screen-time').requestAuthorization(); } catch { return { authorized: false }; } };
-const doPick     = async () => { try { return await require('../../modules/screen-time').showAppPicker(); } catch { return { selected: false, appCount: 0 }; } };
-const doShield   = async () => { try { return await require('../../modules/screen-time').shieldApps(); } catch { return { success: false, error: 'Native module unavailable in managed build' }; } };
 const doUnshield = async () => { try { return await require('../../modules/screen-time').unshieldApps(); } catch { return { success: false }; } };
 
-const STEPS = [5,10,15,20,30,45,60,90,120];
-const nextStep = (v: number, dir: number) => { const i = STEPS.indexOf(v); return STEPS[Math.max(0, Math.min(STEPS.length-1, (i<0?2:i)+dir))]; };
-const EMOJIS: Record<string,string> = { instagram:'📸', tiktok:'🎵', youtube:'▶️', twitter:'𝕏' };
+const STEPS = [5, 10, 15, 20, 30, 45, 60, 90, 120];
+const nextStep = (v: number, dir: number) => {
+  const i = STEPS.indexOf(v);
+  return STEPS[Math.max(0, Math.min(STEPS.length - 1, (i < 0 ? 2 : i) + dir))];
+};
 
-interface Props { data: AppData; onUpdate:(d:AppData)=>void; onStartSession:(t:Technique,app?:string)=>void; isPrem?:boolean; onShowPremium?:()=>void; th?: Theme; }
+interface Props {
+  data: AppData;
+  onUpdate: (d: AppData) => void;
+  onStartSession: (t: Technique, app?: string) => void;
+  isPrem?: boolean;
+  onShowPremium?: () => void;
+  th?: Theme;
+  onPickApps?: () => void;
+}
 
-
-const makeStyles_s = (th: Theme) => StyleSheet.create({
-  root:{flex:1,backgroundColor:th.bg},
-  h1:{color:th.text,fontSize:24,fontWeight:'700',marginBottom:8,textAlign:'center'},
-  sub:{color:th.text2,fontSize:14,textAlign:'center',lineHeight:21},
-  onbIcon:{width:80,height:80,borderRadius:24,backgroundColor:'rgba(220,60,60,0.15)',borderWidth:1,borderColor:'rgba(220,60,60,0.3)',alignItems:'center',justifyContent:'center',marginBottom:16},
-  onbStep:{flexDirection:'row',gap:14,marginBottom:12,backgroundColor:th.surf,borderRadius:14,padding:16,borderWidth:1,borderColor:th.border},
-  badge:{width:28,height:28,borderRadius:14,backgroundColor:th.text4,borderWidth:1,borderColor:th.border,alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:2},
-  badgeTxt:{color:th.label,fontSize:10,fontWeight:'700'},
-  stepTitle:{color:th.text,fontSize:14,fontWeight:'600',marginBottom:4},
-  stepDesc:{color:th.text2,fontSize:12,lineHeight:18,marginBottom:10},
-  tealBtn:{backgroundColor:`${th.teal}22`,borderWidth:1,borderColor:`${th.teal}55`,borderRadius:10,paddingHorizontal:14,paddingVertical:9,alignSelf:'flex-start'},
-  tealBtnTxt:{color:th.teal,fontSize:13,fontWeight:'600'},
-  yearCard:{backgroundColor:'rgba(232,162,60,0.08)',borderWidth:1,borderColor:'rgba(232,162,60,0.2)',borderRadius:14,padding:18,marginTop:8},
-  yearLabel:{color:'rgba(232,162,60,0.7)',fontSize:9,letterSpacing:1.8,textTransform:'uppercase',marginBottom:6},
-  yearBig:{color:'#e8a23c',fontSize:32,fontWeight:'300',marginBottom:2},
-  yearSub:{color:'rgba(232,162,60,0.55)',fontSize:12,lineHeight:18},
-  // blocked
-  blockedCard:{backgroundColor:'#0d1520',borderRadius:20,padding:18,marginBottom:14,borderWidth:1,borderColor:'rgba(220,60,60,0.22)'},
-  blockedTop:{flexDirection:'row',alignItems:'center',marginBottom:16},
-  lockBox:{width:44,height:44,borderRadius:12,backgroundColor:'rgba(220,60,60,0.22)',borderWidth:1,borderColor:'rgba(220,60,60,0.4)',alignItems:'center',justifyContent:'center'},
-  blockedTitle:{color:'#fff',fontSize:17,fontWeight:'700'},
-  blockedSub:{color:'rgba(255,255,255,0.45)',fontSize:12,marginTop:1},
-  recDot:{width:10,height:10,borderRadius:5,backgroundColor:'#cc2200'},
-  blockedMeta:{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginBottom:10},
-  blockedMetaL:{color:'rgba(255,255,255,0.55)',fontSize:13,fontWeight:'500'},
-  manageBtn:{color:'#4a90d9',fontSize:13,fontWeight:'600'},
-  appPill:{flexDirection:'row',alignItems:'center',gap:6,backgroundColor:'rgba(200,50,50,0.20)',borderWidth:1,borderColor:'rgba(200,50,50,0.38)',borderRadius:20,paddingHorizontal:12,paddingVertical:8},
-  pillTxt:{color:'rgba(255,255,255,0.88)',fontSize:13,fontWeight:'500'},
-  breatheBtn:{flexDirection:'row',alignItems:'center',backgroundColor:'#2563eb',borderRadius:14,padding:16,gap:12},
-  breatheTitle:{color:'#fff',fontSize:16,fontWeight:'700'},
-  breatheSub:{color:'rgba(255,255,255,0.65)',fontSize:12},
-  timerBadge:{flexDirection:'row',alignItems:'center',gap:3,backgroundColor:'rgba(255,255,255,0.18)',borderRadius:10,paddingHorizontal:8,paddingVertical:4},
-  timerTxt:{color:'#fff',fontSize:12,fontWeight:'600'},
-  // pool
-  poolCard:{backgroundColor:'rgba(164,142,232,0.1)',borderWidth:1,borderColor:'rgba(164,142,232,0.22)',borderRadius:14,padding:18,marginBottom:14},
-  poolL:{color:'rgba(164,142,232,0.7)',fontSize:9,letterSpacing:2,textTransform:'uppercase',marginBottom:6},
-  poolN:{color:'#a48ee8',fontSize:36,fontWeight:'300',marginBottom:4},
-  poolS:{color:'rgba(164,142,232,0.6)',fontSize:12},
-  // spend rows
-  spendRow:{flexDirection:'row',gap:12,backgroundColor:th.surf,borderRadius:13,padding:14,marginBottom:10,borderWidth:1,borderColor:th.border},
-  dot:{width:36,height:36,borderRadius:9,alignItems:'center',justifyContent:'center',flexShrink:0},
-  dotTxt:{color:'rgba(255,255,255,0.92)',fontSize:10,fontWeight:'700'},
-  spendName:{color:th.text,fontSize:14,fontWeight:'500'},
-  spendBtn:{borderRadius:8,paddingHorizontal:10,paddingVertical:6,borderWidth:1},
-  spendBtnTxt:{fontSize:12,fontWeight:'600'},
-  // setup
-  authBanner:{flexDirection:'row',alignItems:'center',borderWidth:1,borderRadius:13,padding:13,marginBottom:14},
-  blockBtn:{flexDirection:'row',alignItems:'center',justifyContent:'center',gap:8,backgroundColor:'rgba(220,60,60,0.15)',borderWidth:1,borderColor:'rgba(220,60,60,0.35)',borderRadius:14,padding:16,marginBottom:8},
-  blockBtnTxt:{color:'#e05555',fontSize:15,fontWeight:'700'},
-  limCard:{backgroundColor:th.surf,borderWidth:1,borderColor:th.border,borderRadius:13,overflow:'hidden'},
-  limHead:{flexDirection:'row',alignItems:'center',padding:13,paddingHorizontal:15},
-  limRow:{flexDirection:'row',alignItems:'center',gap:8,padding:9,paddingHorizontal:15,backgroundColor:th.text4,borderTopWidth:1,borderTopColor:th.border},
-  stepBtn:{width:26,height:26,borderRadius:13,backgroundColor:th.surf,borderWidth:1,borderColor:th.border,alignItems:'center',justifyContent:'center'},
-  stepTxt:{color:th.text,fontSize:15,lineHeight:18},
-  limVal:{color:th.text,fontSize:14,fontWeight:'700',minWidth:32,textAlign:'center'},
-  applyBtn:{marginLeft:'auto' as any,backgroundColor:`${th.teal}18`,borderWidth:1,borderColor:`${th.teal}44`,borderRadius:8,paddingHorizontal:10,paddingVertical:5},
-  applyTxt:{color:th.teal,fontSize:11,fontWeight:'600'},
-})
-
-export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPrem, onShowPremium, th = DARK }: Props) {
-  const s = makeStyles_s(th);
-  const [status,  setStatus]  = useState(safeSTStatus);
+export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPrem, onShowPremium, th = DARK, onPickApps }: Props) {
+  const [status, setStatus] = useState(safeSTStatus);
   const [loading, setLoading] = useState(false);
-  const isAuth   = status === 'approved';
-  const isShield = !!data.stShieldEnabled;
-  const earned   = data.earnedMin || 0;
-  const ae = data.appEarned  || {};
-  const al = data.appLimits  || {};
-  const en = data.appEnabled || {};
-  const blocked = APPS.filter(a => en[a.id]);
+  const [now, setNow] = useState(Date.now());
+  const [slots, setSlots] = useState<{ index: number; name: string; bundleId: string; iconBase64: string; isBlocked: boolean; hashKey: string }[]>(
+    (data?.slots || []).map(s => ({ ...s, iconBase64: '' }))
+  );
+
+  useEffect(() => {
+    if (!data || typeof data !== 'object') return;
+    const ST = require('../../modules/screen-time');
+    ST.getSlotInfo().then((info: any) => {
+      setSlots((info?.slots || []).map((s: any) => ({ ...s, iconBase64: '' })));
+    }).catch(() => {});
+  }, [data?.slots?.length, data?.stShieldEnabled, data?.nativeAppCount, data?.slotsVersion]);
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 10000);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', state => {
+      if (state !== 'active') return;
+      const ST = require('../../modules/screen-time');
+      ST.getSlotInfo().then((info: any) => {
+        setSlots((info?.slots || []).map((s: any) => ({ ...s, iconBase64: '' })));
+      }).catch(() => {});
+    });
+    return () => sub.remove();
+  }, [data]);
+
+  const isAuth = status === 'approved';
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const earned = (data?.sessions || []).filter(s => s.date === todayKey).reduce((sum, s) => sum + (s.duration || 0), 0);
+  const totalAppCount = slots.length;
+  const chart = last7(data?.sessions || []);
+  const maxEarned = Math.max(...chart.map(d => d.earned), 1);
+
+  if (!data) return null;
 
   const reqAuth = async () => {
     setLoading(true);
     const r = await doAuth() as any;
-    if (r.authorized) { setStatus('approved'); Alert.alert('Authorized', 'Now pick which apps to block.'); }
-    else Alert.alert('Denied', 'Grant access in Settings.', [{text:'Open Settings',onPress:()=>Linking.openURL('App-Prefs:root=SCREENTIME')},{text:'Cancel',style:'cancel'}]);
+    if (r.authorized) setStatus('approved');
+    else Alert.alert('Screen Time Required', 'Grant access in Settings → Screen Time → Family Controls.', [
+      { text: 'Open Settings', onPress: () => Linking.openSettings() },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
     setLoading(false);
   };
-  const [showManualPick, setShowManualPick] = useState(false);
-  const pickApps = async () => {
-    if (!isAuth){await reqAuth();return;}
-    const r=await doPick() as any;
-    if(r.selected) Alert.alert(`${r.appCount} apps selected`,'Tap Block Apps to activate.');
-    else setShowManualPick(true); // fallback: show manual toggle UI
-  };
-  const shieldAll = async () => {
-    if (!isAuth){await reqAuth();return;}
-    setLoading(true);
-    const r = await doShield() as any;
-    if (r.success) onUpdate({...data,stShieldEnabled:true});
-    else Alert.alert('Could not block',(r.error||'Pick apps first (step 2).'),[{text:'OK'}]);
-    setLoading(false);
-  };
-  const unshieldAll = async () => { setLoading(true); const r=await doUnshield() as any; if(r.success) onUpdate({...data,stShieldEnabled:false}); setLoading(false); };
-  const spend = (id:string,m:number) => { const a={...ae}; if((a[id]||0)>=m){a[id]=(a[id]||0)-m; onUpdate({...data,appEarned:a,spentMin:(data.spentMin||0)+m});} };
 
-  // Auth status — shown as inline banner, not a gate
-
-  // ─── APPS BLOCKED (matches screenshot) ────────────────────────────────────
-  if (isShield) return (
-    <SafeAreaView style={s.root} edges={["top","bottom"]}>
-      <ScrollView contentContainerStyle={{padding:20,paddingBottom:48}}>
-        <View style={s.blockedCard}>
-          <View style={s.blockedTop}>
-            <View style={s.lockBox}><Text style={{fontSize:20}}>🔒</Text></View>
-            <View style={{flex:1,marginLeft:12}}>
-              <Text style={s.blockedTitle}>Apps Blocked</Text>
-              <Text style={s.blockedSub}>Complete a breathing session to unlock</Text>
+  const renderLimitSection = (
+    lim: number,
+    isMonitored: boolean,
+    isBlocked: boolean,
+    onChangeLim: (v: number) => void,
+    onActivate: () => void,
+    onBreathe: () => void,
+    onStop: () => void,
+    activatedAt: number,
+  ) => {
+    const elapsed = (isMonitored && activatedAt) ? Math.round((now - activatedAt) / 60000) : 0;
+    const pct = lim > 0 ? Math.min(1, elapsed / lim) : 0;
+    const danger = pct >= 0.8;
+    return (
+      <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: th.border }}>
+        {isMonitored && !isBlocked && activatedAt > 0 && (
+          <View style={{ marginBottom: 10 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
+              <Text style={{ color: th.text2, fontSize: 11 }}>Screen time today</Text>
+              <Text style={{ color: danger ? '#e05555' : th.teal, fontSize: 11, fontWeight: '600' }}>{elapsed}m / {lim}m</Text>
             </View>
-            <View style={s.recDot}/>
-          </View>
-          <View style={s.blockedMeta}>
-            <Text style={s.blockedMetaL}>Blocked Apps</Text>
-            <TouchableOpacity onPress={unshieldAll}><Text style={s.manageBtn}>Manage →</Text></TouchableOpacity>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginBottom:16}} contentContainerStyle={{gap:8}}>
-            {blocked.length===0
-              ? <Text style={{color:th.label,fontSize:13}}>No apps selected — tap Manage</Text>
-              : blocked.map(app=>(
-                <View key={app.id} style={s.appPill}>
-                  <Text style={{fontSize:15}}>{EMOJIS[app.id]||'📱'}</Text>
-                  <Text style={s.pillTxt}>{app.name}</Text>
-                  <Text style={{fontSize:12}}>🔒</Text>
-                </View>
-              ))
-            }
-          </ScrollView>
-          <TouchableOpacity style={s.breatheBtn} onPress={()=>onStartSession(TECHNIQUES[0])}>
-            <Text style={{fontSize:22}}>⚡</Text>
-            <View style={{flex:1}}>
-              <Text style={s.breatheTitle}>Breathe to Unlock Apps</Text>
-              <Text style={s.breatheSub}>1 min breathing = 10 min screen</Text>
-            </View>
-            <View style={s.timerBadge}>
-              <Text style={{fontSize:11}}>⏱</Text>
-              <Text style={s.timerTxt}>{earned}m banked</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        <View style={s.poolCard}>
-          <Text style={s.poolL}>SCREENTIME BANK</Text>
-          <Text style={s.poolN}>{fmtHHMM(earned)}</Text>
-          <Text style={s.poolS}>minutes earned · 1 min breathing = 10 min screen</Text>
-        </View>
-
-        {blocked.map(app=>(
-          <View key={app.id} style={s.spendRow}>
-            <View style={[s.dot,{backgroundColor:app.color}]}><Text style={s.dotTxt}>{app.initials}</Text></View>
-            <View style={{flex:1}}>
-              <Text style={s.spendName}>{app.name}  <Text style={{color:th.label,fontSize:11}}>{ae[app.id]||0}m earned</Text></Text>
-              <View style={{flexDirection:'row',gap:6,marginTop:6}}>
-                {[10,20,30].map(m=>(
-                  <TouchableOpacity key={m} onPress={()=>spend(app.id,m)} style={[s.spendBtn,{opacity:(ae[app.id]||0)>=m?1:0.3,backgroundColor:(ae[app.id]||0)>=m?'rgba(164,142,232,0.12)':th.text4,borderColor:(ae[app.id]||0)>=m?'rgba(164,142,232,0.3)':th.border}]}>
-                    <Text style={[s.spendBtnTxt,{color:(ae[app.id]||0)>=m?'#a48ee8':th.label}]}>use {m}m</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+            <View style={{ height: 4, backgroundColor: th.border, borderRadius: 2 }}>
+              <View style={{ width: `${pct * 100}%` as any, height: '100%' as any, backgroundColor: danger ? '#e05555' : th.teal, borderRadius: 2 }} />
             </View>
           </View>
-        ))}
-      </ScrollView>
-    </SafeAreaView>
-  );
-
-  // ─── SETUP VIEW ───────────────────────────────────────────────────────────
-  return (
-    <>
-    <SafeAreaView style={s.root} edges={["top","bottom"]}>
-      <ScrollView contentContainerStyle={{padding:20,paddingBottom:48}}>
-
-        {Platform.OS === 'android' ? (
-          /* Android: Digital Wellbeing setup card */
-          <View style={[s.authBanner,{borderColor:'rgba(100,200,100,0.3)',backgroundColor:'rgba(100,200,100,0.06)',marginBottom:14}]}>
-            <Text style={{fontSize:16}}>🤖</Text>
-            <View style={{flex:1,marginLeft:10}}>
-              <Text style={{color:'#6fc96f',fontSize:13,fontWeight:'600'}}>Android — Digital Wellbeing</Text>
-              <Text style={{color:th.text2,fontSize:11,marginTop:1}}>Set app timers in Digital Wellbeing settings</Text>
-            </View>
-            <TouchableOpacity onPress={()=>Linking.openURL('intent://settings#Intent;scheme=android.settings;action=android.settings.ACTION_DIGITAL_WELLBEING_SETTINGS;end')} style={{backgroundColor:'rgba(100,200,100,0.15)',borderRadius:8,padding:6,paddingHorizontal:10}}>
-              <Text style={{color:'#6fc96f',fontSize:12,fontWeight:'600'}}>Open →</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          /* iOS: Screen Time auth banner */
-          <TouchableOpacity onPress={reqAuth} style={[s.authBanner,{borderColor:isAuth?'rgba(79,205,216,0.3)':'rgba(232,162,60,0.3)',backgroundColor:isAuth?'rgba(79,205,216,0.08)':'rgba(232,162,60,0.08)'}]}>
-            <Text style={{fontSize:16}}>{isAuth?'✓':'⚠️'}</Text>
-            <View style={{flex:1,marginLeft:10}}>
-              <Text style={{color:isAuth?th.teal:'#e8a23c',fontSize:13,fontWeight:'600'}}>
-                {isAuth?'Screen Time Authorized':'Screen Time Not Authorized'}
-              </Text>
-              <Text style={{color:th.text2,fontSize:11,marginTop:1}}>
-                {isAuth?'Native blocking active':'Tap to request permission → enables real app blocking'}
-              </Text>
-            </View>
-          </TouchableOpacity>
         )}
-
-        <View style={s.poolCard}>
-          <Text style={s.poolL}>POOL BALANCE</Text>
-          <Text style={s.poolN}>{fmtHHMM(earned)}</Text>
-          <Text style={s.poolS}>1 min breathing = 10 min screen</Text>
-        </View>
-        <TouchableOpacity style={[s.tealBtn,{marginBottom:10,alignSelf:'stretch',alignItems:'center'}]} onPress={()=>setShowManualPick(true)}><Text style={s.tealBtnTxt}>⚙  Select Apps to Block</Text></TouchableOpacity>
-        <TouchableOpacity style={s.blockBtn} onPress={shieldAll} disabled={loading}>
-          <Text style={{fontSize:20}}>🔒</Text>
-          <Text style={s.blockBtnTxt}>{loading?'Blocking…':'Block Apps Now'}</Text>
-        </TouchableOpacity>
-        <Text style={[s.poolL,{marginBottom:12,marginTop:20}]}>APP LIMITS</Text>
-        {APPS.map(app=>{
-          const on=!!en[app.id]; const lim=al[app.id]||app.limit;
-          return (
-            <View key={app.id} style={[s.limCard,{marginBottom:10,opacity:on?1:0.6}]}>
-              <View style={s.limHead}>
-                <View style={[s.dot,{backgroundColor:app.color}]}><Text style={s.dotTxt}>{app.initials}</Text></View>
-                <View style={{flex:1,marginLeft:10}}>
-                  <Text style={s.spendName}>{app.name}</Text>
-                  <Text style={{color:th.text2,fontSize:12}}>block after {lim}m/day</Text>
-                </View>
-                <Switch value={on} onValueChange={()=>onUpdate({...data,appEnabled:{...en,[app.id]:!on}})} trackColor={{true:th.teal,false:th.text4}} thumbColor="#fff"/>
-              </View>
-              {on&&(
-                <View style={s.limRow}>
-                  <TouchableOpacity style={s.stepBtn} onPress={()=>onUpdate({...data,appLimits:{...al,[app.id]:nextStep(lim,-1)}})}><Text style={s.stepTxt}>−</Text></TouchableOpacity>
-                  <Text style={s.limVal}>{lim}m</Text>
-                  <TouchableOpacity style={s.stepBtn} onPress={()=>onUpdate({...data,appLimits:{...al,[app.id]:nextStep(lim,+1)}})}><Text style={s.stepTxt}>+</Text></TouchableOpacity>
-                  <TouchableOpacity style={s.applyBtn} onPress={async()=>{
-                    const result = await applyScreenTimeLimit(app.id, lim);
-                    if(result==='applied') Alert.alert('✓ Limit Applied',`${app.name} blocked after ${lim} min/day via Screen Time.`);
-                    else Alert.alert('Opening Screen Time','Set the limit manually:\n1. App Limits → Add Limit\n2. Search: '+app.name+'\n3. Set '+lim+' min\n4. Enable "Block at End of Limit"');
-                  }}>
-                    <Text style={s.applyTxt}>{Platform.OS==='android'?'Digital Wellbeing →':'Apply to iPhone →'}</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-          );
-        })}
-      </ScrollView>
-    </SafeAreaView>
-    <Modal visible={showManualPick} transparent animationType="slide" onRequestClose={()=>setShowManualPick(false)}>
-      <View style={{flex:1,backgroundColor:'rgba(0,0,0,0.75)',justifyContent:'flex-end'}}>
-        <View style={{backgroundColor:th.sheetBg||th.surf,borderRadius:24,padding:24,paddingBottom:40,borderWidth:1,borderColor:th.border}}>
-          <View style={{width:40,height:4,borderRadius:2,backgroundColor:th.text4,alignSelf:'center',marginBottom:20}}/>
-          <Text style={{color:th.text,fontSize:19,fontWeight:'700',marginBottom:4}}>Select Apps to Block</Text>
-          <Text style={{color:th.text2,fontSize:13,marginBottom:20,lineHeight:18}}>Toggle apps to include them in your Blocked Apps list.</Text>
-          {APPS.map(app=>{
-            const on=!!en[app.id];
-            return(
-              <TouchableOpacity key={app.id} onPress={()=>onUpdate({...data,appEnabled:{...en,[app.id]:!on}})}
-                style={{flexDirection:'row',alignItems:'center',gap:14,backgroundColor:on?`${app.color}18`:th.text4,borderWidth:1,borderColor:on?`${app.color}55`:th.border,borderRadius:14,padding:14,marginBottom:10}}>
-                <View style={{width:42,height:42,borderRadius:11,backgroundColor:app.color,alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                  <Text style={{color:'rgba(255,255,255,0.92)',fontSize:12,fontWeight:'700'}}>{app.initials}</Text>
-                </View>
-                <View style={{flex:1}}>
-                  <Text style={{color:th.text,fontSize:15,fontWeight:'600'}}>{app.name}</Text>
-                  <Text style={{color:th.text2,fontSize:12}}>{on?'will be blocked':'not tracked'}</Text>
-                </View>
-                <Switch value={on} onValueChange={()=>onUpdate({...data,appEnabled:{...en,[app.id]:!on}})} trackColor={{true:th.teal,false:th.text4}} thumbColor="#fff"/>
-              </TouchableOpacity>
-            );
-          })}
-          <TouchableOpacity onPress={()=>setShowManualPick(false)} style={{backgroundColor:th.teal,borderRadius:13,padding:15,alignItems:'center',marginTop:4}}>
-            <Text style={{color:th.id==='dark'?'#07111e':'#fff',fontSize:15,fontWeight:'700'}}>Done</Text>
+        {isBlocked && (
+          <View style={{ marginBottom: 10, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#e05555' }} />
+            <Text style={{ color: '#e05555', fontSize: 11, fontWeight: '600' }}>Blocked · limit reached</Text>
+          </View>
+        )}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Text style={{ color: th.text2, fontSize: 12 }}>Block after</Text>
+          <TouchableOpacity style={[ss.stepBtn, { borderColor: th.border, backgroundColor: th.bg }]} onPress={() => onChangeLim(nextStep(lim, -1))}>
+            <Text style={[ss.stepTxt, { color: th.text }]}>−</Text>
           </TouchableOpacity>
+          <Text style={{ color: th.text, fontSize: 15, fontWeight: '700', minWidth: 40, textAlign: 'center' }}>{lim}m</Text>
+          <TouchableOpacity style={[ss.stepBtn, { borderColor: th.border, backgroundColor: th.bg }]} onPress={() => onChangeLim(nextStep(lim, +1))}>
+            <Text style={[ss.stepTxt, { color: th.text }]}>+</Text>
+          </TouchableOpacity>
+          <Text style={{ color: th.label, fontSize: 11, flex: 1 }}>per day</Text>
+          {isBlocked ? (
+            <TouchableOpacity onPress={onBreathe}
+              style={[ss.actionBtn, { backgroundColor: `${th.teal}18`, borderColor: `${th.teal}55` }]}>
+              <Ionicons name="flash" size={13} color={th.teal} />
+              <Text style={[ss.actionTxt, { color: th.teal }]}>Breathe</Text>
+            </TouchableOpacity>
+          ) : isMonitored ? (
+            <TouchableOpacity onPress={onStop}
+              style={[ss.actionBtn, { backgroundColor: th.surf, borderColor: th.border }]}>
+              <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: th.teal }} />
+              <Text style={[ss.actionTxt, { color: th.teal }]}>Stop</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity onPress={onActivate}
+              style={[ss.actionBtn, { backgroundColor: `${th.teal}18`, borderColor: `${th.teal}55` }]}>
+              <Text style={[ss.actionTxt, { color: th.teal }]}>Activate</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
-    </Modal>
-    </>
+    );
+  };
+
+  const ss = styles(th);
+
+  return (
+    <View style={{ flex: 1, backgroundColor: th.bg }}>
+      <LinearGradient
+        colors={[`${th.teal}20`, `${th.teal}00`]}
+        locations={[0, 1]}
+        style={[StyleSheet.absoluteFillObject, { height: 300 }]}
+        pointerEvents="none"
+      />
+
+      <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60, paddingTop: 8 }}>
+
+          {/* Header */}
+          <View style={ss.header}>
+            <Text style={[ss.title, { color: th.text }]}>Screen Time</Text>
+          </View>
+
+          {/* This week chart */}
+          <View style={[ss.card, { marginHorizontal: 16 }]}>
+            <Text style={[ss.sectionLabel, { color: th.label, marginBottom: 14 }]}>BREATHING THIS WEEK</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 6, height: 60 }}>
+              {chart.map((d, i) => (
+                <View key={i} style={{ flex: 1, alignItems: 'center' }}>
+                  <View style={{ width: '100%', borderRadius: 4, minHeight: 4, height: Math.max(4, (d.earned / maxEarned) * 52), backgroundColor: d.isToday ? th.teal : `${th.teal}50` }} />
+                  <Text style={{ fontSize: 9, marginTop: 5, fontWeight: '500', color: d.isToday ? th.teal : th.label }}>{d.label}</Text>
+                </View>
+              ))}
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
+              <Text style={{ color: th.text2, fontSize: 12 }}>{chart.reduce((a, d) => a + d.minutes, 0)} min breathed</Text>
+              <Text style={{ color: th.teal, fontSize: 12, fontWeight: '600' }}>{chart.reduce((a, d) => a + d.earned, 0)}m earned</Text>
+            </View>
+          </View>
+
+          {/* Today + Breathe Now */}
+          <View style={[ss.card, { marginHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 16 }]}>
+            <View style={{ flex: 1 }}>
+              <Text style={[ss.sectionLabel, { color: `rgba(164,142,232,0.65)` }]}>BREATHED TODAY</Text>
+              <Text style={{ color: '#a48ee8', fontSize: 30, fontWeight: '300', marginTop: 6, letterSpacing: -1 }}>{earned}m</Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => onStartSession(TECHNIQUES[0])}
+              style={{ backgroundColor: `${th.teal}18`, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 12, borderWidth: 1, borderColor: `${th.teal}44`, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Ionicons name="flash" size={16} color={th.teal} />
+              <Text style={{ color: th.teal, fontSize: 14, fontWeight: '700' }}>Breathe Now</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Auth banner */}
+          {Platform.OS === 'ios' && !isAuth && (
+            <TouchableOpacity onPress={reqAuth}
+              style={[ss.card, { marginHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(232,162,60,0.08)', borderColor: 'rgba(232,162,60,0.25)', opacity: loading ? 0.6 : 1 }]}>
+              <Ionicons name="warning-outline" size={20} color="#e8a23c" />
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: '#e8a23c', fontSize: 13, fontWeight: '600' }}>Screen Time Not Authorized</Text>
+                <Text style={{ color: th.text2, fontSize: 11, marginTop: 2 }}>Tap to enable app blocking</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+
+          {/* Apps section */}
+          <View style={{ marginHorizontal: 16 }}>
+            <Text style={[ss.sectionLabel, { color: th.label, marginBottom: 12, marginTop: 4 }]}>APPS TO BLOCK</Text>
+
+            <TouchableOpacity
+              onPress={() => onPickApps?.()}
+              style={[ss.card, { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, paddingVertical: 16, backgroundColor: `${th.teal}10`, borderColor: `${th.teal}40` }]}>
+              <Ionicons name="add-circle-outline" size={18} color={th.teal} />
+              <Text style={{ color: th.teal, fontSize: 15, fontWeight: '600' }}>
+                {totalAppCount > 0 ? `${totalAppCount} app${totalAppCount !== 1 ? 's' : ''} selected  ·  tap to change` : 'Select Apps to Block'}
+              </Text>
+            </TouchableOpacity>
+
+            {slots.map(slot => {
+              const isBlocked = slot.isBlocked || !!data?.stShieldEnabled;
+              const slotLim = data.slotLimits?.[slot.hashKey] || 15;
+              const slotMon = !!data.slotMonitored?.[slot.hashKey];
+              return (
+                <View key={slot.hashKey} style={ss.appCard}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <AppTokenView
+                      key={slot.hashKey}
+                      hashKey={slot.hashKey}
+                      darkMode={th.id === 'dark'}
+                      showTitle={true}
+                      style={{ flex: 1, height: 44 }}
+                    />
+                    <TouchableOpacity
+                      onPress={async () => {
+                        const ST = require('../../modules/screen-time');
+                        const newSlotMon = { ...(data.slotMonitored || {}), [slot.hashKey]: false };
+                        const newSlotAt = { ...(data.slotActivatedAt || {}), [slot.hashKey]: 0 };
+                        await ST.removeSlotFromSelection(slot.index).catch(() => {});
+                        const info = await ST.getSlotInfo().catch(() => ({ slots: [] }));
+                        const newSlots = (info.slots || []).map((s: any) => ({ ...s, iconBase64: '' }));
+                        setSlots(newSlots);
+                        onUpdate({ ...data, slots: newSlots, nativeAppCount: newSlots.length, slotMonitored: newSlotMon, slotActivatedAt: newSlotAt });
+                      }}
+                      style={ss.removeBtn}>
+                      <Ionicons name="close" size={16} color="#e05555" />
+                    </TouchableOpacity>
+                  </View>
+                  {renderLimitSection(
+                    slotLim, slotMon, isBlocked,
+                    (v) => onUpdate({ ...data, slotLimits: { ...(data.slotLimits || {}), [slot.hashKey]: v } }),
+                    async () => {
+                      const r = await scheduleSlotMonitoring(slot.index, slotLim);
+                      if (!r.success) { Alert.alert('Monitoring Failed', r.error || 'Could not start Screen Time monitoring.'); return; }
+                      onUpdate({ ...data, slotMonitored: { ...(data.slotMonitored || {}), [slot.hashKey]: true }, slotActivatedAt: { ...(data.slotActivatedAt || {}), [slot.hashKey]: Date.now() } });
+                    },
+                    () => onStartSession(TECHNIQUES[0], `slot_${slot.index}`),
+                    async () => {
+                      await stopSlotMonitoring(slot.index);
+                      onUpdate({ ...data, slotMonitored: { ...(data.slotMonitored || {}), [slot.hashKey]: false }, slotActivatedAt: { ...(data.slotActivatedAt || {}), [slot.hashKey]: 0 } });
+                    },
+                    data.slotActivatedAt?.[slot.hashKey] || 0,
+                  )}
+                </View>
+              );
+            })}
+
+            {/* Unlock All */}
+            {data.stShieldEnabled && (
+              <TouchableOpacity
+                onPress={async () => {
+                  const r = await doUnshield();
+                  if (r.success) onUpdate({ ...data, stShieldEnabled: false, appUnlocked: {}, lockDate: '', unlockedIndices: [], appMonitored: {}, appActivatedAt: {}, slotMonitored: {}, slotActivatedAt: {}, slotsVersion: (data.slotsVersion || 0) + 1 });
+                  else Alert.alert('Could not unlock', 'Try again.');
+                }}
+                style={[ss.card, { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, paddingVertical: 16, backgroundColor: 'rgba(220,60,60,0.08)', borderColor: 'rgba(220,60,60,0.25)' }]}>
+                <Ionicons name="lock-open-outline" size={18} color="#e05555" />
+                <Text style={{ color: '#e05555', fontSize: 15, fontWeight: '700' }}>Unlock All Apps</Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Open iOS Screen Time */}
+            <TouchableOpacity
+              onPress={() => Linking.openURL('App-Prefs:root=SCREEN_TIME').catch(() => Linking.openSettings())}
+              style={[ss.card, { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: `${th.teal}08`, borderColor: `${th.teal}25` }]}>
+              <Ionicons name="bar-chart-outline" size={22} color={th.teal} />
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: th.text, fontSize: 14, fontWeight: '600' }}>View Full Screen Time</Text>
+                <Text style={{ color: th.text2, fontSize: 11, marginTop: 2 }}>Usage, limits & reports → iOS Settings</Text>
+              </View>
+              <Ionicons name="open-outline" size={16} color={th.teal} />
+            </TouchableOpacity>
+          </View>
+
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
-;
+
+const styles = (th: Theme) => StyleSheet.create({
+  header: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 6, marginBottom: 6 },
+  title: { fontSize: 28, fontWeight: '700', letterSpacing: -0.5 },
+  sectionLabel: { fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', fontWeight: '600' },
+  card: { backgroundColor: th.surf, borderWidth: 1, borderColor: th.border, borderRadius: 16, padding: 16, marginBottom: 14 },
+  appCard: { backgroundColor: th.surf, borderWidth: 1, borderColor: th.border, borderRadius: 16, padding: 16, marginBottom: 12 },
+  removeBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(220,60,60,0.10)', borderWidth: 1.5, borderColor: 'rgba(220,60,60,0.28)' },
+  stepBtn: { width: 28, height: 28, borderRadius: 14, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  stepTxt: { fontSize: 16, lineHeight: 20, fontWeight: '600' },
+  actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6 },
+  actionTxt: { fontSize: 12, fontWeight: '600' },
+});

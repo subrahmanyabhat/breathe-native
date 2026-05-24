@@ -5,6 +5,7 @@ import {
   Platform, Vibration,
 } from 'react-native';
 import { DARK, Theme } from '../theme';
+import { Ionicons } from '@expo/vector-icons';
 import { Technique, APPS } from '../data';
 
 // Use built-in Vibration — no expo-haptics enum crash risk
@@ -23,33 +24,33 @@ interface Props {
 const makeStyles_ss = (th: Theme) => StyleSheet.create({
   root: { flex: 1, backgroundColor: th.bg },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 },
-  backBtn: { backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: th.border, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8 },
+  backBtn: { backgroundColor: th.text4, borderWidth: 1, borderColor: th.border, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 2 },
   backTxt: { color: th.text2, fontSize: 13 },
   techName: { fontSize: 12, fontWeight: '600', letterSpacing: 1 },
-  cycleBadge: { backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: th.border, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8, minWidth: 52, alignItems: 'center' },
+  cycleBadge: { backgroundColor: th.text4, borderWidth: 1, borderColor: th.border, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8, minWidth: 52, alignItems: 'center' },
   cycleTxt: { color: th.text2, fontSize: 12 },
   orbContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   bloom: { position: 'absolute', width: 360, height: 360, borderRadius: 180, backgroundColor: 'rgba(79,205,216,0.04)' },
   ring: { position: 'absolute', width: 250, height: 250, borderRadius: 125, borderWidth: 1 },
   orb: { width: 200, height: 200, borderRadius: 100, borderWidth: 1.5, backgroundColor: 'rgba(79,205,216,0.08)', alignItems: 'center', justifyContent: 'center', ...Platform.select({ ios: { shadowOpacity: 0.6, shadowRadius: 30, shadowOffset: { width: 0, height: 0 } } }) },
-  phaseLabel: { color: 'rgba(255,255,255,0.45)', fontSize: 12, fontWeight: '500', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 },
+  phaseLabel: { color: th.label, fontSize: 12, fontWeight: '500', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 },
   countNum: { fontSize: 46, fontWeight: '300', letterSpacing: -2 },
-  dotsRow: { flexDirection: 'row', gap: 8, alignItems: 'center', marginTop: 28 },
+  dotsRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   dot: { height: 7, borderRadius: 4 },
-  phaseLabels: { flexDirection: 'row', gap: 20, marginTop: 18 },
-  cyclesDone: { marginTop: 16, borderWidth: 1, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 5 },
+  phaseLabels: { flexDirection: 'row', gap: 20 },
+  cyclesDone: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 5 },
   cyclesDoneTxt: { fontSize: 12, fontWeight: '600' },
-  bottom: { paddingHorizontal: 24, paddingBottom: 52, alignItems: 'center' },
-  beginBtn: { borderRadius: 50, paddingVertical: 17, paddingHorizontal: 56, shadowOpacity: 0.45, shadowRadius: 20, shadowOffset: { width: 0, height: 6 } },
+  bottom: { paddingHorizontal: 24, paddingBottom: 52, alignItems: 'center', height: 130, justifyContent: 'flex-end' },
+  beginBtn: { borderRadius: 50, paddingVertical: 16, alignSelf: 'stretch', alignItems: 'center', shadowOpacity: 0.45, shadowRadius: 20, shadowOffset: { width: 0, height: 6 } },
   beginTxt: { color: '#07111e', fontSize: 16, fontWeight: '700', letterSpacing: -0.3 },
-  endBtn: { backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: th.border, borderRadius: 50, paddingVertical: 13, paddingHorizontal: 36 },
-  endTxt: { color: th.text2, fontSize: 14 },
+  endBtn: { backgroundColor: th.text4, borderWidth: 1, borderColor: th.border, borderRadius: 50, paddingVertical: 16, alignSelf: 'stretch', alignItems: 'center' },
+  endTxt: { color: th.text2, fontSize: 16 },
   completeCard: { backgroundColor: th.sheetBg || th.surf, borderRadius: 24, padding: 28, width: '100%', borderWidth: 1, alignItems: 'center' },
   completeTick: { fontSize: 28, marginBottom: 14 },
   completeTitle: { color: th.text, fontSize: 20, fontWeight: '700', marginBottom: 4 },
   completeSub: { fontSize: 13, marginBottom: 20 },
   completeRow: { flexDirection: 'row', gap: 10, marginBottom: 16, width: '100%' },
-  completeStat: { flex: 1, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 13, padding: 13, alignItems: 'center', borderWidth: 1 },
+  completeStat: { flex: 1, backgroundColor: th.text4, borderRadius: 13, padding: 13, alignItems: 'center', borderWidth: 1 },
   completeStatL: { color: th.label, fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 },
   completeStatV: { fontSize: 22, fontWeight: '700', letterSpacing: -0.5 },
   btn: { width: '100%', borderRadius: 13, paddingVertical: 14, alignItems: 'center' },
@@ -67,17 +68,17 @@ export default function SessionScreen({ tech, targetApp, onDone, onBack, th = DA
   const [sessMin, setSessMin] = useState(1);
   const [countKey, setCountKey] = useState(0);
 
-  const scale = useRef(new Animated.Value(0.82)).current;
-  const glow  = useRef(new Animated.Value(0.14)).current;
+  const scale = useRef(new Animated.Value(0.68)).current;
+  const glow  = useRef(new Animated.Value(0.10)).current;
   const startRef = useRef<number>(0);
 
   const phase = tech.phases[phaseIdx];
-  const earned = sessMin * 10;
+  const earned = sessMin;
   const targetAppObj = targetApp ? APPS.find(a => a.id === targetApp) : null;
 
   const animateOrb = (targetScale: number, targetGlow: number, duration: number, easing = Easing.inOut(Easing.ease)) => {
     Animated.parallel([
-      Animated.timing(scale, { toValue: targetScale, duration, easing, useNativeDriver: true }),
+      Animated.timing(scale, { toValue: targetScale, duration, easing, useNativeDriver: false }),
       Animated.timing(glow, { toValue: targetGlow,  duration, easing, useNativeDriver: false }),
     ]).start();
   };
@@ -90,13 +91,15 @@ export default function SessionScreen({ tech, targetApp, onDone, onBack, th = DA
     if (p.label === 'Inhale') {
       setLastDir('in');
       animateOrb(1.26, 0.72, p.dur * 1000);
-      hapticImpact('light');
+      hapticImpact();
     } else if (p.label === 'Exhale') {
       setLastDir('out');
       animateOrb(0.68, 0.10, p.dur * 1000);
-      hapticImpact('light');
+      hapticImpact();
     } else {
-      hapticImpact('soft');
+      // Hold phases — keep current scale, just soften glow slightly
+      animateOrb(lastDir === 'in' ? 1.26 : 0.68, lastDir === 'in' ? 0.45 : 0.08, 400, Easing.out(Easing.ease));
+      hapticImpact();
     }
 
     setCount(p.dur);
@@ -127,15 +130,23 @@ export default function SessionScreen({ tech, targetApp, onDone, onBack, th = DA
     hapticNotify();
   };
 
+  // Auto-dismiss completion card after 2 seconds
+  useEffect(() => {
+    if (!showComplete) return;
+    const t = setTimeout(() => onDone(tech.id, sessMin, cycles, targetApp), 2000);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showComplete]);
+
   if (showComplete) {
     return (
       <SafeAreaView style={[ss.root, { justifyContent: 'center', alignItems: 'center', padding: 24 }]} edges={["top","bottom"]}>
         <View style={[ss.completeCard, { borderColor: tech.accent }]}>
-          <Text style={[ss.completeTick, { color: tech.accent }]}>✦</Text>
-          <Text style={ss.completeTitle}>session complete</Text>
-          <Text style={[ss.completeSub, { color: 'rgba(255,255,255,0.5)' }]}>{tech.name}</Text>
+          <Ionicons name="checkmark-circle" size={32} color={tech.accent} style={{ marginBottom: 14 }} />
+          <Text style={ss.completeTitle}>Session Complete</Text>
+          <Text style={[ss.completeSub, { color: th.text2 }]}>{tech.name}</Text>
           <View style={ss.completeRow}>
-            {[{ l: 'Cycles', v: String(cycles) }, { l: 'Minutes', v: String(sessMin) }, { l: 'Earned', v: `+${earned}m`, hi: true }].map(s => (
+            {[{ l: 'Cycles', v: String(cycles) }, { l: 'Minutes', v: String(sessMin) }, { l: 'Unlocked', v: `${earned}m`, hi: true }].map(s => (
               <View key={s.l} style={[ss.completeStat, { borderColor: th.border }]}>
                 <Text style={ss.completeStatL}>{s.l}</Text>
                 <Text style={[ss.completeStatV, { color: s.hi ? tech.accent : th.text }]}>{s.v}</Text>
@@ -144,12 +155,13 @@ export default function SessionScreen({ tech, targetApp, onDone, onBack, th = DA
           </View>
           {targetAppObj && (
             <Text style={[ss.completeSub, { color: tech.accent, marginBottom: 12 }]}>
-              {earned}m unlocked for {targetAppObj.name}
+              {targetAppObj.name} unlocked
             </Text>
           )}
           <TouchableOpacity style={[ss.btn, { backgroundColor: tech.accent }]} onPress={() => onDone(tech.id, sessMin, cycles, targetApp)}>
-            <Text style={[ss.btnTxt, { color: '#07111e' }]}>continue</Text>
+            <Text style={[ss.btnTxt, { color: '#07111e' }]}>done</Text>
           </TouchableOpacity>
+          <Text style={{ color: th.label, fontSize: 11, marginTop: 10 }}>auto-closing…</Text>
         </View>
       </SafeAreaView>
     );
@@ -165,7 +177,8 @@ export default function SessionScreen({ tech, targetApp, onDone, onBack, th = DA
       {/* Top bar */}
       <View style={ss.topBar}>
         <TouchableOpacity style={ss.backBtn} onPress={onBack}>
-          <Text style={ss.backTxt}>← back</Text>
+          <Ionicons name="chevron-back" size={16} color={th.text2} />
+          <Text style={ss.backTxt}>back</Text>
         </TouchableOpacity>
         <Text style={[ss.techName, { color: tech.accent }]}>{tech.name}</Text>
         <View style={ss.cycleBadge}>
@@ -183,8 +196,8 @@ export default function SessionScreen({ tech, targetApp, onDone, onBack, th = DA
         {/* Bloom */}
         <Animated.View style={[ss.bloom, { transform: [{ scale }] }]} />
 
-        {/* Ring */}
-        <Animated.View style={[ss.ring, { borderColor: tech.accent, opacity: glow }]} />
+        {/* Ring — scales WITH orb so both circles stay concentric */}
+        <Animated.View style={[ss.ring, { borderColor: tech.accent, opacity: glow, transform: [{ scale }] }]} />
 
         {/* Main orb */}
         <Animated.View style={[ss.orb, {
@@ -201,35 +214,34 @@ export default function SessionScreen({ tech, targetApp, onDone, onBack, th = DA
           )}
         </Animated.View>
 
-        {/* Phase dots */}
-        {running && (
-          <View style={ss.dotsRow}>
-            {tech.phases.map((p, i) => (
-              <View key={i} style={[ss.dot, {
-                width: i === phaseIdx ? 28 : 7,
-                backgroundColor: i === phaseIdx ? tech.accent : 'rgba(255,255,255,0.12)',
-              }]} />
-            ))}
-          </View>
-        )}
+      </View>
 
-        {/* Phase labels */}
+      {/* Phase info — fixed 100px below orb, never shifts circle */}
+      <View style={{ height: 100, alignItems: 'center', justifyContent: 'center' }}>
         {running && (
-          <View style={ss.phaseLabels}>
-            {tech.phases.map((p, i) => (
-              <View key={i} style={{ alignItems: 'center', opacity: i === phaseIdx ? 1 : 0.22 }}>
-                <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: 11 }}>{p.label}</Text>
-                <Text style={{ color: tech.accent, fontSize: 10 }}>{p.dur}s</Text>
+          <>
+            <View style={ss.dotsRow}>
+              {tech.phases.map((p, i) => (
+                <View key={i} style={[ss.dot, {
+                  width: i === phaseIdx ? 28 : 7,
+                  backgroundColor: i === phaseIdx ? tech.accent : th.border,
+                }]} />
+              ))}
+            </View>
+            <View style={[ss.phaseLabels, { marginTop: 10 }]}>
+              {tech.phases.map((p, i) => (
+                <View key={i} style={{ alignItems: 'center', opacity: i === phaseIdx ? 1 : 0.22 }}>
+                  <Text style={{ color: th.text, fontSize: 11 }}>{p.label}</Text>
+                  <Text style={{ color: tech.accent, fontSize: 10 }}>{p.dur}s</Text>
+                </View>
+              ))}
+            </View>
+            {cycles > 0 && (
+              <View style={[ss.cyclesDone, { marginTop: 8, borderColor: tech.accent + '40', backgroundColor: tech.accent + '18' }]}>
+                <Text style={[ss.cyclesDoneTxt, { color: tech.accent }]}>✦ {cycles} cycle{cycles !== 1 ? 's' : ''} complete</Text>
               </View>
-            ))}
-          </View>
-        )}
-
-        {/* Cycles badge */}
-        {running && cycles > 0 && (
-          <View style={[ss.cyclesDone, { borderColor: tech.accent + '40', backgroundColor: tech.accent + '18' }]}>
-            <Text style={[ss.cyclesDoneTxt, { color: tech.accent }]}>✦ {cycles} cycle{cycles !== 1 ? 's' : ''} complete</Text>
-          </View>
+            )}
+          </>
         )}
       </View>
 
@@ -237,7 +249,7 @@ export default function SessionScreen({ tech, targetApp, onDone, onBack, th = DA
       <View style={ss.bottom}>
         {!running ? (
           <TouchableOpacity style={[ss.beginBtn, { backgroundColor: tech.accent, shadowColor: tech.accent }]} onPress={handleStart}>
-            <Text style={ss.beginTxt}>begin</Text>
+            <Text style={ss.beginTxt}>Begin Breathing</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity style={ss.endBtn} onPress={handleEnd}>

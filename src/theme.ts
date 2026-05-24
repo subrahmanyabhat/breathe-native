@@ -23,15 +23,15 @@ export const DARK = {
 
 export const LIGHT = {
   id:       'light' as const,
-  bg:       '#e8f0ff',
-  surf:     '#ffffff',
-  card:     '#ffffff',
-  border:   'rgba(30,60,140,0.14)',
-  borderHi: 'rgba(30,60,140,0.28)',
-  text:     'rgba(6,16,40,0.92)',
-  text2:    'rgba(6,16,40,0.52)',
-  label:    'rgba(6,16,40,0.36)',
-  text4:    'rgba(6,16,40,0.09)',
+  bg:       '#f0f3f8',
+  surf:     '#e8edf5',
+  card:     '#e8edf5',
+  border:   'rgba(30,60,140,0.12)',
+  borderHi: 'rgba(30,60,140,0.22)',
+  text:     'rgba(6,16,40,0.90)',
+  text2:    'rgba(6,16,40,0.50)',
+  label:    'rgba(6,16,40,0.34)',
+  text4:    'rgba(6,16,40,0.08)',
   teal:     '#0891b2',
   earned:   '#0891b2',
   spent:    'rgba(6,16,40,0.40)',
@@ -39,9 +39,9 @@ export const LIGHT = {
   btnBg:    '#1d4ed8',
   purple:   '#a48ee8',
   amber:    '#e8a23c',
-  navBg:    'rgba(232,240,255,0.97)',
-  sheetBg:  '#ffffff',
+  navBg:    'rgba(240,243,248,0.97)',
+  sheetBg:  '#e8edf5',
   toggleTrack: 'rgba(6,16,40,0.12)',
 };
 
-export type Theme = typeof DARK;
+export type Theme = Omit<typeof DARK, 'id'> & { id: string };

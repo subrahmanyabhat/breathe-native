@@ -1,0 +1,1146 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		052462EB671E5A183DFD7CB3 /* BreatheDeviceActivityMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04003794D53D50AD22E5D450 /* BreatheDeviceActivityMonitor.swift */; };
+		07A9C012A5F857F1C7E7FADF /* ManagedSettingsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 28DDB3379263CA65F3629993 /* ManagedSettingsUI.framework */; };
+		0C63AACE2BB0FADE52BB9498 /* DeviceActivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06CB6342BCF7F62F0D4D8B16 /* DeviceActivity.framework */; };
+		0CBC4CA8F00226963F13AA34 /* BreatheShield.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E11B6B1400066865A5FDC047 /* BreatheShield.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		0E8FA71944D9BCC20047A1EB /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF28FAE84482C15250964C4D /* Foundation.framework */; };
+		0F32621B0DC23F20290A129B /* BreatheShieldConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 571019BC0C79092CD9675635 /* BreatheShieldConfiguration.swift */; };
+		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		1DF057384741AE894230B0CA /* FamilyControls.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4B1E62E07B94B952FEA4700 /* FamilyControls.framework */; };
+		1EA8E9D72D18430989424D00 /* DeviceActivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 993AF91667DF30FD42FE391C /* DeviceActivity.framework */; };
+		27CDAF837917224F35216B7D /* libPods-Breathe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C739590A641845C4EDEB25D6 /* libPods-Breathe.a */; };
+		2AA3EB8B73ED7D1969F77C2A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF28FAE84482C15250964C4D /* Foundation.framework */; };
+		353E7B846D243CA96264BFB0 /* BreatheReportExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D41772769835A39D1E59425 /* BreatheReportExtension.swift */; };
+		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
+		4BB33BC808C240701C99138B /* BreatheShieldAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 14A482138308D2856AC25603 /* BreatheShieldAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4EA436E0F9E4251B4B6CDAB6 /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84960DB0CCC959FE262E2627 /* ManagedSettings.framework */; };
+		56AE3B82288A7CAA8152874A /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04A170A17C1D91B9E8C4A17F /* UserNotifications.framework */; };
+		6EC62B61071EF47F852C415D /* BreatheMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F37A8EBAB98C99DD3F198BE6 /* BreatheMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		723DDFC4A7C498BA63EBC36C /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E68B69308828CC862369823 /* ManagedSettings.framework */; };
+		8DFB7E206FBDBD6B52507145 /* DeviceActivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96EB6D0F5CACA7FACD594FD6 /* DeviceActivity.framework */; };
+		A15804BD8BB75C1FB0AA6B5A /* FamilyControls.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5C1B6E8DCE8524FB70A1D62 /* FamilyControls.framework */; };
+		AF7B75795348F45B0370D742 /* FamilyControls.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0D8DD6C1A1FC3F7FFE6AD630 /* FamilyControls.framework */; };
+		B3361C9DE7A8EB62689703A3 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4976B2E16BFB41B7B6CD0168 /* ExpoModulesProvider.swift */; };
+		B885B8F48E8C6E57E4D486C7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF28FAE84482C15250964C4D /* Foundation.framework */; };
+		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
+		CA11D0B540E81FC642C10470 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF28FAE84482C15250964C4D /* Foundation.framework */; };
+		CF26E3F1A89C931A62CE8203 /* DeviceActivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDEBBD4598AF26E12B46AA24 /* DeviceActivity.framework */; };
+		D020142AD2D428AF31A6DD09 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 74980904B1F56FD93585474E /* PrivacyInfo.xcprivacy */; };
+		E3446F9ABA1720EEB17C2F42 /* FamilyControls.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E4396E4EA2F21C034137643A /* FamilyControls.framework */; };
+		E8881E7D8297BA46004F2F06 /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4A1A3297E91227599EC6218 /* ManagedSettings.framework */; };
+		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
+		F3382B0F0E9C519BDEC00757 /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C66613DB9D8814D5DF735786 /* ManagedSettings.framework */; };
+		FD3BBBF91582285ECF3C6B2F /* BreatheShieldActionExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76CDD808076D2A2EE0C0E691 /* BreatheShieldActionExtension.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		89E375CC027FC4DEC67C3404 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D7EE2FC49B6CEF88D5861911;
+			remoteInfo = BreatheMonitor;
+		};
+		8DB17C447604DCC278E52383 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 454835193F1E7F70D2DF7FF1;
+			remoteInfo = BreatheShield;
+		};
+		F61AD8C8E33401E6FE1D7B92 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8039B2234FEA64A85BC3A838;
+			remoteInfo = BreatheShieldAction;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		93225865E7375025A093BAD4 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				0CBC4CA8F00226963F13AA34 /* BreatheShield.appex in Embed Foundation Extensions */,
+				6EC62B61071EF47F852C415D /* BreatheMonitor.appex in Embed Foundation Extensions */,
+				4BB33BC808C240701C99138B /* BreatheShieldAction.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		04003794D53D50AD22E5D450 /* BreatheDeviceActivityMonitor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BreatheDeviceActivityMonitor.swift; sourceTree = "<group>"; };
+		04A170A17C1D91B9E8C4A17F /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = UserNotifications.framework; sourceTree = SDKROOT; };
+		06CB6342BCF7F62F0D4D8B16 /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = DeviceActivity.framework; sourceTree = SDKROOT; };
+		0D8DD6C1A1FC3F7FFE6AD630 /* FamilyControls.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FamilyControls.framework; sourceTree = SDKROOT; };
+		10EB39CBE48AA87322AA17D2 /* BreatheMonitor.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = BreatheMonitor.entitlements; sourceTree = "<group>"; };
+		13B07F961A680F5B00A75B9A /* Breathe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Breathe.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Breathe/Images.xcassets; sourceTree = "<group>"; };
+		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Breathe/Info.plist; sourceTree = "<group>"; };
+		14A482138308D2856AC25603 /* BreatheShieldAction.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = BreatheShieldAction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		1718FC050A423460AB23DCB7 /* BreatheReport.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = BreatheReport.entitlements; sourceTree = "<group>"; };
+		22F627B2ACD2250F35C09AD2 /* BreatheReport.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = BreatheReport.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		28DDB3379263CA65F3629993 /* ManagedSettingsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ManagedSettingsUI.framework; sourceTree = SDKROOT; };
+		2DFF9AFF36E30ADB46AD6AE3 /* BreatheShieldAction.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = BreatheShieldAction.entitlements; sourceTree = "<group>"; };
+		32D389E5914689808E1F6C9C /* BreatheShield.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = BreatheShield.entitlements; sourceTree = "<group>"; };
+		3F1965DD5F035D46082EBC32 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4075E7C8EEF7EA123D814B11 /* ManagedSettings.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ManagedSettings.framework; sourceTree = SDKROOT; };
+		4976B2E16BFB41B7B6CD0168 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Breathe/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		4ADE84F7589FCB944C6D3071 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		510451AD0313DDE5AE61A4AA /* ManagedSettings.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ManagedSettings.framework; sourceTree = SDKROOT; };
+		53BA0DF644A1B977B82EDDB7 /* FamilyControls.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FamilyControls.framework; sourceTree = SDKROOT; };
+		54D37A380D2EF0343E5065D7 /* Pods-Breathe.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Breathe.debug.xcconfig"; path = "Target Support Files/Pods-Breathe/Pods-Breathe.debug.xcconfig"; sourceTree = "<group>"; };
+		571019BC0C79092CD9675635 /* BreatheShieldConfiguration.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BreatheShieldConfiguration.swift; sourceTree = "<group>"; };
+		6B1A134A6E0B2E374E57169F /* FamilyControls.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FamilyControls.framework; sourceTree = SDKROOT; };
+		74980904B1F56FD93585474E /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Breathe/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		76CDD808076D2A2EE0C0E691 /* BreatheShieldActionExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BreatheShieldActionExtension.swift; sourceTree = "<group>"; };
+		79DD2F0DF0487AE664F647E6 /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = DeviceActivity.framework; sourceTree = SDKROOT; };
+		7E68B69308828CC862369823 /* ManagedSettings.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ManagedSettings.framework; sourceTree = SDKROOT; };
+		84960DB0CCC959FE262E2627 /* ManagedSettings.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ManagedSettings.framework; sourceTree = SDKROOT; };
+		96EB6D0F5CACA7FACD594FD6 /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = DeviceActivity.framework; sourceTree = SDKROOT; };
+		993AF91667DF30FD42FE391C /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = DeviceActivity.framework; sourceTree = SDKROOT; };
+		9A2FE68D4E316102426593CF /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9D41772769835A39D1E59425 /* BreatheReportExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BreatheReportExtension.swift; sourceTree = "<group>"; };
+		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Breathe/SplashScreen.storyboard; sourceTree = "<group>"; };
+		AF28FAE84482C15250964C4D /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		B420D43BEF87D25EC21BCF08 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = UserNotifications.framework; sourceTree = SDKROOT; };
+		B4A1A3297E91227599EC6218 /* ManagedSettings.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ManagedSettings.framework; sourceTree = SDKROOT; };
+		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
+		C4B1E62E07B94B952FEA4700 /* FamilyControls.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FamilyControls.framework; sourceTree = SDKROOT; };
+		C66613DB9D8814D5DF735786 /* ManagedSettings.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ManagedSettings.framework; sourceTree = SDKROOT; };
+		C6F260DEA7B98813983ABC06 /* Pods-Breathe.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Breathe.release.xcconfig"; path = "Target Support Files/Pods-Breathe/Pods-Breathe.release.xcconfig"; sourceTree = "<group>"; };
+		C739590A641845C4EDEB25D6 /* libPods-Breathe.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Breathe.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DED42C2562D8304F35355ED5 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E11B6B1400066865A5FDC047 /* BreatheShield.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 1; lastKnownFileType = "wrapper.app-extension"; path = BreatheShield.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		E4396E4EA2F21C034137643A /* FamilyControls.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FamilyControls.framework; sourceTree = SDKROOT; };
+		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Breathe/AppDelegate.swift; sourceTree = "<group>"; };
+		F11748442D0722820044C1D9 /* Breathe-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Breathe-Bridging-Header.h"; path = "Breathe/Breathe-Bridging-Header.h"; sourceTree = "<group>"; };
+		F37A8EBAB98C99DD3F198BE6 /* BreatheMonitor.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 1; lastKnownFileType = "wrapper.app-extension"; path = BreatheMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		F5C1B6E8DCE8524FB70A1D62 /* FamilyControls.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FamilyControls.framework; sourceTree = SDKROOT; };
+		FAD9953F804EF941E7A76E86 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = UserNotifications.framework; sourceTree = SDKROOT; };
+		FC55E85B68EEA062605630C0 /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = DeviceActivity.framework; sourceTree = SDKROOT; };
+		FDEBBD4598AF26E12B46AA24 /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = DeviceActivity.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		13B07F8C1A680F5B00A75B9A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				27CDAF837917224F35216B7D /* libPods-Breathe.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		677ABEA04EFBD13CC8B18DAA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B885B8F48E8C6E57E4D486C7 /* Foundation.framework in Frameworks */,
+				AF7B75795348F45B0370D742 /* FamilyControls.framework in Frameworks */,
+				E8881E7D8297BA46004F2F06 /* ManagedSettings.framework in Frameworks */,
+				1EA8E9D72D18430989424D00 /* DeviceActivity.framework in Frameworks */,
+				56AE3B82288A7CAA8152874A /* UserNotifications.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C0C6F57D3827CD34791FC8B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0E8FA71944D9BCC20047A1EB /* Foundation.framework in Frameworks */,
+				A15804BD8BB75C1FB0AA6B5A /* FamilyControls.framework in Frameworks */,
+				F3382B0F0E9C519BDEC00757 /* ManagedSettings.framework in Frameworks */,
+				CF26E3F1A89C931A62CE8203 /* DeviceActivity.framework in Frameworks */,
+				07A9C012A5F857F1C7E7FADF /* ManagedSettingsUI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7EF85C4271178176D05A04B0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2AA3EB8B73ED7D1969F77C2A /* Foundation.framework in Frameworks */,
+				1DF057384741AE894230B0CA /* FamilyControls.framework in Frameworks */,
+				4EA436E0F9E4251B4B6CDAB6 /* ManagedSettings.framework in Frameworks */,
+				0C63AACE2BB0FADE52BB9498 /* DeviceActivity.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FCBECE452C860E4B1EEF3616 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CA11D0B540E81FC642C10470 /* Foundation.framework in Frameworks */,
+				E3446F9ABA1720EEB17C2F42 /* FamilyControls.framework in Frameworks */,
+				723DDFC4A7C498BA63EBC36C /* ManagedSettings.framework in Frameworks */,
+				8DFB7E206FBDBD6B52507145 /* DeviceActivity.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		13B07FAE1A68108700A75B9A /* Breathe */ = {
+			isa = PBXGroup;
+			children = (
+				F11748412D0307B40044C1D9 /* AppDelegate.swift */,
+				F11748442D0722820044C1D9 /* Breathe-Bridging-Header.h */,
+				BB2F792B24A3F905000567C9 /* Supporting */,
+				13B07FB51A68108700A75B9A /* Images.xcassets */,
+				13B07FB61A68108700A75B9A /* Info.plist */,
+				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
+				74980904B1F56FD93585474E /* PrivacyInfo.xcprivacy */,
+			);
+			name = Breathe;
+			sourceTree = "<group>";
+		};
+		1E0F5A9BA9CCD9A0203B342E /* BreatheShield */ = {
+			isa = PBXGroup;
+			children = (
+				571019BC0C79092CD9675635 /* BreatheShieldConfiguration.swift */,
+				DED42C2562D8304F35355ED5 /* Info.plist */,
+				32D389E5914689808E1F6C9C /* BreatheShield.entitlements */,
+			);
+			name = BreatheShield;
+			path = BreatheShield;
+			sourceTree = "<group>";
+		};
+		27442F24132BE8A31B27B1C3 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				54D37A380D2EF0343E5065D7 /* Pods-Breathe.debug.xcconfig */,
+				C6F260DEA7B98813983ABC06 /* Pods-Breathe.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
+				C739590A641845C4EDEB25D6 /* libPods-Breathe.a */,
+				BD484E76258252975414A9D4 /* iOS */,
+				F5C1B6E8DCE8524FB70A1D62 /* FamilyControls.framework */,
+				C66613DB9D8814D5DF735786 /* ManagedSettings.framework */,
+				FDEBBD4598AF26E12B46AA24 /* DeviceActivity.framework */,
+				28DDB3379263CA65F3629993 /* ManagedSettingsUI.framework */,
+				C4B1E62E07B94B952FEA4700 /* FamilyControls.framework */,
+				84960DB0CCC959FE262E2627 /* ManagedSettings.framework */,
+				06CB6342BCF7F62F0D4D8B16 /* DeviceActivity.framework */,
+				6B1A134A6E0B2E374E57169F /* FamilyControls.framework */,
+				4075E7C8EEF7EA123D814B11 /* ManagedSettings.framework */,
+				79DD2F0DF0487AE664F647E6 /* DeviceActivity.framework */,
+				FAD9953F804EF941E7A76E86 /* UserNotifications.framework */,
+				53BA0DF644A1B977B82EDDB7 /* FamilyControls.framework */,
+				510451AD0313DDE5AE61A4AA /* ManagedSettings.framework */,
+				FC55E85B68EEA062605630C0 /* DeviceActivity.framework */,
+				B420D43BEF87D25EC21BCF08 /* UserNotifications.framework */,
+				0D8DD6C1A1FC3F7FFE6AD630 /* FamilyControls.framework */,
+				B4A1A3297E91227599EC6218 /* ManagedSettings.framework */,
+				993AF91667DF30FD42FE391C /* DeviceActivity.framework */,
+				04A170A17C1D91B9E8C4A17F /* UserNotifications.framework */,
+				E4396E4EA2F21C034137643A /* FamilyControls.framework */,
+				7E68B69308828CC862369823 /* ManagedSettings.framework */,
+				96EB6D0F5CACA7FACD594FD6 /* DeviceActivity.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		552BB48B8647B13909C3A730 /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				974FF57809080F68C94AB277 /* Breathe */,
+			);
+			name = ExpoModulesProviders;
+			sourceTree = "<group>";
+		};
+		6A0460A5F9B1E257BC15DD69 /* BreatheShieldAction */ = {
+			isa = PBXGroup;
+			children = (
+				76CDD808076D2A2EE0C0E691 /* BreatheShieldActionExtension.swift */,
+				4ADE84F7589FCB944C6D3071 /* Info.plist */,
+				2DFF9AFF36E30ADB46AD6AE3 /* BreatheShieldAction.entitlements */,
+			);
+			name = BreatheShieldAction;
+			path = BreatheShieldAction;
+			sourceTree = "<group>";
+		};
+		7ED28B7F7CAEC779452D7151 /* BreatheReport */ = {
+			isa = PBXGroup;
+			children = (
+				9D41772769835A39D1E59425 /* BreatheReportExtension.swift */,
+				3F1965DD5F035D46082EBC32 /* Info.plist */,
+				1718FC050A423460AB23DCB7 /* BreatheReport.entitlements */,
+			);
+			name = BreatheReport;
+			path = BreatheReport;
+			sourceTree = "<group>";
+		};
+		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Libraries;
+			sourceTree = "<group>";
+		};
+		83CBB9F61A601CBA00E9B192 = {
+			isa = PBXGroup;
+			children = (
+				13B07FAE1A68108700A75B9A /* Breathe */,
+				832341AE1AAA6A7D00B99B32 /* Libraries */,
+				83CBBA001A601CBA00E9B192 /* Products */,
+				2D16E6871FA4F8E400B85C8A /* Frameworks */,
+				27442F24132BE8A31B27B1C3 /* Pods */,
+				552BB48B8647B13909C3A730 /* ExpoModulesProviders */,
+				1E0F5A9BA9CCD9A0203B342E /* BreatheShield */,
+				990651A9EE8587D6DA2C8E74 /* BreatheMonitor */,
+				6A0460A5F9B1E257BC15DD69 /* BreatheShieldAction */,
+				7ED28B7F7CAEC779452D7151 /* BreatheReport */,
+			);
+			indentWidth = 2;
+			sourceTree = "<group>";
+			tabWidth = 2;
+			usesTabs = 0;
+		};
+		83CBBA001A601CBA00E9B192 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				13B07F961A680F5B00A75B9A /* Breathe.app */,
+				E11B6B1400066865A5FDC047 /* BreatheShield.appex */,
+				F37A8EBAB98C99DD3F198BE6 /* BreatheMonitor.appex */,
+				14A482138308D2856AC25603 /* BreatheShieldAction.appex */,
+				22F627B2ACD2250F35C09AD2 /* BreatheReport.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		974FF57809080F68C94AB277 /* Breathe */ = {
+			isa = PBXGroup;
+			children = (
+				4976B2E16BFB41B7B6CD0168 /* ExpoModulesProvider.swift */,
+			);
+			name = Breathe;
+			sourceTree = "<group>";
+		};
+		990651A9EE8587D6DA2C8E74 /* BreatheMonitor */ = {
+			isa = PBXGroup;
+			children = (
+				04003794D53D50AD22E5D450 /* BreatheDeviceActivityMonitor.swift */,
+				9A2FE68D4E316102426593CF /* Info.plist */,
+				10EB39CBE48AA87322AA17D2 /* BreatheMonitor.entitlements */,
+			);
+			name = BreatheMonitor;
+			path = BreatheMonitor;
+			sourceTree = "<group>";
+		};
+		BB2F792B24A3F905000567C9 /* Supporting */ = {
+			isa = PBXGroup;
+			children = (
+				BB2F792C24A3F905000567C9 /* Expo.plist */,
+			);
+			name = Supporting;
+			path = Breathe/Supporting;
+			sourceTree = "<group>";
+		};
+		BD484E76258252975414A9D4 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				AF28FAE84482C15250964C4D /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		13B07F861A680F5B00A75B9A /* Breathe */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Breathe" */;
+			buildPhases = (
+				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
+				363DFA8EE9B2854EE78239FA /* [Expo] Configure project */,
+				13B07F871A680F5B00A75B9A /* Sources */,
+				13B07F8C1A680F5B00A75B9A /* Frameworks */,
+				13B07F8E1A680F5B00A75B9A /* Resources */,
+				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
+				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
+				B2C69359D727CE2EE39CD9AB /* [CP] Embed Pods Frameworks */,
+				93225865E7375025A093BAD4 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F362E53847F68404EA677A5D /* PBXTargetDependency */,
+				E5C66AB93E454E5462135A5A /* PBXTargetDependency */,
+				9E466D687F3C6B24925F3EA3 /* PBXTargetDependency */,
+			);
+			name = Breathe;
+			productName = Breathe;
+			productReference = 13B07F961A680F5B00A75B9A /* Breathe.app */;
+			productType = "com.apple.product-type.application";
+		};
+		454835193F1E7F70D2DF7FF1 /* BreatheShield */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2C6D5B516E6E44344E3AF22F /* Build configuration list for PBXNativeTarget "BreatheShield" */;
+			buildPhases = (
+				0F8E5BFFE4D282DE6AF22984 /* Sources */,
+				6C0C6F57D3827CD34791FC8B /* Frameworks */,
+				16CACA0C99B99617376D9A14 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BreatheShield;
+			productName = BreatheShield;
+			productReference = E11B6B1400066865A5FDC047 /* BreatheShield.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		46F6C6CE2AC5F7DC826A5070 /* BreatheReport */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A747459ED005C9249D3E7DBF /* Build configuration list for PBXNativeTarget "BreatheReport" */;
+			buildPhases = (
+				C98638117A533FB1F9AE5870 /* Sources */,
+				FCBECE452C860E4B1EEF3616 /* Frameworks */,
+				942F702F4B278FE3186C0155 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BreatheReport;
+			productName = BreatheReport;
+			productReference = 22F627B2ACD2250F35C09AD2 /* BreatheReport.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		8039B2234FEA64A85BC3A838 /* BreatheShieldAction */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8007747DB48D20C88EE597CE /* Build configuration list for PBXNativeTarget "BreatheShieldAction" */;
+			buildPhases = (
+				81836380AE2B8EB37FDBEDA5 /* Sources */,
+				677ABEA04EFBD13CC8B18DAA /* Frameworks */,
+				020F015EF4DDA0449E29BA18 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BreatheShieldAction;
+			productName = BreatheShieldAction;
+			productReference = 14A482138308D2856AC25603 /* BreatheShieldAction.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		D7EE2FC49B6CEF88D5861911 /* BreatheMonitor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1D3652BFA4A83CF4894DC750 /* Build configuration list for PBXNativeTarget "BreatheMonitor" */;
+			buildPhases = (
+				A0D2C06381BDFB09015C2949 /* Sources */,
+				7EF85C4271178176D05A04B0 /* Frameworks */,
+				7EDDF02A6FB6DF3EE03E42C6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BreatheMonitor;
+			productName = BreatheMonitor;
+			productReference = F37A8EBAB98C99DD3F198BE6 /* BreatheMonitor.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		83CBB9F71A601CBA00E9B192 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1130;
+				TargetAttributes = {
+					13B07F861A680F5B00A75B9A = {
+						LastSwiftMigration = 1250;
+					};
+				};
+			};
+			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "Breathe" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 83CBB9F61A601CBA00E9B192;
+			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				13B07F861A680F5B00A75B9A /* Breathe */,
+				454835193F1E7F70D2DF7FF1 /* BreatheShield */,
+				D7EE2FC49B6CEF88D5861911 /* BreatheMonitor */,
+				8039B2234FEA64A85BC3A838 /* BreatheShieldAction */,
+				46F6C6CE2AC5F7DC826A5070 /* BreatheReport */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		020F015EF4DDA0449E29BA18 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		13B07F8E1A680F5B00A75B9A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
+				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
+				D020142AD2D428AF31A6DD09 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		16CACA0C99B99617376D9A14 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7EDDF02A6FB6DF3EE03E42C6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		942F702F4B278FE3186C0155 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/.xcode.env",
+				"$(SRCROOT)/.xcode.env.local",
+			);
+			name = "Bundle React Native code and images";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [[ -f \"$PODS_ROOT/../.xcode.env\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env\"\nfi\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n# The project root by default is one level up from the ios directory\nexport PROJECT_ROOT=\"$PROJECT_DIR\"/..\n\nif [[ \"$CONFIGURATION\" = *Debug* ]]; then\n  export SKIP_BUNDLING=1\nfi\nif [[ -z \"$ENTRY_FILE\" ]]; then\n  # Set the entry JS file using the bundler's entry resolution.\n  export ENTRY_FILE=\"$(\"$NODE_BINARY\" -e \"require('expo/scripts/resolveAppEntry')\" \"$PROJECT_ROOT\" ios absolute | tail -n 1)\"\nfi\n\nif [[ -z \"$CLI_PATH\" ]]; then\n  # Use Expo CLI\n  export CLI_PATH=\"$(\"$NODE_BINARY\" --print \"require.resolve('@expo/cli', { paths: [require.resolve('expo/package.json')] })\")\"\nfi\nif [[ -z \"$BUNDLE_COMMAND\" ]]; then\n  # Default Expo CLI command for bundling\n  export BUNDLE_COMMAND=\"export:embed\"\nfi\n\n# Source .xcode.env.updates if it exists to allow\n# SKIP_BUNDLING to be unset if needed\nif [[ -f \"$PODS_ROOT/../.xcode.env.updates\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.updates\"\nfi\n# Source local changes to allow overrides\n# if needed\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n`\"$NODE_BINARY\" --print \"require('path').dirname(require.resolve('react-native/package.json')) + '/scripts/react-native-xcode.sh'\"`\n\n";
+		};
+		08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-Breathe-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		363DFA8EE9B2854EE78239FA /* [Expo] Configure project */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/.xcode.env",
+				"$(SRCROOT)/.xcode.env.local",
+				"$(SRCROOT)/Breathe/Breathe.entitlements",
+				"$(SRCROOT)/Pods/Target Support Files/Pods-Breathe/expo-configure-project.sh",
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Pods/Target Support Files/Pods-Breathe/ExpoModulesProvider.swift",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Breathe/expo-configure-project.sh\"\n";
+		};
+		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Breathe/Pods-Breathe-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/EXApplication/ExpoApplication_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/EXConstants.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/ExpoConstants_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoFileSystem/ExpoFileSystem_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoNotifications/ExpoNotifications_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/RNCAsyncStorage/RNCAsyncStorage_resources.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/React-Core_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/React-cxxreact/React-cxxreact_privacy.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoApplication_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXConstants.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoConstants_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoFileSystem_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoNotifications_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNCAsyncStorage_resources.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-Core_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-cxxreact_privacy.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Breathe/Pods-Breathe-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B2C69359D727CE2EE39CD9AB /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Breathe/Pods-Breathe-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermesvm.framework/hermesvm",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermesvm.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Breathe/Pods-Breathe-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0F8E5BFFE4D282DE6AF22984 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F32621B0DC23F20290A129B /* BreatheShieldConfiguration.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		13B07F871A680F5B00A75B9A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
+				B3361C9DE7A8EB62689703A3 /* ExpoModulesProvider.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		81836380AE2B8EB37FDBEDA5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FD3BBBF91582285ECF3C6B2F /* BreatheShieldActionExtension.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A0D2C06381BDFB09015C2949 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				052462EB671E5A183DFD7CB3 /* BreatheDeviceActivityMonitor.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C98638117A533FB1F9AE5870 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				353E7B846D243CA96264BFB0 /* BreatheReportExtension.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		9E466D687F3C6B24925F3EA3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = BreatheShieldAction;
+			target = 8039B2234FEA64A85BC3A838 /* BreatheShieldAction */;
+			targetProxy = F61AD8C8E33401E6FE1D7B92 /* PBXContainerItemProxy */;
+		};
+		E5C66AB93E454E5462135A5A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = BreatheMonitor;
+			target = D7EE2FC49B6CEF88D5861911 /* BreatheMonitor */;
+			targetProxy = 89E375CC027FC4DEC67C3404 /* PBXContainerItemProxy */;
+		};
+		F362E53847F68404EA677A5D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = BreatheShield;
+			target = 454835193F1E7F70D2DF7FF1 /* BreatheShield */;
+			targetProxy = 8DB17C447604DCC278E52383 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0BB4984A785119DB91EA5D63 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = BreatheReport/BreatheReport.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = PT83LJRA65;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BreatheReport/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
+				PRODUCT_BUNDLE_IDENTIFIER = com.breathex.app.report;
+				PRODUCT_NAME = BreatheReport;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		13B07F941A680F5B00A75B9A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 54D37A380D2EF0343E5065D7 /* Pods-Breathe.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Breathe/Breathe.entitlements;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PT83LJRA65;
+				ENABLE_BITCODE = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"FB_SONARKIT_ENABLED=1",
+				);
+				INFOPLIST_FILE = Breathe/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-lc++",
+				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
+				PRODUCT_BUNDLE_IDENTIFIER = com.breathex.app;
+				PRODUCT_NAME = Breathe;
+				SWIFT_OBJC_BRIDGING_HEADER = "Breathe/Breathe-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		13B07F951A680F5B00A75B9A /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = C6F260DEA7B98813983ABC06 /* Pods-Breathe.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Breathe/Breathe.entitlements;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PT83LJRA65;
+				INFOPLIST_FILE = Breathe/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-lc++",
+				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
+				PRODUCT_BUNDLE_IDENTIFIER = com.breathex.app;
+				PRODUCT_NAME = Breathe;
+				SWIFT_OBJC_BRIDGING_HEADER = "Breathe/Breathe-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		1F29031D636666747A39F5D1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = BreatheReport/BreatheReport.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = PT83LJRA65;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BreatheReport/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
+				PRODUCT_BUNDLE_IDENTIFIER = com.breathex.app.report;
+				PRODUCT_NAME = BreatheReport;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.9;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		21882D458D16B236C32EC791 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = BreatheShield/BreatheShield.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = PT83LJRA65;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BreatheShield/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
+				PRODUCT_BUNDLE_IDENTIFIER = com.breathex.app.shield;
+				PRODUCT_NAME = BreatheShield;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.9;
+				VALIDATE_PRODUCT = YES;
+				WRAPPER_EXTENSION = appex;
+			};
+			name = Release;
+		};
+		4BD0693C23A0F0D6BE49A7B2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = BreatheMonitor/BreatheMonitor.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = PT83LJRA65;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BreatheMonitor/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
+				PRODUCT_BUNDLE_IDENTIFIER = com.breathex.app.monitor;
+				PRODUCT_NAME = BreatheMonitor;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.9;
+				VALIDATE_PRODUCT = YES;
+				WRAPPER_EXTENSION = appex;
+			};
+			name = Release;
+		};
+		83CBBA201A601CBA00E9B192 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					/usr/lib/swift,
+					"$(inherited)",
+				);
+				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
+				USE_HERMES = true;
+			};
+			name = Debug;
+		};
+		83CBBA211A601CBA00E9B192 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					/usr/lib/swift,
+					"$(inherited)",
+				);
+				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
+				SDKROOT = iphoneos;
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
+				USE_HERMES = true;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A7AEA3AB7F4B8CCE4D8FAF0E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = BreatheShield/BreatheShield.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = PT83LJRA65;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BreatheShield/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
+				PRODUCT_BUNDLE_IDENTIFIER = com.breathex.app.shield;
+				PRODUCT_NAME = BreatheShield;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.9;
+				WRAPPER_EXTENSION = appex;
+			};
+			name = Debug;
+		};
+		DBDB58B2DD366DB2A7CA0AB0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = BreatheShieldAction/BreatheShieldAction.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = PT83LJRA65;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BreatheShieldAction/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
+				PRODUCT_BUNDLE_IDENTIFIER = com.breathex.app.shieldaction;
+				PRODUCT_NAME = BreatheShieldAction;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		EE3A7702D7ACA26334741ACB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = BreatheMonitor/BreatheMonitor.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = PT83LJRA65;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BreatheMonitor/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
+				PRODUCT_BUNDLE_IDENTIFIER = com.breathex.app.monitor;
+				PRODUCT_NAME = BreatheMonitor;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.9;
+				WRAPPER_EXTENSION = appex;
+			};
+			name = Debug;
+		};
+		F1A59723C59D062FB59AE187 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = BreatheShieldAction/BreatheShieldAction.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = PT83LJRA65;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BreatheShieldAction/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
+				PRODUCT_BUNDLE_IDENTIFIER = com.breathex.app.shieldaction;
+				PRODUCT_NAME = BreatheShieldAction;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.9;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Breathe" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				13B07F941A680F5B00A75B9A /* Debug */,
+				13B07F951A680F5B00A75B9A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1D3652BFA4A83CF4894DC750 /* Build configuration list for PBXNativeTarget "BreatheMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4BD0693C23A0F0D6BE49A7B2 /* Release */,
+				EE3A7702D7ACA26334741ACB /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2C6D5B516E6E44344E3AF22F /* Build configuration list for PBXNativeTarget "BreatheShield" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				21882D458D16B236C32EC791 /* Release */,
+				A7AEA3AB7F4B8CCE4D8FAF0E /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8007747DB48D20C88EE597CE /* Build configuration list for PBXNativeTarget "BreatheShieldAction" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F1A59723C59D062FB59AE187 /* Release */,
+				DBDB58B2DD366DB2A7CA0AB0 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "Breathe" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				83CBBA201A601CBA00E9B192 /* Debug */,
+				83CBBA211A601CBA00E9B192 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A747459ED005C9249D3E7DBF /* Build configuration list for PBXNativeTarget "BreatheReport" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1F29031D636666747A39F5D1 /* Release */,
+				0BB4984A785119DB91EA5D63 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 83CBB9F71A601CBA00E9B192 /* Project object */;
+}

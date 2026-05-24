@@ -1,11 +1,12 @@
 import React, { useState, useEffect, Component } from 'react';
 import { StatusBar, View, Text, Modal, TouchableOpacity, ScrollView, StyleSheet, Alert, Platform } from 'react-native';
-import { NavigationContainer, DarkTheme } from '@react-navigation/native';
+import { NavigationContainer, DarkTheme, createNavigationContainerRef } from '@react-navigation/native';
+const navRef = createNavigationContainerRef<any>();
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { enableScreens } from 'react-native-screens';
 import { Ionicons } from '@expo/vector-icons';
-import { load, save, AppData, DEFAULT } from './src/storage';
+import { load, save, AppData, DEFAULT, earnedScreenMin, todayStr } from './src/storage';
 import { DARK, LIGHT, Theme } from './src/theme';
 import HomeScreen from './src/screens/HomeScreen';
 import StatsScreen from './src/screens/StatsScreen';
@@ -15,6 +16,7 @@ import OnboardingScreen from './src/screens/OnboardingScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import { Technique, TECHNIQUES } from './src/data';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Notifications from 'expo-notifications';
 
 enableScreens();
 
@@ -56,7 +58,7 @@ function PremiumModal({ visible, onClose, onTrial, onBuy, hasTrial, isDarkMode =
           <View style={pm.handle} />
 
           {/* Icon + heading */}
-          <View style={pm.iconWrap}><Text style={{ fontSize: 28 }}>✦</Text></View>
+          <View style={pm.iconWrap}><Ionicons name="star" size={26} color="#a48ee8" /></View>
           <Text style={pm.h1}>Breathe Premium</Text>
           <Text style={pm.sub}>Block distracting apps. Earn screentime back by breathing.</Text>
 
@@ -102,7 +104,7 @@ function PremiumModal({ visible, onClose, onTrial, onBuy, hasTrial, isDarkMode =
           {/* Trial CTA */}
           {!hasTrial ? (
             <TouchableOpacity style={pm.trialBtn} onPress={onTrial}>
-              <Text style={pm.trialBtnTxt}>🎁  Start 7-Day Free Trial</Text>
+              <Text style={pm.trialBtnTxt}>Start 7-Day Free Trial</Text>
               <Text style={pm.trialBtnSub}>Then ₹99/month · cancel anytime</Text>
             </TouchableOpacity>
           ) : (
@@ -177,11 +179,81 @@ export default function App() {
   const th = isDark ? DARK : LIGHT;
 
   useEffect(() => {
-    load().then(d => { setData(d); setLoaded(true); });
+    load().then(d => {
+      setData(d);
+      setLoaded(true);
+      // Refresh slot hashKeys on every launch — token.hashValue changes between sessions
+      const ST = require('./modules/screen-time');
+      ST.getSlotInfo().then((info: any) => {
+        if (info?.slots?.length > 0) {
+          const freshSlots = info.slots.map((s: any) => ({ ...s, iconBase64: '' }));
+          const next = { ...d, slots: freshSlots, nativeAppCount: freshSlots.length };
+          setData(next);
+          save(next);
+        }
+      }).catch(() => {});
+      // Backfill icons for enabled apps missing icons
+      const { APPS: ALL_APPS } = require('./src/data');
+      const { fetchAppIcons } = require('./src/appIcons');
+      const missing = ALL_APPS
+        .filter((a: any) => d.appEnabled?.[a.id] && !d.appIconUrls?.[a.bundleId])
+        .map((a: any) => a.bundleId);
+      if (missing.length > 0) {
+        fetchAppIcons(missing).then((icons: Record<string, string>) => {
+          if (Object.keys(icons).length > 0) {
+            const next = { ...d, appIconUrls: { ...(d.appIconUrls || {}), ...icons } };
+            setData(next);
+            save(next);
+          }
+        }).catch(() => {});
+      }
+    });
     AsyncStorage.getItem('breathe_onboarded').then(v => { if (!v) setShowOnboard(true); });
   }, []);
 
   const update = (d: AppData) => { setData(d); save(d); };
+
+  // Open breathing session when user taps the "Time to Breathe" notification from ShieldActionExtension
+  useEffect(() => {
+    const sub = Notifications.addNotificationResponseReceivedListener(response => {
+      if (response.notification.request.content.categoryIdentifier === 'BREATHE_UNLOCK' ||
+          response.notification.request.content.title === 'Time to Breathe') {
+        startSession(TECHNIQUES[0]);
+      }
+    });
+    return () => sub.remove();
+  }, []);
+
+  // Auto-shield when any app/slot monitoring countdown expires (JS wall-clock fallback)
+  useEffect(() => {
+    const t = setInterval(async () => {
+      if (data.stShieldEnabled) return;
+      const n = Date.now();
+      const { APPS: ALL_APPS } = require('./src/data');
+      const anyKnownExpired = ALL_APPS.some((a: any) => {
+        if (!data.appEnabled?.[a.id] || !data.appMonitored?.[a.id]) return false;
+        const lim = (data.appLimits?.[a.id] || 15) * 60000;
+        const at = data.appActivatedAt?.[a.id] || 0;
+        return at > 0 && n - at >= lim;
+      });
+      const anySlotExpired = (data.slots || []).some((slot: any) => {
+        if (!data.slotMonitored?.[slot.hashKey] || !data.slotActivatedAt?.[slot.hashKey]) return false;
+        const lim = (data.slotLimits?.[slot.hashKey] || 15) * 60000;
+        const at = data.slotActivatedAt[slot.hashKey];
+        return at > 0 && n - at >= lim;
+      });
+      if (anyKnownExpired || anySlotExpired) {
+        const ST = require('./modules/screen-time');
+        const r = await ST.shieldApps().catch(() => ({ success: false }));
+        if (r.success) {
+          const info = await ST.getSlotInfo().catch(() => ({ slots: [] }));
+          update({ ...data, stShieldEnabled: true, lockDate: todayStr(), slots: info.slots || [], slotsVersion: (data.slotsVersion || 0) + 1 });
+        }
+      }
+    }, 15000);
+    return () => clearInterval(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
 
   const isPrem   = isPremActive(data.premium);
   const dLeft    = trialDaysLeft(data.premium);
@@ -202,21 +274,10 @@ export default function App() {
 
       await IAP.initConnection();
 
-      // Listen for purchase completion
-      const purchaseSub = IAP.purchaseUpdatedListener(async (purchase: any) => {
-        if (purchase?.transactionReceipt) {
-          await IAP.finishTransaction({ purchase, isConsumable: false });
-          purchaseSub?.remove();
-          update({ ...data, premium: { ...data.premium, paid: true } });
-          setShowPremium(false);
-          Alert.alert('✓ Premium Activated', 'Thank you! All features unlocked.');
-        }
-      });
-
-      // Get subscriptions (not products)
-      const subs = await IAP.getSubscriptions([PRODUCT_ID]);
+      // Verify product exists in App Store Connect
+      const subs = await IAP.fetchProducts({ skus: [PRODUCT_ID], type: 'subs' });
       if (!subs || subs.length === 0) {
-        purchaseSub?.remove();
+        await IAP.endConnection().catch(() => {});
         Alert.alert(
           'Not Configured',
           'Subscription not set up in App Store Connect yet.\n\nFor testing: activate as purchased?',
@@ -228,8 +289,25 @@ export default function App() {
         return;
       }
 
-      // requestSubscription is the correct API for expo-iap v4+
-      await IAP.requestSubscription({ sku: PRODUCT_ID });
+      // Listen for purchase result (event-based in v4)
+      const purchaseSub = IAP.purchaseUpdatedListener(async (purchase: any) => {
+        if (purchase?.transactionReceipt) {
+          await IAP.finishTransaction({ purchase, isConsumable: false });
+          purchaseSub?.remove();
+          await IAP.endConnection().catch(() => {});
+          update({ ...data, premium: { ...data.premium, paid: true } });
+          setShowPremium(false);
+          Alert.alert('✓ Premium Activated', 'Thank you! All features unlocked.');
+        }
+      });
+
+      await IAP.requestPurchase({
+        request: {
+          apple: { sku: PRODUCT_ID },
+          google: { skus: [PRODUCT_ID] },
+        },
+        type: 'subs',
+      });
     } catch (e: any) {
       if (e?.code !== 'E_USER_CANCELLED') {
         Alert.alert(
@@ -246,26 +324,81 @@ export default function App() {
 
   const startSession = (tech: Technique, targetApp?: string) => setSession({ tech, targetApp });
 
-  const endSession = (techId: string, minutes: number, cycles: number, targetApp?: string) => {
-    const earned = minutes * 10;
+  const endSession = async (techId: string, minutes: number, cycles: number, targetApp?: string) => {
+    const mode = data.mode || 'normal';
+    const calibration = (data.calibration ?? 10) as any;
+    const earned = earnedScreenMin(minutes, mode, calibration);
     const ae = { ...(data.appEarned || {}) };
-    if (targetApp) {
+    if (targetApp && !targetApp.startsWith('slot_')) {
       ae[targetApp] = (ae[targetApp] || 0) + earned;
-    } else {
+    } else if (!targetApp) {
       const ids = Object.keys(data.appEnabled || {}).filter(k => data.appEnabled[k]);
       ids.forEach(id => { ae[id] = (ae[id] || 0) + Math.round(earned / Math.max(ids.length, 1)); });
     }
+    const ST = require('./modules/screen-time');
+    const nativeCount = ST.getSelectedAppCount ? ST.getSelectedAppCount() : (data.nativeAppCount || 0);
     const now = new Date();
-    update({
-      ...data,
-      sessions: [...data.sessions, {
-        date: now.toISOString().slice(0, 10),
-        technique: techId, duration: minutes, cycles,
-        hour: now.getHours(), ts: Date.now(),
-      }],
-      totalMin: data.totalMin + minutes,
-      earnedMin: (data.earnedMin || 0) + earned,
-      appEarned: ae,
+
+    // Strict mode: require at least 5 minutes of breathing to unlock
+    if (targetApp && data.stShieldEnabled && minutes < 5) {
+      Alert.alert(
+        'Need 5 Minutes',
+        'Strict mode requires at least 5 minutes of breathing to unlock. Keep going!',
+        [{ text: 'OK' }]
+      );
+      setSession(null);
+      return;
+    }
+
+    // Unshield the specific slot/app BEFORE updating state so UI reflects correctly
+    let freshSlots: any[] = data.slots || [];
+    let newSlotsVersion = (data.slotsVersion || 0) + 1;
+    if (targetApp && data.stShieldEnabled) {
+      try {
+        if (targetApp.startsWith('slot_')) {
+          const slotIndex = parseInt(targetApp.replace('slot_', ''), 10);
+          if (!isNaN(slotIndex)) {
+            await ST.unshieldSlot(slotIndex);
+            if (mode === 'strict') {
+              // Re-shield after the slot's saved limit, then restart monitoring for next cycle
+              const slot = (data.slots || [])[slotIndex];
+              const slotLim = slot ? (data.slotLimits?.[slot.hashKey] || 15) : 15;
+              setTimeout(async () => {
+                await ST.reshieldSlot(slotIndex).catch(() => {});
+                // Restart monitoring so blocking cycle repeats
+                const { scheduleSlotMonitoring } = require('./modules/screen-time');
+                await scheduleSlotMonitoring(slotIndex, slotLim).catch(() => {});
+              }, slotLim * 60000);
+            }
+          }
+        } else {
+          const { APPS: ALL_APPS } = require('./src/data');
+          const blockedApp = ALL_APPS.find((a: any) => a.id === targetApp);
+          if (blockedApp) await ST.unshieldBundleId(blockedApp.bundleId).catch(() => {});
+        }
+        // Refresh slot list so ScreentimeScreen shows updated blocked states
+        const info = await ST.getSlotInfo().catch(() => ({ slots: [] }));
+        freshSlots = info.slots || [];
+      } catch {}
+    }
+
+    setData(prev => {
+      const next = {
+        ...prev,
+        sessions: [...prev.sessions, {
+          date: now.toISOString().slice(0, 10),
+          technique: techId, duration: minutes, cycles,
+          hour: now.getHours(), ts: Date.now(),
+        }],
+        totalMin: prev.totalMin + minutes,
+        earnedMin: (prev.earnedMin || 0) + earned,
+        appEarned: ae,
+        nativeAppCount: nativeCount,
+        slots: freshSlots,
+        slotsVersion: newSlotsVersion,
+      };
+      save(next);
+      return next;
     });
     setSession(null);
   };
@@ -282,34 +415,26 @@ export default function App() {
     </SafeAreaProvider>
   );
 
-  if (session) {
-    return (
-      <SafeAreaProvider>
-        <StatusBar barStyle="light-content" />
-        <SessionScreen tech={session.tech} targetApp={session.targetApp} onDone={endSession} onBack={() => setSession(null)} th={th} />
-      </SafeAreaProvider>
-    );
-  }
-
   return (
     <ErrorBoundary>
       <SafeAreaProvider>
         <StatusBar barStyle="light-content" />
         {hasTrial && <TrialBanner daysLeft={dLeft} onPress={() => setShowPremium(true)} />}
 
-        <NavigationContainer theme={{ ...DarkTheme, colors: { ...DarkTheme.colors, background: th.bg, card: th.surf, text: th.text, border: th.border, primary: th.teal, notification: th.teal } }}>
+        <NavigationContainer ref={navRef} theme={{ ...DarkTheme, colors: { ...DarkTheme.colors, background: th.bg, card: th.surf, text: th.text, border: th.border, primary: th.teal, notification: th.teal } }}>
           <Tab.Navigator
+            id={undefined}
             screenOptions={({ route }) => ({
               headerShown: false,
               tabBarStyle: { backgroundColor: th.navBg, borderTopWidth: 0, paddingBottom: 6, height: 80 },
-              tabBarActiveTintColor: 'rgba(130,175,215,0.95)',
-              tabBarInactiveTintColor: 'rgba(100,145,180,0.48)',
+              tabBarActiveTintColor: th.teal,
+              tabBarInactiveTintColor: th.label,
               tabBarLabelStyle: { fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase' },
               tabBarIcon: ({ color, focused }) => {
                 const icons: Record<string, [string, string]> = {
                   Home:       ['home',              'home-outline'],
                   Stats:      ['bar-chart',         'bar-chart-outline'],
-                  Time:       ['shield-checkmark',  'shield-checkmark-outline'],
+                  Screen:     ['shield-checkmark',  'shield-checkmark-outline'],
                   Settings:   ['settings-sharp',    'settings-outline'],
                 };
                 const [active, inactive] = icons[route.name] ?? ['ellipse', 'ellipse-outline'];
@@ -323,6 +448,7 @@ export default function App() {
                   data={data} onUpdate={update} onStartSession={startSession}
                   th={th} isPrem={isPrem} onShowPremium={() => setShowPremium(true)}
                   isDark={isDark} onToggleTheme={toggleTheme}
+                  onNavigateToScreen={() => navRef.isReady() && navRef.navigate('Screen')}
                 />
               )}
             </Tab.Screen>
@@ -330,41 +456,34 @@ export default function App() {
               {() => <StatsScreen data={data} th={th} />}
             </Tab.Screen>
 
-            {/* Centre FAB — floating breathe button */}
-            <Tab.Screen
-              name="Breathe"
-              listeners={{ tabPress: (e) => { e.preventDefault(); startSession(TECHNIQUES[0]); } }}
-              options={{
-                tabBarLabel: '',
-                tabBarIcon: () => null,
-                tabBarButton: () => (
-                  <TouchableOpacity
-                    onPress={() => startSession(TECHNIQUES[0])}
-                    style={{
-                      width: 68, height: 68, borderRadius: 34,
-                      backgroundColor: '#5b80a0',
-                      alignItems: 'center', justifyContent: 'center',
-                      marginBottom: 22,
-                      shadowColor: '#5b8fb9', shadowOpacity: 0.55,
-                      shadowRadius: 22, shadowOffset: { width: 0, height: 4 },
-                      elevation: 10,
-                    }}
-                  >
-                    <Text style={{ fontFamily: 'Georgia', fontStyle: 'italic', fontSize: 16, color: '#0f1e30', fontWeight: '400', letterSpacing: -0.2 }}>breathe</Text>
-                  </TouchableOpacity>
-                ),
-              }}
-            >
-              {() => null}
-            </Tab.Screen>
 
-            <Tab.Screen name="Time"
+
+            <Tab.Screen name="Screen"
               options={{ tabBarBadge: !isPrem ? '' : undefined, tabBarBadgeStyle: { backgroundColor: '#a48ee8', minWidth: 8, height: 8, borderRadius: 4 } }}
             >
               {() => (
                 <ScreentimeScreen
                   data={data} onUpdate={update} onStartSession={startSession}
                   th={th} isPrem={isPrem} onShowPremium={() => setShowPremium(true)}
+                  onPickApps={async () => {
+                    const ST = require('./modules/screen-time');
+                    const authStatus = ST.getAuthorizationStatus();
+                    if (authStatus !== 'approved') {
+                      const r = await ST.requestAuthorization();
+                      if (!r.authorized) return;
+                    }
+                    const res = await ST.showAppPicker();
+                    if (res.selected) {
+                      // Refresh slot list immediately — reflects new selection
+                      const info = await ST.getSlotInfo().catch(() => ({ slots: [] }));
+                      const newSlots = (info.slots || []).map((s: any) => ({ ...s, iconBase64: '' }));
+                      update({ ...data, slots: newSlots, nativeAppCount: res.appCount });
+                    } else {
+                      // Cancelled — clear family selection entirely
+                      await ST.clearSelection().catch(() => {});
+                      update({ ...data, slots: [], nativeAppCount: 0, stShieldEnabled: false });
+                    }
+                  }}
                 />
               )}
             </Tab.Screen>
@@ -390,6 +509,18 @@ export default function App() {
           onTrial={handleTrial}
           onBuy={handleBuy}
         />
+        {/* SessionScreen as overlay — keeps NavigationContainer mounted so tab state is preserved */}
+        {session && (
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999 }}>
+            <SessionScreen
+              tech={session.tech}
+              targetApp={session.targetApp}
+              onDone={endSession}
+              onBack={() => setSession(null)}
+              th={th}
+            />
+          </View>
+        )}
       </SafeAreaProvider>
     </ErrorBoundary>
   );

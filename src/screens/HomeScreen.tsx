@@ -1,14 +1,17 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Alert, Linking, Vibration, Modal, Switch, Platform,
+  Alert, Linking, Modal, Switch, AppState,
+  Animated,
 } from 'react-native';
 import { scheduleDailyReminder, cancelDailyReminder } from '../notifications';
 import { AppData } from '../storage';
 import { TECHNIQUES, APPS, Technique } from '../data';
 import { DARK, Theme } from '../theme';
-import { calcStreak, todayStr, fmtHHMM } from '../storage';
+import { calcStreak, todayStr } from '../storage';
 import * as ScreenTime from '../../modules/screen-time';
 const safeSTStatus = () => { try { return ScreenTime.getAuthorizationStatus(); } catch { return 'unavailable'; } };
 
@@ -21,120 +24,59 @@ interface Props {
   isDark?: boolean;
   onToggleTheme?: () => void;
   th?: Theme;
+  onNavigateToScreen?: () => void;
 }
 
-const TL_START = 6, TL_END = 22, TL_SLOTS = TL_END - TL_START;
-
-
-const makeStyles_ss = (th: Theme) => StyleSheet.create({
-  root: { flex: 1, backgroundColor: th.bg },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 8 },
-  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  logoBox: { width: 18, height: 18, borderRadius: 5 },
-  logoTxt: { color: th.text, fontSize: 17, fontWeight: '600', letterSpacing: -0.3 },
-  dayBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: th.text4, borderWidth: 1, borderColor: th.border, borderRadius: 20, paddingHorizontal: 11, paddingVertical: 5 },
-  premBtn: { backgroundColor: 'rgba(164,142,232,0.18)', borderWidth: 1, borderColor: 'rgba(164,142,232,0.40)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5 },
-  premBtnTxt: { color: '#a48ee8', fontSize: 12, fontWeight: '700' },
-  dayDot: { width: 6, height: 6, borderRadius: 3 },
-  dayTxt: { color: th.text2, fontSize: 12, fontWeight: '500' },
-  scroll: { flex: 1 },
-  section: { paddingHorizontal: 20, marginBottom: 6 },
-  sectionLabel: { color: th.label, fontSize: 10, letterSpacing: 2.5, textTransform: 'uppercase', fontWeight: '500', marginBottom: 2 },
-  sectionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 },
-  sectionAction: { fontSize: 12, fontWeight: '600' },
-  heroRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 2, marginBottom: 6 },
-  heroNum: { color: th.text, fontSize: 46, fontWeight: '300', letterSpacing: -1.5, lineHeight: 52 },
-  heroUnit: { color: th.text2, fontSize: 13, marginBottom: 6, marginLeft: 5 },
-  earnedRow: { flexDirection: 'row', gap: 16 },
-  earnedTxt: { fontSize: 13, fontWeight: '500' },
-  card: { backgroundColor: th.surf, borderWidth: 1, borderColor: th.border, borderRadius: 13 },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, paddingBottom: 10 },
-  cardTxt: { color: th.text, fontSize: 13 },
-  tlRow: { flexDirection: 'row', gap: 2, paddingHorizontal: 14, marginBottom: 5 },
-  tlSeg: { flex: 1, height: 5, borderRadius: 2 },
-  tlLabels: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 14, paddingBottom: 12 },
-  tlLabel: { color: th.label, fontSize: 9, letterSpacing: 0.5 },
-  // Locked apps card — matches screenshot
-  lockedCard: { borderRadius: 15, padding: 12, borderWidth: 1, marginBottom: 4 },
-  lockedHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  lockedIconBox: { width: 34, height: 34, borderRadius: 9, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  lockedTitle: { fontSize: 16, fontWeight: '700' },
-  lockedSub: { fontSize: 12, marginTop: 1 },
-  recDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#cc2200' },
-  lockedMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  lockedMetaL: { fontSize: 13, fontWeight: '500' },
-  lockedManage: { color: '#4a90d9', fontSize: 13, fontWeight: '600' },
-  // App chips
-  appChipsWrap: { flexDirection: 'row', gap: 8, marginBottom: 10 },
-  appChip: { flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1.5, borderRadius: 20, paddingVertical: 7, paddingHorizontal: 10 },
-  chipIcon: { width: 22, height: 22, borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
-  chipInitials: { color: 'rgba(255,255,255,0.92)', fontSize: 9, fontWeight: '700' },
-  chipName: { color: 'rgba(255,255,255,0.85)', fontSize: 12, fontWeight: '500' },
-  appPill: { flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1, borderRadius: 22, paddingHorizontal: 11, paddingVertical: 8 },
-  pillIcon: { width: 26, height: 26, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
-  pillInitials: { color: 'rgba(255,255,255,0.92)', fontSize: 10, fontWeight: '700' },
-  pillName: { color: 'rgba(255,255,255,0.88)', fontSize: 13, fontWeight: '500' },
-  unlockBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#2563eb', borderRadius: 13, padding: 14, gap: 10 },
-  unlockTitle: { color: '#fff', fontSize: 15, fontWeight: '700' },
-  unlockSub: { color: 'rgba(255,255,255,0.60)', fontSize: 11, marginTop: 1, fontFamily: 'Courier' },
-  unlockBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4 },
-  unlockBadgeTxt: { color: '#fff', fontSize: 12, fontWeight: '600' },
-  tabPill: { flexDirection: 'row', gap: 3, backgroundColor: th.text4, borderRadius: 20, padding: 3 },
-  tabBtn: { borderRadius: 16, paddingHorizontal: 12, paddingVertical: 4 },
-  tabBtnActive: { backgroundColor: th.surf, borderWidth: 1, borderColor: th.border },
-  tabBtnTxt: { color: th.label, fontSize: 11, fontWeight: '400' },
-  tabBtnTxtActive: { color: th.text, fontWeight: '500' },
-  chip: { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 4 },
-  chipTxt: { fontSize: 13, fontWeight: '500' },
-  chipTag: { fontSize: 11 },
-  techDetail: { backgroundColor: th.surf, borderWidth: 1, borderRadius: 13, padding: 14, marginBottom: 10 },
-  techDetailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  techDetailName: { color: 'rgba(255,255,255,0.88)', fontSize: 14, fontWeight: '600', marginBottom: 3 },
-  techDetailDesc: { color: 'rgba(255,255,255,0.42)', fontSize: 12, lineHeight: 18, marginBottom: 8 },
-  techDetailPhase: { color: 'rgba(255,255,255,0.45)', fontSize: 11, fontFamily: 'Courier' },
-  techEarn: { fontSize: 12, fontWeight: '600', marginBottom: 1 },
-  techEarnSub: { color: 'rgba(255,255,255,0.30)', fontSize: 10 },
-  learnCard: { backgroundColor: th.surf, borderWidth: 1, borderColor: th.border, borderRadius: 13, padding: 14 },
-  learnCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
-  learnName: { color: 'rgba(255,255,255,0.90)', fontSize: 14, fontWeight: '600', marginTop: 5 },
-  learnChevron: { fontSize: 13, marginTop: 4 },
-  tagPill: { borderRadius: 20, paddingHorizontal: 8, paddingVertical: 2, alignSelf: 'flex-start' },
-  tagPillTxt: { fontSize: 10, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' },
-  phaseBarRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 5 },
-  phaseBarLabel: { color: 'rgba(255,255,255,0.28)', fontSize: 9, width: 38 },
-  phaseBarBg: { flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 2 },
-  phaseBarFill: { height: '100%' as any, borderRadius: 2, opacity: 0.7 },
-  phaseBarDur: { color: 'rgba(255,255,255,0.28)', fontSize: 9, width: 16, textAlign: 'right' },
-  learnExpanded: { backgroundColor: th.surf, borderWidth: 1, borderTopWidth: 0, borderBottomLeftRadius: 13, borderBottomRightRadius: 13, padding: 16 },
-  learnExpandedSec: { color: th.label, fontSize: 9, letterSpacing: 1.8, textTransform: 'uppercase', fontWeight: '500', marginBottom: 10 },
-  startBtn: { borderRadius: 10, paddingVertical: 12, alignItems: 'center' },
-  startBtnTxt: { fontSize: 13, fontWeight: '700' },
-  fixedBottom: { paddingHorizontal: 16, paddingVertical: 10, paddingBottom: 12, borderTopWidth: 1, borderTopColor: th.border, backgroundColor: th.bg },
-  beginCard: { backgroundColor: 'rgba(44,92,152,0.92)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.13)', borderRadius: 15, paddingVertical: 18, paddingHorizontal: 20, alignItems: 'center' },
-  beginCardTitle: { color: '#fff', fontSize: 16, fontWeight: '600', marginBottom: 4, letterSpacing: -0.3 },
-  beginCardSub: { color: 'rgba(255,255,255,0.5)', fontSize: 11, letterSpacing: 0.3, fontFamily: 'Courier' },
-  reminderRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 14, borderTopWidth: 1, borderTopColor: th.border, marginTop: 8 },
-  reminderTitle: { color: th.text, fontSize: 14, fontWeight: '500' },
-  reminderSub: { color: th.text2, fontSize: 12, marginTop: 1 },
-  reminderDot: { width: 7, height: 7, borderRadius: 4, flexShrink: 0 },
-  reminderSheet: { backgroundColor: th.sheetBg || th.surf, borderRadius: 28, padding: 24, paddingBottom: 44, borderWidth: 1, borderColor: th.border, borderBottomWidth: 0 },
-  reminderHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: th.text4, alignSelf: 'center', marginBottom: 22 },
-  reminderSheetTitle: { color: th.text, fontSize: 19, fontWeight: '700', marginBottom: 4 },
-  reminderSheetSub: { color: th.text2, fontSize: 13, lineHeight: 18, marginBottom: 20 },
-  reminderRow2: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: th.text4, borderWidth: 1, borderColor: th.border, borderRadius: 13, padding: 15, marginBottom: 10 },
-  reminderLabel: { color: th.text, fontSize: 14, fontWeight: '500' },
-  reminderTimeBtn: { fontSize: 22, fontWeight: '700', letterSpacing: -0.5, textAlign:'center', minWidth:30 },
-  stepBtn2: { width:30, height:24, alignItems:'center', justifyContent:'center', backgroundColor:th.text4, borderRadius:6, borderWidth:1, borderColor:th.border },
-  stepTxt2: { color:th.text, fontSize:14, lineHeight:18, fontWeight:'600' },
-  reminderSaveBtn: { backgroundColor: th.teal, borderRadius: 13, padding: 15, alignItems: 'center', marginTop: 6 },
-  reminderSaveTxt: { color: th.id === 'dark' ? '#07111e' : '#fff', fontSize: 15, fontWeight: '700' },
-})
-
-export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onShowPremium, isDark = true, onToggleTheme, th = DARK }: Props) {
+export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onShowPremium, isDark = true, onToggleTheme, th = DARK, onNavigateToScreen }: Props) {
   const [showReminder, setShowReminder] = useState(false);
   const [reminderTime, setReminderTime] = useState(data.reminder?.time || '08:00');
   const [reminderOn, setReminderOn] = useState(!!data.reminder?.enabled);
   const [savingReminder, setSavingReminder] = useState(false);
+  const [selTech, setSelTech] = useState(TECHNIQUES[0]);
+
+  const orbPulse = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const anim = Animated.loop(
+      Animated.sequence([
+        Animated.timing(orbPulse, { toValue: 1, duration: 1800, useNativeDriver: true }),
+        Animated.timing(orbPulse, { toValue: 0, duration: 1800, useNativeDriver: true }),
+      ])
+    );
+    anim.start();
+    return () => anim.stop();
+  }, []);
+
+  useEffect(() => {
+    const t = setInterval(async () => {
+      const n = Date.now();
+      if (!data.stShieldEnabled) return;
+      const au = data.appUnlocked || {};
+      const en = data.appEnabled || {};
+      const stillUnlocked = APPS
+        .filter(a => en[a.id])
+        .filter(a => { const exp = au[a.id] || 0; return exp === -1 || exp > n; })
+        .map(a => a.bundleId);
+      const hadUnlocked = APPS.some(a => en[a.id] && (au[a.id] === -1 || (au[a.id] || 0) > 0));
+      if (hadUnlocked && stillUnlocked.length === 0) {
+        await ScreenTime.reshieldAll();
+      } else if (hadUnlocked && stillUnlocked.length > 0) {
+        await ScreenTime.reshieldExcept(stillUnlocked);
+      }
+    }, 15000);
+    return () => clearInterval(t);
+  }, [data]);
+
+  useEffect(() => {
+    const actuallyShielded = ScreenTime.isShieldActive();
+    if (data.stShieldEnabled !== actuallyShielded) {
+      onUpdate({ ...data, stShieldEnabled: actuallyShielded });
+    }
+    const sub = AppState.addEventListener('change', state => {
+      if (state === 'active') safeSTStatus();
+    });
+    return () => sub.remove();
+  }, []);
 
   const saveReminder = async (enabled: boolean, time: string) => {
     setSavingReminder(true);
@@ -149,398 +91,305 @@ export default function HomeScreen({ data, onUpdate, onStartSession, isPrem, onS
     setSavingReminder(false);
     setShowReminder(false);
   };
-  const [selTech, setSelTech] = useState(TECHNIQUES[0]);
-  const [btab, setBtab] = useState<'Practice' | 'Learn'>('Practice');
-  const [expandedLearn, setExpandedLearn] = useState<string | null>(null);
-  const [stStatus, setStStatus] = useState<string>(safeSTStatus);
 
-  const ss = makeStyles_ss(th);
   const streak = calcStreak(data.sessions);
   const today = todayStr();
   const todaySess = data.sessions.filter(s => s.date === today);
-  const nowHour = new Date().getHours();
-  const activeHours = new Set(todaySess.map(s => (s.hour != null ? s.hour : nowHour)).filter(h => h >= TL_START && h < TL_END));
-  const earned = data.earnedMin || 0;
-  const spent = data.spentMin || 0;
+  const earned = todaySess.reduce((sum, s) => sum + (s.duration || 0), 0);
   const enabledApps = APPS.filter(a => data.appEnabled?.[a.id]);
-  const appEarned = data.appEarned || {};
-  const cycleSeconds = selTech.phases.reduce((s, p) => s + p.dur, 0);
+  const slots = data.slots || [];
+  const activeCount = slots.length || enabledApps.length;
+  const phaseStr = selTech.phases.map(p => p.dur).join('·');
 
-  const handleRequestST = async () => {
-    const res = await ScreenTime.requestAuthorization();
-    if (res.authorized) {
-      setStStatus('approved');
-      Alert.alert('Screen Time', 'Authorization granted. You can now use the app picker to select which apps to block.');
-    } else {
-      Alert.alert('Screen Time', res.error || 'Authorization denied. Please enable in Settings > Screen Time.');
-    }
-  };
+  const orbScale = orbPulse.interpolate({ inputRange: [0, 1], outputRange: [0.88, 1.0] });
+  const orbGlow = orbPulse.interpolate({ inputRange: [0, 1], outputRange: [0.28, 0.72] });
 
-  const handlePickApps = async () => {
-    // Try native FamilyActivityPicker first
-    if (stStatus === 'approved') {
-      const res = await ScreenTime.showAppPicker();
-      if (res.selected) {
-        Alert.alert('Apps Selected', `${res.appCount} app(s) selected for blocking.`);
-        return;
-      }
-    }
-    // Fall back to manual toggle sheet
-    setShowManualAppPicker(true);
-  };
-
-  const [showManualAppPicker, setShowManualAppPicker] = useState(false);
-
-  const handleOpenApp = (app: typeof APPS[0]) => {
-    const ae = appEarned[app.id] || 0;
-    if (ae > 0) {
-      Linking.openURL(app.bundleId.includes('instagram') ? 'instagram://' : `https://www.google.com`).catch(() => {});
-    } else {
-      Alert.alert(
-        `${app.name} is sealed 🔒`,
-        `Breathe to earn ${app.id} screentime.\n\n1 min breathing = 10 min screen`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Start Breathing', onPress: () => onStartSession(selTech, app.id) },
-        ]
-      );
-    }
-  };
+  const ss = styles(th);
 
   return (
-    <SafeAreaView style={ss.root} edges={["top","bottom"]}>
-      {/* Header */}
-      <View style={ss.header}>
-        <View style={ss.logoRow}>
-          <View style={[ss.logoBox, { backgroundColor: th.teal }]} />
-          <Text style={ss.logoTxt}>breathe</Text>
-        </View>
-        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-          {!isPrem && (
-            <TouchableOpacity onPress={onShowPremium} style={ss.premBtn}>
-              <Text style={ss.premBtnTxt}>✦ Premium</Text>
+    <View style={{ flex: 1, backgroundColor: th.bg }}>
+      {/* Seamless gradient overlay */}
+      <LinearGradient
+        colors={[`${th.teal}22`, `${th.teal}00`]}
+        locations={[0, 1]}
+        style={[StyleSheet.absoluteFillObject, { height: 320 }]}
+        pointerEvents="none"
+      />
+
+      <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+        {/* Header */}
+        <View style={ss.header}>
+          <View style={ss.logoRow}>
+            <View style={[ss.logoBox, { backgroundColor: th.teal }]} />
+            <Text style={[ss.logoTxt, { color: th.text }]}>Breathe</Text>
+          </View>
+          <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+            {!isPrem && (
+              <TouchableOpacity onPress={onShowPremium} style={ss.premBtn}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Ionicons name="star" size={11} color="#a48ee8" />
+                  <Text style={ss.premBtnTxt}>Premium</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity onPress={() => setShowReminder(true)} style={ss.iconBtn}>
+              <Ionicons name={data.reminder?.enabled ? 'notifications' : 'notifications-outline'} size={17} color={data.reminder?.enabled ? th.teal : th.text2} />
             </TouchableOpacity>
-          )}
-          <TouchableOpacity onPress={onToggleTheme} style={ss.dayBadge}>
-            <Text style={{ fontSize: 14 }}>{isDark ? '☀️' : '🌙'}</Text>
+            <View style={ss.dayBadge}>
+              <View style={[ss.dayDot, { backgroundColor: streak > 0 ? th.teal : th.label }]} />
+              <Text style={[ss.dayTxt, { color: th.text2 }]}>day {streak}</Text>
+            </View>
+          </View>
+        </View>
+
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60, paddingTop: 8 }}>
+
+          {/* Stats card */}
+          <View style={[ss.statsCard, { backgroundColor: th.surf, borderColor: th.border }]}>
+            <View style={ss.statCol}>
+              <Text style={[ss.statNum, { color: th.teal }]}>{earned}<Text style={ss.statUnit}>m</Text></Text>
+              <Text style={[ss.statLbl, { color: th.text2 }]}>today</Text>
+            </View>
+            <View style={[ss.statDivider, { backgroundColor: th.border }]} />
+            <View style={ss.statCol}>
+              <Text style={[ss.statNum, { color: th.amber }]}>{streak}</Text>
+              <Text style={[ss.statLbl, { color: th.text2 }]}>streak</Text>
+            </View>
+            <View style={[ss.statDivider, { backgroundColor: th.border }]} />
+            <View style={ss.statCol}>
+              <Text style={[ss.statNum, { color: th.text }]}>{todaySess.length}<Text style={[ss.statUnit, { color: th.text2 }]}>/10</Text></Text>
+              <Text style={[ss.statLbl, { color: th.text2 }]}>mindful</Text>
+            </View>
+          </View>
+
+          {/* Centered floating breathe button */}
+          <TouchableOpacity
+            activeOpacity={0.82}
+            onPress={() => onStartSession(selTech)}
+            style={ss.floatBreathWrap}>
+            <View style={ss.floatOrbOuter}>
+              <Animated.View style={[ss.floatOrbGlow, { opacity: orbGlow, backgroundColor: `${selTech.accent}30` }]} />
+              <Animated.View style={[ss.floatOrbRing, { transform: [{ scale: orbScale }], borderColor: `${selTech.accent}55` }]}>
+                <View style={[ss.floatOrbCore, { backgroundColor: `${selTech.accent}18` }]}>
+                  <View style={[ss.floatOrbDot, { backgroundColor: selTech.accent, shadowColor: selTech.accent }]} />
+                </View>
+              </Animated.View>
+            </View>
+            <Text style={[ss.floatLabel, { color: th.text }]}>Breathe</Text>
+            <Text style={[ss.floatSub, { color: th.text2 }]}>{phaseStr} · tap to begin</Text>
           </TouchableOpacity>
-          <View style={ss.dayBadge}>
-            <View style={[ss.dayDot, { backgroundColor: streak > 0 ? th.teal : th.label }]} />
-            <Text style={ss.dayTxt}>day {streak}</Text>
-          </View>
-        </View>
-      </View>
 
-      <ScrollView style={ss.scroll} contentContainerStyle={{ paddingBottom: 16, gap: 6 }}>
-
-        {/* BANKED SCREENTIME hero */}
-        <View style={ss.section}>
-          <Text style={ss.sectionLabel}>BANKED SCREENTIME</Text>
-          <View style={ss.heroRow}>
-            <Text style={ss.heroNum}>{fmtHHMM(earned).split(':')[0]}</Text>
-            <Text style={[ss.heroNum, { color: th.label }]}>:</Text>
-            <Text style={ss.heroNum}>{fmtHHMM(earned).split(':')[1]}</Text>
-            <Text style={ss.heroUnit}>min</Text>
-          </View>
-          <View style={ss.earnedRow}>
-            <Text style={[ss.earnedTxt, { color: th.earned }]}>+{fmtHHMM(earned)} earned</Text>
-            <Text style={[ss.earnedTxt, { color: th.spent }]}>  −{fmtHHMM(spent)} spent</Text>
-          </View>
-        </View>
-
-        {/* Today's mindful minutes */}
-        <View style={[ss.card, { marginHorizontal: 16, marginBottom: 10 }]}>
-          <View style={ss.cardHeader}>
-            <Text style={ss.cardTxt}>today's mindful minutes</Text>
-            <Text style={ss.cardTxt}><Text style={{ color: th.teal, fontWeight: '600' }}>{todaySess.length}</Text><Text style={{ color: th.label }}>/10</Text></Text>
-          </View>
-          <View style={ss.tlRow}>
-            {Array.from({ length: TL_SLOTS }, (_, i) => {
-              const h = TL_START + i;
-              const active = activeHours.has(h);
-              const curr = h === nowHour;
-              return <View key={i} style={[ss.tlSeg, { backgroundColor: active ? th.teal : curr ? th.teal + '35' : th.text4 }]} />;
+          {/* Technique chips — full width row below orb */}
+          <View style={[ss.techRow, { borderColor: th.border }]}>
+            {TECHNIQUES.map((t, i) => {
+              const active = selTech.id === t.id;
+              return (
+                <TouchableOpacity
+                  key={t.id}
+                  onPress={() => setSelTech(t)}
+                  style={[ss.techChip, {
+                    backgroundColor: active ? `${t.accent}18` : 'transparent',
+                    borderRightWidth: i < TECHNIQUES.length - 1 ? 1 : 0,
+                    borderRightColor: th.border,
+                  }]}>
+                  <Text style={[ss.techChipTxt, { color: active ? t.accent : th.text2 }]}>
+                    {t.name === 'box' ? 'Box' : t.name}
+                  </Text>
+                </TouchableOpacity>
+              );
             })}
           </View>
-          <View style={ss.tlLabels}>
-            {['6AM', 'NOON', 'NOW', '10PM'].map(l => <Text key={l} style={ss.tlLabel}>{l}</Text>)}
-          </View>
-        </View>
 
-        {/* LOCKED APPS — two states */}
-        <View style={[ss.section, { paddingBottom: 0, marginTop: 4 }]}>
-          {!data.stShieldEnabled ? (
-            /* ── STATE 1: Not blocked — wellness CTA ── */
-            <View style={{ backgroundColor: th.id === 'dark' ? 'rgba(79,205,216,0.06)' : 'rgba(8,145,178,0.05)', borderRadius: 15, padding: 14, borderWidth: 1, borderColor: `${th.teal}30` }}>
-              <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
-                <Text style={{ fontSize: 26, flexShrink: 0 }}>🌿</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ color: th.text, fontSize: 15, fontWeight: '700', marginBottom: 4 }}>Block Apps & Increase Wellness</Text>
-                  <Text style={{ color: th.text2, fontSize: 12, lineHeight: 18 }}>Select apps to limit. Set daily timers in Screen Time. Breathe to earn back access.</Text>
-                </View>
-              </View>
-              {/* Select & Block CTA */}
+          {/* Block distracting apps */}
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={onNavigateToScreen}
+            style={[ss.blockCard, { backgroundColor: th.surf, borderColor: th.border }]}>
+            <View style={[ss.blockIconBox, { backgroundColor: `${th.teal}18`, borderColor: `${th.teal}30` }]}>
+              <Ionicons name={data.stShieldEnabled ? 'lock-closed' : 'shield-outline'} size={18} color={th.teal} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[ss.blockTitle, { color: th.text }]}>Block distracting apps</Text>
+              <Text style={[ss.blockSub, { color: th.text2 }]}>
+                {activeCount > 0
+                  ? `${activeCount} app${activeCount !== 1 ? 's' : ''} selected${data.stShieldEnabled ? ' · blocked' : ''}`
+                  : 'Select apps to block'}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color={th.text2} />
+          </TouchableOpacity>
+
+
+          {/* Learn section */}
+          <View style={ss.learnHeader}>
+            <Text style={[ss.learnHeadTxt, { color: th.label }]}>BREATHING TECHNIQUES</Text>
+          </View>
+
+          {TECHNIQUES.map(t => {
+            const totalDur = t.phases.reduce((s, p) => s + p.dur, 0);
+            return (
               <TouchableOpacity
-                style={{ backgroundColor: `${th.teal}18`, borderWidth: 1, borderColor: `${th.teal}44`, borderRadius: 12, padding: 13, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-                onPress={async () => {
-                  // Try native FamilyActivityPicker first
-                  const r = await ScreenTime.showAppPicker();
-                  if (r.selected) {
-                    const shield = await ScreenTime.shieldApps();
-                    if (shield.success) {
-                      onUpdate({ ...data, stShieldEnabled: true });
-                      Alert.alert('✓ Apps Blocked', `${r.appCount} app(s) are now blocked. Breathe to unlock.`);
-                      return;
-                    }
-                  }
-                  // Fallback: manual picker + manual shield
-                  setShowManualAppPicker(true);
-                }}
-              >
-                <Text style={{ fontSize: 18 }}>📱</Text>
-                <Text style={{ color: th.teal, fontSize: 14, fontWeight: '600' }}>Select & Block Apps</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            /* ── STATE 2: Blocked — locked apps card ── */
-            <View style={[ss.lockedCard, { backgroundColor: th.id === 'dark' ? '#0d1520' : '#fff1f1', borderColor: 'rgba(220,60,60,0.22)' }]}>
-              <View style={ss.lockedHeader}>
-                <View style={[ss.lockedIconBox, { backgroundColor: 'rgba(220,60,60,0.18)', borderColor: 'rgba(220,60,60,0.38)' }]}><Text style={{ fontSize: 18 }}>🔒</Text></View>
-                <View style={{ flex: 1, marginLeft: 10 }}>
-                  <Text style={[ss.lockedTitle, { color: th.text }]}>Apps Blocked</Text>
-                  <Text style={[ss.lockedSub, { color: th.text2 }]}>{earned > 0 ? `${earned}m banked · tap to open` : 'Breathe to unlock'}</Text>
-                </View>
-                <TouchableOpacity onPress={async () => {
-                  const r = await ScreenTime.showAppPicker();
-                  if (r.selected) return; // picker used successfully
-                  // Fallback: show manual picker
-                  setShowManualAppPicker(true);
-                }}>
-                  <Text style={{ color: '#4a90d9', fontSize: 12, fontWeight: '600' }}>Manage →</Text>
-                </TouchableOpacity>
-              </View>
-
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 10 }} contentContainerStyle={{ gap: 8, alignItems: 'center' }}>
-                {APPS.filter(a => data.appEnabled?.[a.id]).map(app => {
-                  const isOpen = earned > 0;
-                  return (
-                    <TouchableOpacity key={app.id} onPress={() => handleOpenApp(app)}
-                      style={[ss.appChip, {
-                        backgroundColor: isOpen ? `${th.teal}18` : 'rgba(200,50,50,0.14)',
-                        borderColor: isOpen ? `${th.teal}55` : 'rgba(220,60,60,0.35)',
-                      }]}>
-                      <View style={[ss.chipIcon, { backgroundColor: app.color }]}>
-                        <Text style={ss.chipInitials}>{app.initials}</Text>
-                      </View>
-                      <Text style={[ss.chipName, { color: th.text }]}>{app.name}</Text>
-                      <Text style={{ fontSize: 11 }}>{isOpen ? '🔓' : '🔒'}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-                {APPS.filter(a => data.appEnabled?.[a.id]).length === 0 && (
-                  <TouchableOpacity onPress={() => setShowManualAppPicker(true)}>
-                    <Text style={{ color: th.teal, fontSize: 12, fontWeight: '600' }}>+ add apps</Text>
-                  </TouchableOpacity>
-                )}
-              </ScrollView>
-
-              <TouchableOpacity style={ss.unlockBtn} onPress={() => onStartSession(selTech)}>
-                <Text style={{ fontSize: 18 }}>⚡</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={ss.unlockTitle}>Breathe to Unlock Apps</Text>
-                  <Text style={ss.unlockSub}>{selTech.name} · 1 min = 10 min screen</Text>
-                </View>
-                <View style={ss.unlockBadge}>
-                  <Text style={ss.unlockBadgeTxt}>{earned > 0 ? `${earned}m` : 'earn'}</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-
-        {/* BREATHING section */}
-        <View style={[ss.section, { marginTop: 20 }]}>
-          <View style={ss.sectionRow}>
-            <Text style={ss.sectionLabel}>BREATHING</Text>
-            <View style={ss.tabPill}>
-              {(['Practice', 'Learn'] as const).map(t => (
-                <TouchableOpacity key={t} onPress={() => setBtab(t)} style={[ss.tabBtn, btab === t ? ss.tabBtnActive : {}]}>
-                  <Text style={[ss.tabBtnTxt, btab === t ? ss.tabBtnTxtActive : {}]}>{t}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {btab === 'Practice' ? (
-            <>
-              {/* Technique chips */}
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }} contentContainerStyle={{ gap: 8, paddingRight: 20 }}>
-                {TECHNIQUES.map(t => {
-                  const active = selTech.id === t.id;
-                  return (
-                    <TouchableOpacity key={t.id} onPress={() => setSelTech(t)} style={[ss.chip, { backgroundColor: active ? t.accent : th.text4, borderColor: active ? t.accent : th.border }]}>
-                      <Text style={[ss.chipTxt, { color: active ? '#07111e' : th.text2 }]}>{t.name}</Text>
-                      <Text style={[ss.chipTag, { color: active ? '#07111e99' : th.label }]}>{t.tag}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-
-              {/* Selected tech detail */}
-              <View style={[ss.techDetail, { borderColor: 'rgba(255,255,255,0.07)' }]}>
-                <View style={ss.techDetailRow}>
-                  <View style={{ flex: 1, paddingRight: 12 }}>
-                    <Text style={ss.techDetailName}>{selTech.name}</Text>
-                    <Text style={ss.techDetailDesc}>{selTech.desc}</Text>
-                    <Text style={[ss.techDetailPhase, {}]}>
-                      {selTech.phases.map((p, i) => `${i > 0 ? ' · ' : ''}${p.dur}`).join('')}
-                    </Text>
+                key={t.id}
+                activeOpacity={0.85}
+                onPress={() => { setSelTech(t); }}
+                style={[ss.learnCard, { backgroundColor: th.surf, borderColor: selTech.id === t.id ? `${t.accent}55` : th.border }]}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <View style={{ backgroundColor: t.tagBg, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 }}>
+                    <Text style={{ color: t.accent, fontSize: 10, fontWeight: '700', letterSpacing: 0.4 }}>{t.tag}</Text>
                   </View>
-                  <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={[ss.techEarn, { color: selTech.accent }]}>+{Math.floor(cycleSeconds * 10 / 60)}m</Text>
-                    <Text style={ss.techEarnSub}>per cycle</Text>
-                  </View>
+                  <Text style={{ color: `${t.accent}90`, fontSize: 12, fontWeight: '500' }}>{totalDur}s cycle</Text>
                 </View>
-              </View>
-            </>
-          ) : (
-            // Learn tab
-            TECHNIQUES.map(t => {
-              const isExp = expandedLearn === t.id;
-              const maxPhase = Math.max(...t.phases.map(p => p.dur));
-              return (
-                <View key={t.id} style={{ marginBottom: 10 }}>
-                  <TouchableOpacity style={[ss.learnCard, { borderBottomLeftRadius: isExp ? 0 : 13, borderBottomRightRadius: isExp ? 0 : 13 }]} onPress={() => setExpandedLearn(isExp ? null : t.id)}>
-                    <View style={ss.learnCardHeader}>
-                      <View>
-                        <View style={[ss.tagPill, { backgroundColor: t.tagBg }]}>
-                          <Text style={[ss.tagPillTxt, { color: t.accent }]}>{t.tag}</Text>
-                        </View>
-                        <Text style={ss.learnName}>{t.name}</Text>
-                      </View>
-                      <Text style={[ss.learnChevron, { color: t.accent }]}>{isExp ? '↑' : '↓'}</Text>
-                    </View>
-                    {t.phases.map((p, pi) => (
-                      <View key={pi} style={ss.phaseBarRow}>
-                        <Text style={ss.phaseBarLabel}>{p.label}</Text>
-                        <View style={ss.phaseBarBg}>
-                          <View style={[ss.phaseBarFill, { width: `${(p.dur / maxPhase) * 100}%` as any, backgroundColor: t.accent }]} />
-                        </View>
-                        <Text style={ss.phaseBarDur}>{p.dur}s</Text>
-                      </View>
-                    ))}
-                  </TouchableOpacity>
-                  {isExp && (
-                    <View style={[ss.learnExpanded, { borderColor: 'rgba(255,255,255,0.07)' }]}>
-                      <Text style={ss.learnExpandedSec}>HOW TO DO IT</Text>
-                      {/* Steps omitted for brevity — rendered from TECHNIQUE_INFO in practice */}
-                      <Text style={{ color: th.text2, fontSize: 13, lineHeight: 20 }}>{t.desc}</Text>
-                      <TouchableOpacity style={[ss.startBtn, { backgroundColor: t.accent, marginTop: 14 }]} onPress={() => { setSelTech(t); setBtab('Practice'); }}>
-                        <Text style={[ss.startBtnTxt, { color: '#07111e' }]}>start {t.name} →</Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
+                <Text style={{ color: th.text, fontSize: 14, fontWeight: '600', marginBottom: 4 }}>{t.name === 'box' ? 'Box Breathing' : t.name}</Text>
+                <Text style={{ color: th.text2, fontSize: 12, lineHeight: 18, marginBottom: 12 }}>{t.desc}</Text>
+                {/* Phase bars */}
+                <View style={{ flexDirection: 'row', gap: 3, marginBottom: 6 }}>
+                  {t.phases.map((p, i) => (
+                    <View key={i} style={{ flex: p.dur, height: 3, borderRadius: 2, backgroundColor: i === 0 ? t.accent : `${t.accent}50` }} />
+                  ))}
                 </View>
-              );
-            })
-          )}
-        </View>
+                <View style={{ flexDirection: 'row' }}>
+                  {t.phases.map((p, i) => (
+                    <View key={i} style={{ flex: p.dur }}>
+                      <Text style={{ color: th.label, fontSize: 10 }} numberOfLines={1}>
+                        {p.label} <Text style={{ color: th.text2, fontWeight: '600' }}>{p.dur}s</Text>
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+                <TouchableOpacity
+                  onPress={() => onStartSession(t)}
+                  style={{ marginTop: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderColor: `${t.accent}50`, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16, backgroundColor: `${t.accent}10` }}>
+                  <Text style={{ color: t.accent, fontSize: 14, fontWeight: '600', letterSpacing: 0.2 }}>Breathe</Text>
+                  <Ionicons name="arrow-forward" size={16} color={t.accent} />
+                </TouchableOpacity>
+              </TouchableOpacity>
+            );
+          })}
 
-        {/* Reminder row */}
-        <TouchableOpacity onPress={() => setShowReminder(true)} style={ss.reminderRow}>
-          <Text style={{ fontSize: 18 }}>🔔</Text>
-          <View style={{ flex: 1 }}>
-            <Text style={ss.reminderTitle}>Daily Reminder</Text>
-            <Text style={ss.reminderSub}>
-              {data.reminder?.enabled ? `Every day at ${data.reminder.time} · tap to change` : 'Set a daily breathing alarm'}
-            </Text>
-          </View>
-          <View style={[ss.reminderDot, { backgroundColor: data.reminder?.enabled ? th.teal : th.text4 }]} />
-        </TouchableOpacity>
-      </ScrollView>
-
+        </ScrollView>
+      </SafeAreaView>
 
       {/* Reminder Modal */}
       <Modal visible={showReminder} transparent animationType="slide" onRequestClose={() => setShowReminder(false)}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'flex-end' }}>
           <TouchableOpacity style={StyleSheet.absoluteFillObject} onPress={() => setShowReminder(false)} />
-          <View style={ss.reminderSheet}>
-            <View style={ss.reminderHandle} />
-            <Text style={ss.reminderSheetTitle}>Daily Reminder</Text>
-            <Text style={ss.reminderSheetSub}>Set a daily alarm to breathe. Scheduled as a repeating notification.</Text>
+          <View style={[ss.reminderSheet, { backgroundColor: th.surf, borderColor: th.border }]}>
+            <View style={[ss.reminderHandle, { backgroundColor: th.text2 }]} />
+            <Text style={[ss.reminderSheetTitle, { color: th.text }]}>Daily Reminder</Text>
+            <Text style={{ color: th.text2, fontSize: 13, lineHeight: 18, marginBottom: 20 }}>Set a daily alarm to breathe.</Text>
 
-            <View style={ss.reminderRow2}>
+            <View style={[ss.reminderRow, { backgroundColor: th.bg, borderColor: th.border }]}>
               <View style={{ flex: 1 }}>
-                <Text style={ss.reminderLabel}>Enable reminder</Text>
-                <Text style={ss.reminderSub}>Fires every day at the set time</Text>
+                <Text style={[ss.reminderLabel, { color: th.text }]}>Enable reminder</Text>
+                <Text style={{ color: th.text2, fontSize: 12, marginTop: 2 }}>Fires every day at the set time</Text>
               </View>
-              <Switch value={reminderOn} onValueChange={setReminderOn} trackColor={{ true: th.teal, false: th.text4 }} thumbColor="#fff" />
+              <Switch value={reminderOn} onValueChange={setReminderOn} trackColor={{ true: th.teal, false: th.border }} thumbColor="#fff" />
             </View>
 
-            <View style={[ss.reminderRow2, { opacity: reminderOn ? 1 : 0.4 }]}>
-              <Text style={ss.reminderLabel}>Time</Text>
-              <View style={{ flexDirection:'row', alignItems:'center', gap:10 }}>
-                {/* Hour − / + */}
-                <View style={{ alignItems:'center' }}>
-                  <TouchableOpacity disabled={!reminderOn} onPress={()=>{ const [h,m]=reminderTime.split(':').map(Number); setReminderTime(`${String((h-1+24)%24).padStart(2,'0')}:${String(m).padStart(2,'0')}`); }} style={ss.stepBtn2}><Text style={ss.stepTxt2}>+</Text></TouchableOpacity>
-                  <Text style={[ss.reminderTimeBtn,{color:th.teal}]}>{reminderTime.split(':')[0]}</Text>
-                  <TouchableOpacity disabled={!reminderOn} onPress={()=>{ const [h,m]=reminderTime.split(':').map(Number); setReminderTime(`${String((h+1)%24).padStart(2,'0')}:${String(m).padStart(2,'0')}`); }} style={ss.stepBtn2}><Text style={ss.stepTxt2}>−</Text></TouchableOpacity>
-                </View>
-                <Text style={[ss.reminderTimeBtn,{color:th.label}]}>:</Text>
-                {/* Minute − / + */}
-                <View style={{ alignItems:'center' }}>
-                  <TouchableOpacity disabled={!reminderOn} onPress={()=>{ const [h,m]=reminderTime.split(':').map(Number); setReminderTime(`${String(h).padStart(2,'0')}:${String((m+15)%60).padStart(2,'0')}`); }} style={ss.stepBtn2}><Text style={ss.stepTxt2}>+</Text></TouchableOpacity>
-                  <Text style={[ss.reminderTimeBtn,{color:th.teal}]}>{reminderTime.split(':')[1]}</Text>
-                  <TouchableOpacity disabled={!reminderOn} onPress={()=>{ const [h,m]=reminderTime.split(':').map(Number); setReminderTime(`${String(h).padStart(2,'0')}:${String((m-15+60)%60).padStart(2,'0')}`); }} style={ss.stepBtn2}><Text style={ss.stepTxt2}>−</Text></TouchableOpacity>
-                </View>
+            <View style={[ss.reminderRow, { backgroundColor: th.bg, borderColor: th.border, opacity: reminderOn ? 1 : 0.4 }]}>
+              <Text style={[ss.reminderLabel, { color: th.text }]}>Time</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                {(['hour', 'min'] as const).map((unit, ui) => (
+                  <View key={unit} style={{ alignItems: 'center' }}>
+                    <TouchableOpacity disabled={!reminderOn} onPress={() => {
+                      const [h, m] = reminderTime.split(':').map(Number);
+                      if (ui === 0) setReminderTime(`${String((h - 1 + 24) % 24).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+                      else setReminderTime(`${String(h).padStart(2, '0')}:${String((m + 15) % 60).padStart(2, '0')}`);
+                    }} style={[ss.stepBtn, { borderColor: th.border, backgroundColor: th.bg }]}>
+                      <Text style={[ss.stepTxt, { color: th.text }]}>+</Text>
+                    </TouchableOpacity>
+                    <Text style={{ color: th.teal, fontSize: 22, fontWeight: '700', minWidth: 30, textAlign: 'center' }}>
+                      {ui === 0 ? reminderTime.split(':')[0] : reminderTime.split(':')[1]}
+                    </Text>
+                    <TouchableOpacity disabled={!reminderOn} onPress={() => {
+                      const [h, m] = reminderTime.split(':').map(Number);
+                      if (ui === 0) setReminderTime(`${String((h + 1) % 24).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+                      else setReminderTime(`${String(h).padStart(2, '0')}:${String((m - 15 + 60) % 60).padStart(2, '0')}`);
+                    }} style={[ss.stepBtn, { borderColor: th.border, backgroundColor: th.bg }]}>
+                      <Text style={[ss.stepTxt, { color: th.text }]}>−</Text>
+                    </TouchableOpacity>
+                    {ui === 0 && <Text style={{ color: th.text2, fontSize: 22, fontWeight: '700', marginTop: -50, marginLeft: 30 }}>:</Text>}
+                  </View>
+                ))}
               </View>
             </View>
 
-            <TouchableOpacity style={[ss.reminderSaveBtn, { opacity: savingReminder ? 0.6 : 1 }]} onPress={() => saveReminder(reminderOn, reminderTime)} disabled={savingReminder}>
-              <Text style={ss.reminderSaveTxt}>{savingReminder ? 'Setting…' : reminderOn ? `Set Alarm for ${reminderTime}` : 'Save (off)'}</Text>
+            <TouchableOpacity
+              style={[ss.saveBtn, { backgroundColor: th.teal, opacity: savingReminder ? 0.6 : 1 }]}
+              onPress={() => saveReminder(reminderOn, reminderTime)}
+              disabled={savingReminder}>
+              <Text style={{ color: th.id === 'dark' ? '#07111e' : '#fff', fontSize: 15, fontWeight: '700' }}>
+                {savingReminder ? 'Setting…' : reminderOn ? `Set for ${reminderTime}` : 'Save (off)'}
+              </Text>
             </TouchableOpacity>
 
-            {/* Open Reminders App */}
             <TouchableOpacity
-              style={{ marginTop: 10, paddingVertical: 12, alignItems: 'center', borderWidth: 1, borderColor: th.border, borderRadius: 12, backgroundColor: th.text4 }}
-              onPress={() => Linking.openURL('x-apple-reminderkit://')}
-            >
-              <Text style={{ color: th.teal, fontSize: 13, fontWeight: '600' }}>📅 Open Reminders App →</Text>
+              style={{ marginTop: 10, paddingVertical: 12, alignItems: 'center', borderWidth: 1, borderColor: th.border, borderRadius: 12, backgroundColor: th.bg }}
+              onPress={() => Linking.openURL('x-apple-reminderkit://')}>
+              <Text style={{ color: th.teal, fontSize: 13, fontWeight: '600' }}>Open Reminders App →</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
-    {/* Manual app selector modal (fallback when FamilyActivityPicker unavailable) */}
-    <Modal visible={showManualAppPicker} transparent animationType="slide" onRequestClose={() => setShowManualAppPicker(false)}>
-      <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.75)', justifyContent:'flex-end' }}>
-        <TouchableOpacity style={StyleSheet.absoluteFillObject} onPress={() => setShowManualAppPicker(false)} />
-        <View style={{ backgroundColor: th.sheetBg || th.surf, borderRadius:24, padding:22, paddingBottom:40, borderWidth:1, borderColor: th.border }}>
-          <View style={{ width:40,height:4,borderRadius:2,backgroundColor:th.text4,alignSelf:'center',marginBottom:18 }}/>
-          <Text style={{ color:th.text, fontSize:18, fontWeight:'700', marginBottom:4 }}>Select Apps to Block</Text>
-          <Text style={{ color:th.text2, fontSize:13, marginBottom:18, lineHeight:18 }}>Toggle apps to add them to your blocked list.</Text>
-          {APPS.map(app => {
-            const on = !!data.appEnabled?.[app.id];
-            return (
-              <TouchableOpacity key={app.id} onPress={() => onUpdate({ ...data, appEnabled:{ ...(data.appEnabled||{}), [app.id]: !on } })}
-                style={{ flexDirection:'row', alignItems:'center', gap:14, backgroundColor:on?`${app.color}18`:th.text4, borderWidth:1, borderColor:on?`${app.color}55`:th.border, borderRadius:13, padding:13, marginBottom:9 }}>
-                <View style={{ width:40,height:40,borderRadius:10,backgroundColor:app.color,alignItems:'center',justifyContent:'center',flexShrink:0 }}>
-                  <Text style={{ color:'rgba(255,255,255,0.92)',fontSize:12,fontWeight:'700' }}>{app.initials}</Text>
-                </View>
-                <View style={{ flex:1 }}>
-                  <Text style={{ color:th.text, fontSize:15, fontWeight:'600' }}>{app.name}</Text>
-                  <Text style={{ color:th.text2, fontSize:11 }}>{on?'will be blocked':'not tracked'}</Text>
-                </View>
-                <Switch value={on} onValueChange={() => onUpdate({ ...data, appEnabled:{ ...(data.appEnabled||{}), [app.id]: !on } })} trackColor={{ true:th.teal, false:th.text4 }} thumbColor="#fff" />
-              </TouchableOpacity>
-            );
-          })}
-          <TouchableOpacity onPress={() => setShowManualAppPicker(false)} style={{ backgroundColor:th.teal, borderRadius:12, padding:14, alignItems:'center', marginTop:4 }}>
-            <Text style={{ color: th.id === 'dark' ? '#07111e' : '#fff', fontSize:15, fontWeight:'700' }}>Done</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
-;
+
+const styles = (th: Theme) => StyleSheet.create({
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14 },
+  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  logoBox: { width: 30, height: 30, borderRadius: 9 },
+  logoTxt: { fontSize: 18, fontWeight: '600', letterSpacing: -0.3 },
+  premBtn: { backgroundColor: 'rgba(164,142,232,0.18)', borderWidth: 1, borderColor: 'rgba(164,142,232,0.40)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5 },
+  premBtnTxt: { color: '#a48ee8', fontSize: 12, fontWeight: '700' },
+  iconBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  dayBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: th.surf, borderWidth: 1, borderColor: th.border, borderRadius: 20, paddingHorizontal: 11, paddingVertical: 6 },
+  dayDot: { width: 6, height: 6, borderRadius: 3 },
+  dayTxt: { fontSize: 13, fontWeight: '500' },
+
+  statsCard: { marginHorizontal: 16, borderRadius: 16, borderWidth: 1, flexDirection: 'row', paddingVertical: 20, marginBottom: 14 },
+  statCol: { flex: 1, alignItems: 'center' },
+  statNum: { fontSize: 28, fontWeight: '300', letterSpacing: -1, lineHeight: 32 },
+  statUnit: { fontSize: 15, fontWeight: '300' },
+  statLbl: { fontSize: 12, marginTop: 5 },
+  statDivider: { width: 1, marginVertical: 4 },
+
+  floatBreathWrap: { alignItems: 'center', paddingVertical: 12, marginBottom: 4 },
+  floatOrbOuter: { width: 180, height: 180, alignItems: 'center', justifyContent: 'center', marginBottom: 18 },
+  floatOrbGlow: { position: 'absolute', width: 180, height: 180, borderRadius: 90 },
+  floatOrbRing: { width: 162, height: 162, borderRadius: 81, borderWidth: 1.5, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
+  floatOrbCore: { width: 112, height: 112, borderRadius: 56, alignItems: 'center', justifyContent: 'center' },
+  floatOrbDot: { width: 32, height: 32, borderRadius: 16, shadowOpacity: 0.9, shadowRadius: 16, shadowOffset: { width: 0, height: 0 } },
+  floatLabel: { fontSize: 24, fontWeight: '300', letterSpacing: 4, marginBottom: 6 },
+  floatSub: { fontSize: 12 },
+
+  techRow: { flexDirection: 'row', marginHorizontal: 16, borderRadius: 14, borderWidth: 1, overflow: 'hidden', marginBottom: 14 },
+  techChip: { flex: 1, paddingVertical: 12, alignItems: 'center', justifyContent: 'center' },
+  techChipTxt: { fontSize: 13, fontWeight: '500' },
+
+  blockCard: { marginHorizontal: 16, borderRadius: 16, borderWidth: 1, flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12, marginBottom: 14 },
+  blockIconBox: { width: 40, height: 40, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  blockTitle: { fontSize: 15, fontWeight: '600', marginBottom: 2 },
+  blockSub: { fontSize: 12 },
+
+  appsGrid: { marginHorizontal: 16, borderRadius: 16, borderWidth: 1, padding: 10, flexDirection: 'row', flexWrap: 'wrap', marginBottom: 14 },
+  appCell: { width: '33.33%', alignItems: 'center', paddingVertical: 10 },
+  appIconWrap: { position: 'relative', marginBottom: 6 },
+  appIcon: { width: 54, height: 54, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  appInitials: { color: 'rgba(255,255,255,0.92)', fontSize: 14, fontWeight: '700' },
+  lockBadge: { position: 'absolute', bottom: -2, right: -2, width: 16, height: 16, borderRadius: 8, backgroundColor: '#1a1a2e', borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  appName: { fontSize: 11, textAlign: 'center', paddingHorizontal: 4 },
+
+  learnHeader: { marginHorizontal: 16, marginBottom: 12 },
+  learnHeadTxt: { fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', fontWeight: '600' },
+  learnCard: { marginHorizontal: 16, borderRadius: 18, borderWidth: 1, padding: 20, marginBottom: 16 },
+
+  reminderSheet: { borderRadius: 28, padding: 24, paddingBottom: 44, borderWidth: 1, borderBottomWidth: 0 },
+  reminderHandle: { width: 40, height: 4, borderRadius: 2, opacity: 0.3, alignSelf: 'center', marginBottom: 22 },
+  reminderSheetTitle: { fontSize: 19, fontWeight: '700', marginBottom: 4 },
+  reminderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderRadius: 13, padding: 15, marginBottom: 10 },
+  reminderLabel: { fontSize: 14, fontWeight: '500' },
+  stepBtn: { width: 30, height: 24, alignItems: 'center', justifyContent: 'center', borderRadius: 6, borderWidth: 1 },
+  stepTxt: { fontSize: 14, lineHeight: 18, fontWeight: '600' },
+  saveBtn: { borderRadius: 13, padding: 15, alignItems: 'center', marginTop: 6 },
+});
