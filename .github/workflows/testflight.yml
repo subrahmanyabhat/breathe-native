@@ -78,9 +78,6 @@ jobs:
           echo "$ASC_API_KEY_P8" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8
 
       - name: Archive
-        env:
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: |
           xcodebuild \
             -workspace ios/Breathe.xcworkspace \
@@ -88,13 +85,10 @@ jobs:
             -configuration Release \
             -destination "generic/platform=iOS" \
             -archivePath ios/build/Breathe.xcarchive \
-            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="iPhone Distribution" \
             DEVELOPMENT_TEAM=PT83LJRA65 \
-            archive \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8 \
-            -authenticationKeyID "${ASC_KEY_ID}" \
-            -authenticationKeyIssuerID "${ASC_ISSUER_ID}"
+            archive
 
       - name: Export IPA
         run: |
