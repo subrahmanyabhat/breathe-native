@@ -45,8 +45,9 @@ jobs:
           security import /tmp/cert.p12 -k ci.keychain -P "$CERT_PASSWORD" \
             -T /usr/bin/codesign -T /usr/bin/security
           security set-key-partition-list -S apple-tool:,apple: -s -k "ci" ci.keychain
+          security list-keychains -d user -s ci.keychain ~/Library/Keychains/login.keychain-db
           rm /tmp/cert.p12
-          security find-identity -v -p codesigning ci.keychain
+          security find-identity -v -p codesigning
 
       - name: Install Provisioning Profiles
         env:
@@ -72,8 +73,8 @@ jobs:
             -archivePath ios/build/Breathe.xcarchive \
             CODE_SIGN_STYLE=Automatic \
             DEVELOPMENT_TEAM=PT83LJRA65 \
-            OTHER_CODE_SIGN_FLAGS="--keychain ci.keychain" \
-            archive
+            archive \
+            -allowProvisioningUpdates
 
       - name: Export IPA
         run: |
