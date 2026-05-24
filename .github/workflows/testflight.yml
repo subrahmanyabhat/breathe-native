@@ -90,13 +90,38 @@ jobs:
             -authenticationKeyID "${ASC_KEY_ID}" \
             -authenticationKeyIssuerID "${ASC_ISSUER_ID}"
 
-      - name: Package IPA from archive
+      - name: Export IPA
         run: |
-          APP_PATH=$(find ios/build/Breathe.xcarchive/Products -name "*.app" | head -1)
-          mkdir -p ios/build/IPA/Payload
-          cp -r "$APP_PATH" ios/build/IPA/Payload/
-          cd ios/build/IPA && zip -qr Breathe.ipa Payload/
-          echo "IPA size: $(du -sh Breathe.ipa | cut -f1)"
+          cat > /tmp/ExportOptions.plist << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>PT83LJRA65</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>com.breathex.app</key>
+              <string>Breathe AppStore</string>
+              <key>com.breathex.app.monitor</key>
+              <string>BreatheMonitor AppStore</string>
+              <key>com.breathex.app.shield</key>
+              <string>BreatheShield AppStore</string>
+              <key>com.breathex.app.shieldaction</key>
+              <string>BreatheShieldAction AppStore</string>
+            </dict>
+          </dict>
+          </plist>
+          EOF
+          xcodebuild -exportArchive \
+            -archivePath ios/build/Breathe.xcarchive \
+            -exportOptionsPlist /tmp/ExportOptions.plist \
+            -exportPath ios/build/IPA
+          echo "IPA size: $(du -sh ios/build/IPA/Breathe.ipa | cut -f1)"
 
       - name: Upload to TestFlight
         env:
