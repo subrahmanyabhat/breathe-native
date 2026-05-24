@@ -64,10 +64,27 @@ jobs:
         run: |
           PP_DIR=~/Library/MobileDevice/Provisioning\ Profiles
           mkdir -p "$PP_DIR"
-          echo "$PROFILE_APP_BASE64"          | base64 --decode > "$PP_DIR/app.mobileprovision"
-          echo "$PROFILE_MONITOR_BASE64"      | base64 --decode > "$PP_DIR/monitor.mobileprovision"
-          echo "$PROFILE_SHIELD_BASE64"       | base64 --decode > "$PP_DIR/shield.mobileprovision"
-          echo "$PROFILE_SHIELDACTION_BASE64" | base64 --decode > "$PP_DIR/shieldaction.mobileprovision"
+          install_profile() {
+            local b64="$1"
+            local tmp=$(mktemp /tmp/profile.XXXXXX.mobileprovision)
+            echo "$b64" | base64 --decode > "$tmp"
+            # Extract UUID from profile plist and install with UUID filename
+            local uuid=$(python3 -c "
+          import plistlib, sys
+          raw = open('$tmp','rb').read()
+          start = raw.find(b'<?xml')
+          end = raw.find(b'</plist>') + 8
+          d = plistlib.loads(raw[start:end])
+          print(d['UUID'])
+          ")
+            cp "$tmp" "$PP_DIR/${uuid}.mobileprovision"
+            rm "$tmp"
+            echo "Installed profile UUID: $uuid"
+          }
+          install_profile "$PROFILE_APP_BASE64"
+          install_profile "$PROFILE_MONITOR_BASE64"
+          install_profile "$PROFILE_SHIELD_BASE64"
+          install_profile "$PROFILE_SHIELDACTION_BASE64"
 
       - name: Setup App Store Connect API Key
         env:
