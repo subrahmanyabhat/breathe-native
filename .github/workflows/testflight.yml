@@ -138,7 +138,9 @@ jobs:
             -archivePath ios/build/Breathe.xcarchive \
             -exportOptionsPlist /tmp/ExportOptions.plist \
             -exportPath ios/build/IPA
-          echo "IPA size: $(du -sh ios/build/IPA/Breathe.ipa | cut -f1)"
+          IPA_PATH=$(find ios/build/IPA -name "*.ipa" | head -1)
+          echo "IPA: $IPA_PATH ($(du -sh "$IPA_PATH" | cut -f1))"
+          echo "IPA_PATH=$IPA_PATH" >> $GITHUB_ENV
 
       - name: Upload to TestFlight
         env:
@@ -146,7 +148,7 @@ jobs:
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: |
           xcrun altool --upload-app \
-            -f ios/build/IPA/Breathe.ipa \
+            -f "$IPA_PATH" \
             -t ios \
             --apiKey "${ASC_KEY_ID}" \
             --apiIssuer "${ASC_ISSUER_ID}" \
