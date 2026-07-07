@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PRIVACY_URL = 'https://narrow-geometry-8d7.notion.site/Breathe-Privacy-Policy-366017564263814d8acee4f287319443';
 const TERMS_URL   = 'https://narrow-geometry-8d7.notion.site/Breathe-Terms-Conditions-366017564263816abc4aeb8e7e8bb8d0';
+const COFFEE_URL  = 'https://buymeacoffee.com/subrahmanya';
 
 interface Props {
   data: AppData;
@@ -217,6 +218,20 @@ export default function SettingsScreen({ data, onUpdate, th = DARK, isDark = tru
               </TouchableOpacity>
             ))}
           </View>
+
+          {/* Buy Me a Coffee */}
+          <Text style={[ss.section, { color: th.label }]}>SUPPORT</Text>
+          <TouchableOpacity
+            onPress={() => Linking.openURL(COFFEE_URL)}
+            style={[ss.group, { backgroundColor: th.surf, borderColor: th.border, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14 }]}
+            activeOpacity={0.8}>
+            <Text style={{ fontSize: 26 }}>☕</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[ss.rowLabel, { color: th.text }]}>Buy me a coffee</Text>
+              <Text style={[ss.rowSub, { color: th.text2 }]}>Support Breathe development</Text>
+            </View>
+            <Ionicons name="open-outline" size={16} color={th.teal} />
+          </TouchableOpacity>
 
           {/* About */}
           <Text style={[ss.section, { color: th.label }]}>ABOUT</Text>
