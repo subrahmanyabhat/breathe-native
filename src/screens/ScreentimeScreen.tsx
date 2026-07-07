@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Linking, Platform, AppState } from 'react-native';
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert, Linking, Platform, AppState } from 'react-native';
 import { AppData, last7 } from '../storage';
 import { TECHNIQUES, Technique } from '../data';
 import { DARK, Theme } from '../theme';
 import { AppTokenView, scheduleSlotMonitoring, stopSlotMonitoring } from '../../modules/screen-time';
+import * as AndroidBlocker from '../../modules/android-blocker';
+import type { InstalledApp } from '../../modules/android-blocker';
 
 const safeSTStatus = () => { try { return require('../../modules/screen-time').getAuthorizationStatus(); } catch { return 'unavailable'; } };
 const doAuth     = async () => { try { return await require('../../modules/screen-time').requestAuthorization(); } catch { return { authorized: false }; } };
@@ -35,6 +37,36 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPre
   const [slots, setSlots] = useState<{ index: number; name: string; bundleId: string; iconBase64: string; isBlocked: boolean; hashKey: string }[]>(
     (data?.slots || []).map(s => ({ ...s, iconBase64: '' }))
   );
+  const [androidPerms, setAndroidPerms] = useState<{ usage: boolean; overlay: boolean } | null>(null);
+  const [androidAppsMap, setAndroidAppsMap] = useState<Record<string, InstalledApp>>({});
+
+  const checkAndroidPerms = useCallback(async () => {
+    if (Platform.OS !== 'android') return;
+    const [usage, overlay] = await Promise.all([
+      AndroidBlocker.hasUsageStatsPermission(),
+      AndroidBlocker.hasOverlayPermission(),
+    ]);
+    setAndroidPerms({ usage, overlay });
+  }, []);
+
+  // Load ALL installed apps once — used for name + icon lookup
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    checkAndroidPerms();
+    AndroidBlocker.getInstalledApps().then(list => {
+      const map: Record<string, InstalledApp> = {};
+      list.forEach(a => { map[a.packageName] = a; });
+      setAndroidAppsMap(map);
+    }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const sub = AppState.addEventListener('change', state => {
+      if (state === 'active') checkAndroidPerms();
+    });
+    return () => sub.remove();
+  }, [checkAndroidPerms]);
 
   useEffect(() => {
     if (!data || typeof data !== 'object') return;
@@ -63,7 +95,9 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPre
   const isAuth = status === 'approved';
   const todayKey = new Date().toISOString().slice(0, 10);
   const earned = (data?.sessions || []).filter(s => s.date === todayKey).reduce((sum, s) => sum + (s.duration || 0), 0);
-  const totalAppCount = slots.length;
+  const totalAppCount = Platform.OS === 'android'
+    ? (data?.androidBlockedPackages || []).length
+    : slots.length;
   const chart = last7(data?.sessions || []);
   const maxEarned = Math.max(...chart.map(d => d.earned), 1);
 
@@ -195,6 +229,32 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPre
             </TouchableOpacity>
           </View>
 
+          {/* Android permissions + blocking */}
+          {Platform.OS === 'android' && androidPerms && !androidPerms.usage && (
+            <TouchableOpacity
+              onPress={() => AndroidBlocker.openUsageStatsSettings()}
+              style={[ss.card, { marginHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(232,162,60,0.08)', borderColor: 'rgba(232,162,60,0.25)' }]}>
+              <Ionicons name="warning-outline" size={20} color="#e8a23c" />
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: '#e8a23c', fontSize: 13, fontWeight: '600' }}>Usage Access Required</Text>
+                <Text style={{ color: th.text2, fontSize: 11, marginTop: 2 }}>Tap to grant in Settings → Usage Access</Text>
+              </View>
+              <Ionicons name="open-outline" size={16} color="#e8a23c" />
+            </TouchableOpacity>
+          )}
+          {Platform.OS === 'android' && androidPerms && !androidPerms.overlay && (
+            <TouchableOpacity
+              onPress={() => AndroidBlocker.openOverlaySettings()}
+              style={[ss.card, { marginHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(232,162,60,0.08)', borderColor: 'rgba(232,162,60,0.25)' }]}>
+              <Ionicons name="warning-outline" size={20} color="#e8a23c" />
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: '#e8a23c', fontSize: 13, fontWeight: '600' }}>Display Over Apps Required</Text>
+                <Text style={{ color: th.text2, fontSize: 11, marginTop: 2 }}>Tap to grant in Settings → Display over other apps</Text>
+              </View>
+              <Ionicons name="open-outline" size={16} color="#e8a23c" />
+            </TouchableOpacity>
+          )}
+
           {/* Auth banner */}
           {Platform.OS === 'ios' && !isAuth && (
             <TouchableOpacity onPress={reqAuth}
@@ -220,7 +280,68 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPre
               </Text>
             </TouchableOpacity>
 
-            {slots.map(slot => {
+            {/* Android: per-app cards with limit/monitoring, same as iOS */}
+            {Platform.OS === 'android' && (data?.androidBlockedPackages || []).map(pkg => {
+              const appInfo = androidAppsMap[pkg];
+              const lim = data.androidAppLimits?.[pkg] || 15;
+              const isMon = !!data.androidAppMonitored?.[pkg];
+              const activatedAt = data.androidAppActivatedAt?.[pkg] || 0;
+              const elapsed = (isMon && activatedAt) ? Math.round((now - activatedAt) / 60000) : 0;
+              const isBlocked = isMon && activatedAt > 0 && elapsed >= lim;
+              return (
+                <View key={pkg} style={ss.appCard}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    {appInfo?.icon ? (
+                      <Image
+                        source={{ uri: `data:image/png;base64,${appInfo.icon}` }}
+                        style={{ width: 44, height: 44, borderRadius: 10, marginRight: 12 }}
+                      />
+                    ) : (
+                      <View style={{ width: 44, height: 44, borderRadius: 10, marginRight: 12, backgroundColor: th.border }} />
+                    )}
+                    <Text style={{ color: th.text, fontSize: 15, fontWeight: '600', flex: 1 }} numberOfLines={1}>
+                      {appInfo?.appName || pkg}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={async () => {
+                        const next = (data.androidBlockedPackages || []).filter(p => p !== pkg);
+                        const newMon = { ...(data.androidAppMonitored || {}), [pkg]: false };
+                        const newAt = { ...(data.androidAppActivatedAt || {}), [pkg]: 0 };
+                        // Remove from service blocked list
+                        const serviceBlocked = next.filter(p => !!(data.androidAppMonitored || {})[p]);
+                        await AndroidBlocker.setBlockedApps(serviceBlocked);
+                        if (serviceBlocked.length === 0) await AndroidBlocker.stopBlockingService();
+                        onUpdate({ ...data, androidBlockedPackages: next, androidAppMonitored: newMon, androidAppActivatedAt: newAt, androidBlockingActive: serviceBlocked.length > 0 });
+                      }}
+                      style={ss.removeBtn}>
+                      <Ionicons name="close" size={16} color="#e05555" />
+                    </TouchableOpacity>
+                  </View>
+                  {renderLimitSection(
+                    lim, isMon, isBlocked,
+                    (v) => onUpdate({ ...data, androidAppLimits: { ...(data.androidAppLimits || {}), [pkg]: v } }),
+                    async () => {
+                      if (!androidPerms?.usage || !androidPerms?.overlay) {
+                        Alert.alert('Permissions needed', 'Grant Usage Access and Display Over Apps permissions first.');
+                        return;
+                      }
+                      onUpdate({ ...data, androidAppMonitored: { ...(data.androidAppMonitored || {}), [pkg]: true }, androidAppActivatedAt: { ...(data.androidAppActivatedAt || {}), [pkg]: Date.now() } });
+                    },
+                    () => onStartSession(TECHNIQUES[0], `android_pkg_${pkg}`),
+                    async () => {
+                      const newMon = { ...(data.androidAppMonitored || {}), [pkg]: false };
+                      const newAt = { ...(data.androidAppActivatedAt || {}), [pkg]: 0 };
+                      await AndroidBlocker.setBlockedApps((data.androidBlockedPackages || []).filter(p => p !== pkg && !!(newMon[p])));
+                      onUpdate({ ...data, androidAppMonitored: newMon, androidAppActivatedAt: newAt });
+                    },
+                    activatedAt,
+                  )}
+                </View>
+              );
+            })}
+
+            {/* iOS: slot monitoring per app */}
+            {Platform.OS === 'ios' && slots.map(slot => {
               const isBlocked = slot.isBlocked || !!data?.stShieldEnabled;
               const slotLim = data.slotLimits?.[slot.hashKey] || 15;
               const slotMon = !!data.slotMonitored?.[slot.hashKey];
@@ -268,8 +389,8 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPre
               );
             })}
 
-            {/* Unlock All */}
-            {data.stShieldEnabled && (
+            {/* Unlock All (iOS only) */}
+            {Platform.OS === 'ios' && data.stShieldEnabled && (
               <TouchableOpacity
                 onPress={async () => {
                   const r = await doUnshield();
@@ -282,17 +403,19 @@ export default function ScreentimeScreen({ data, onUpdate, onStartSession, isPre
               </TouchableOpacity>
             )}
 
-            {/* Open iOS Screen Time */}
-            <TouchableOpacity
-              onPress={() => Linking.openURL('App-Prefs:root=SCREEN_TIME').catch(() => Linking.openSettings())}
-              style={[ss.card, { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: `${th.teal}08`, borderColor: `${th.teal}25` }]}>
-              <Ionicons name="bar-chart-outline" size={22} color={th.teal} />
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: th.text, fontSize: 14, fontWeight: '600' }}>View Full Screen Time</Text>
-                <Text style={{ color: th.text2, fontSize: 11, marginTop: 2 }}>Usage, limits & reports → iOS Settings</Text>
-              </View>
-              <Ionicons name="open-outline" size={16} color={th.teal} />
-            </TouchableOpacity>
+            {/* Open iOS Screen Time (iOS only) */}
+            {Platform.OS === 'ios' && (
+              <TouchableOpacity
+                onPress={() => Linking.openURL('App-Prefs:root=SCREEN_TIME').catch(() => Linking.openSettings())}
+                style={[ss.card, { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: `${th.teal}08`, borderColor: `${th.teal}25` }]}>
+                <Ionicons name="bar-chart-outline" size={22} color={th.teal} />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: th.text, fontSize: 14, fontWeight: '600' }}>View Full Screen Time</Text>
+                  <Text style={{ color: th.text2, fontSize: 11, marginTop: 2 }}>Usage, limits & reports → iOS Settings</Text>
+                </View>
+                <Ionicons name="open-outline" size={16} color={th.teal} />
+              </TouchableOpacity>
+            )}
           </View>
 
         </ScrollView>

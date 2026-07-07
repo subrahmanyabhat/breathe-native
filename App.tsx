@@ -14,9 +14,11 @@ import ScreentimeScreen from './src/screens/ScreentimeScreen';
 import SessionScreen from './src/screens/SessionScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import AndroidAppPickerModal from './src/screens/AndroidAppPickerModal';
 import { Technique, TECHNIQUES } from './src/data';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
+import * as AndroidBlocker from './modules/android-blocker';
 
 enableScreens();
 
@@ -168,13 +170,14 @@ function TrialBanner({ daysLeft, onPress }: { daysLeft: number; onPress: () => v
 const Tab = createBottomTabNavigator();
 
 export default function App() {
-  const [data,        setData]        = useState<AppData>({ ...DEFAULT });
-  const [session,     setSession]     = useState<{ tech: Technique; targetApp?: string } | null>(null);
-  const [loaded,      setLoaded]      = useState(false);
-  const [showPremium,  setShowPremium]  = useState(false);
-  const [showOnboard,  setShowOnboard]  = useState(false);
-  const [sound,       setSound]       = useState(true);
-  const [isDark,       setIsDark]       = useState(true);
+  const [data,             setData]             = useState<AppData>({ ...DEFAULT });
+  const [session,          setSession]          = useState<{ tech: Technique; targetApp?: string } | null>(null);
+  const [loaded,           setLoaded]           = useState(false);
+  const [showPremium,      setShowPremium]      = useState(false);
+  const [showOnboard,      setShowOnboard]      = useState(false);
+  const [sound,            setSound]            = useState(true);
+  const [isDark,           setIsDark]           = useState(true);
+  const [showAndroidPicker, setShowAndroidPicker] = useState(false);
   const toggleTheme = () => setIsDark(d => !d);
   const th = isDark ? DARK : LIGHT;
 
@@ -227,8 +230,29 @@ export default function App() {
   // Auto-shield when any app/slot monitoring countdown expires (JS wall-clock fallback)
   useEffect(() => {
     const t = setInterval(async () => {
-      if (data.stShieldEnabled) return;
       const n = Date.now();
+
+      // Android: start service and add expired apps to blocked list
+      if (Platform.OS === 'android') {
+        const selected = data.androidBlockedPackages || [];
+        const expiredPkgs = selected.filter(pkg => {
+          if (!data.androidAppMonitored?.[pkg]) return false;
+          const lim = (data.androidAppLimits?.[pkg] || 15) * 60000;
+          const at = data.androidAppActivatedAt?.[pkg] || 0;
+          return at > 0 && n - at >= lim;
+        });
+        if (expiredPkgs.length > 0) {
+          await AndroidBlocker.setBlockedApps(expiredPkgs);
+          if (!data.androidBlockingActive) {
+            await AndroidBlocker.startBlockingService();
+            update({ ...data, androidBlockingActive: true });
+          }
+        }
+        return;
+      }
+
+      // iOS: shield all apps when any timer expires
+      if (data.stShieldEnabled) return;
       const { APPS: ALL_APPS } = require('./src/data');
       const anyKnownExpired = ALL_APPS.some((a: any) => {
         if (!data.appEnabled?.[a.id] || !data.appMonitored?.[a.id]) return false;
@@ -329,7 +353,7 @@ export default function App() {
     const calibration = (data.calibration ?? 10) as any;
     const earned = earnedScreenMin(minutes, mode, calibration);
     const ae = { ...(data.appEarned || {}) };
-    if (targetApp && !targetApp.startsWith('slot_')) {
+    if (targetApp && !targetApp.startsWith('slot_') && !targetApp.startsWith('android_pkg_')) {
       ae[targetApp] = (ae[targetApp] || 0) + earned;
     } else if (!targetApp) {
       const ids = Object.keys(data.appEnabled || {}).filter(k => data.appEnabled[k]);
@@ -339,7 +363,18 @@ export default function App() {
     const nativeCount = ST.getSelectedAppCount ? ST.getSelectedAppCount() : (data.nativeAppCount || 0);
     const now = new Date();
 
-    // Strict mode: require at least 5 minutes of breathing to unlock
+    // Android: require 5 minutes of breathing to unlock any blocked app
+    if (Platform.OS === 'android' && targetApp?.startsWith('android_pkg_') && minutes < 5) {
+      Alert.alert(
+        'Need 5 Minutes',
+        'You need at least 5 minutes of breathing to unlock this app. Keep going!',
+        [{ text: 'OK' }]
+      );
+      setSession(null);
+      return;
+    }
+
+    // iOS strict mode: require at least 5 minutes of breathing to unlock
     if (targetApp && data.stShieldEnabled && minutes < 5) {
       Alert.alert(
         'Need 5 Minutes',
@@ -380,6 +415,17 @@ export default function App() {
         const info = await ST.getSlotInfo().catch(() => ({ slots: [] }));
         freshSlots = info.slots || [];
       } catch {}
+    }
+
+    // Android: temporarily unblock the specific app (or all) after breathing
+    if (Platform.OS === 'android') {
+      const durationMs = Math.min(earned, 1440) * 60 * 1000;
+      if (targetApp?.startsWith('android_pkg_')) {
+        const pkg = targetApp.replace('android_pkg_', '');
+        await AndroidBlocker.temporarilyUnblock([pkg], durationMs).catch(() => {});
+      } else if (data.androidBlockingActive && (data.androidBlockedPackages || []).length > 0) {
+        await AndroidBlocker.temporarilyUnblock(data.androidBlockedPackages || [], durationMs).catch(() => {});
+      }
     }
 
     setData(prev => {
@@ -466,6 +512,10 @@ export default function App() {
                   data={data} onUpdate={update} onStartSession={startSession}
                   th={th} isPrem={isPrem} onShowPremium={() => setShowPremium(true)}
                   onPickApps={async () => {
+                    if (Platform.OS === 'android') {
+                      setShowAndroidPicker(true);
+                      return;
+                    }
                     const ST = require('./modules/screen-time');
                     const authStatus = ST.getAuthorizationStatus();
                     if (authStatus !== 'approved') {
@@ -509,6 +559,19 @@ export default function App() {
           onTrial={handleTrial}
           onBuy={handleBuy}
         />
+        {Platform.OS === 'android' && (
+          <AndroidAppPickerModal
+            visible={showAndroidPicker}
+            selectedPackages={data.androidBlockedPackages || []}
+            th={th}
+            onCancel={() => setShowAndroidPicker(false)}
+            onDone={async (packages) => {
+              await AndroidBlocker.setBlockedApps(packages);
+              update({ ...data, androidBlockedPackages: packages });
+              setShowAndroidPicker(false);
+            }}
+          />
+        )}
         {/* SessionScreen as overlay — keeps NavigationContainer mounted so tab state is preserved */}
         {session && (
           <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999 }}>

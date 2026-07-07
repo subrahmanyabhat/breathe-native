@@ -39,6 +39,11 @@ export interface AppData {
   slotsVersion: number;                    // increment to force ScreentimeScreen slot refresh
   reminder: { enabled: boolean; time: string };
   premium?: { paid?: boolean; trial?: boolean; trialStart?: string };
+  androidBlockedPackages?: string[];
+  androidBlockingActive?: boolean;
+  androidAppLimits?: Record<string, number>;
+  androidAppMonitored?: Record<string, boolean>;
+  androidAppActivatedAt?: Record<string, number>;
 }
 
 export const DEFAULT: AppData = {
